@@ -2,6 +2,10 @@ pacman -S --needed \
     python python-pip python-pipx python-poetry \
     pycharm-community-edition
 
+pacman -S --needed \
+    python-lsp-server \
+    python-rope python-pyflakes python-mccabe yapf python-whatthepatch
+
 # // run as user, NOT root!
 # $ pipx install "black[d]"
 
