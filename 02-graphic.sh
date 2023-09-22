@@ -15,7 +15,7 @@ pacman -S --needed \
     alacritty foot \
     tmux vifm fzf the_silver_searcher
 pacman -S --needed \
-    sshfs  exfatprogs \
+    sshfs exfatprogs dosfstools \
     pcmanfm-gtk3 gvfs gvfs-mtp gvfs-afc
 
 pacman -S --needed \
