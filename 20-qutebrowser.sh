@@ -15,11 +15,18 @@ function __install_dict() {
     )
 }
 
+function __dot() {
+    local base="d_qutebrowser"
+
+    (cd "$(dot_dir)" && clone_and_stow "$(clone_url github ${base})" "${base}")
+}
+
 function main() {
     __install
     __install_dict
+    __dot
 
-    unfunction __install __install_dict
+    unfunction __install __install_dict __dot
 }
 main
 unfunction main
