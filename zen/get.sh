@@ -1,74 +1,58 @@
-function get_zen_version() {
-    version=$(
-        pacman -Si zfs-linux-zen | \
-        grep "^Depends On" | \
-        sed "s/.*linux-zen=\\(\\S*\\).*/\\1/" \
-    )
+function kernel_version_required() {
+    local mode
+    if [[ "${1}" == "remote" ]]; then
+        mode="S"
+    elif [[ "${1}" == "local" ]]; then
+        mode="Q"
+    fi
 
-    echo "${version}"
+    pacman -"${mode}"i zfs-linux-"${2}" | \
+    grep "^Depends On" | \
+    sed "s/.*linux-${2}=\\(\\S*\\).*/\\1/"
 }
 
-function package_name_zen() {
-    echo "linux-zen-""${1}""-x86_64.pkg.tar.zst"
-}
+function need_update() {
+    local ver_remote ver_local
+    ver_remote=$(kernel_version_required remote "${1}")
+    ver_local=$(kernel_version_required local "${1}")
 
-function package_name_zen_headers() {
-    echo "linux-zen-headers-""${1}""-x86_64.pkg.tar.zst"
-}
-
-function package_name_zen_docs() {
-    echo "linux-zen-docs-""${1}""-x86_64.pkg.tar.zst"
+    [[ "${ver_remote}" != "${ver_local}" ]]
 }
 
 function download() {
-    if [ ! -f "${1}" ]; then
-        wget "https://archive.archlinux.org/packages/l/linux-zen/""${1}"
-    fi
-    if [ ! -f "${2}" ]; then
-        wget "https://archive.archlinux.org/packages/l/linux-zen/""${2}"
-    fi
-    if [ ! -f "${3}" ]; then
-        wget "https://archive.archlinux.org/packages/l/linux-zen/""${3}"
-    fi
-}
-
-function install() {
-    zfs_zen="zfs-linux-zen"
-    zfs_zen_headers="${zfs_zen}""-headers"
-
-    if pacman -Qi "${zfs_zen}" >/dev/null; then
-        echo "not have zfs-zen"
-    fi
-    # TODO: skip removal of uninstalled package if:
-    #   1.  not yet installed
-    #   2.  no new download
-    uninstall_if_installed "${zfs_zen}"
-    uninstall_if_installed "${zfs_zen_headers}"
-
-    pacman -Rns "${zfs_zen}" "${zfs_zen_headers}"
-    pacman -Rns linux-zen linux-zen-headers linux-zen-docs
-
-    pacman -U "${1}" "${2}" "${3}"
-    pacman -S "${zfs_zen}" "${zfs_zen_headers}"
+    for f in "${@:2}"; do
+        if [ ! -f "${f}" ]; then
+            wget "${1}/${f}"
+        fi
+    done
 }
 
 function uninstall_if_installed() {
-    package="$1"
-
-    if pacman -Qi "${package}" >/dev/null; then
-        pacman -Rns "${package}"
-    fi
+    for p in "${@}"; do
+        if pacman -Qi "${p}" >/dev/null; then
+            sudo pacman -Rns "${p}"
+        fi
+    done
 }
 
 function pipeline_zen() {
-    version="$(get_zen_version)"
+    local suffix="-x86_64.pkg.tar.zst"
+    local prefixes=("linux-zen" "linux-zen-headers" "linux-zen-docs")
+    local version
+    version="$(kernel_version_required remote zen)"
+    local packages_kernel=()
+    for prefix in "${prefixes[@]}"; do
+        packages_kernel+=("${prefix}-${version}${suffix}")
+    done
 
-    package_zen="$(package_name_zen "${version}")"
-    package_zen_headers="$(package_name_zen_headers "${version}")"
-    package_zen_docs="$(package_name_zen_docs "${version}")"
+    download "https://archive.archlinux.org/packages/l/linux-zen" "${packages_kernel[@]}"
+    local packages_zfs=("zfs-linux-zen" "zfs-linux-zen-headers")
 
-    download "${package_zen}" "${package_zen_headers}" "${package_zen_docs}"
-    install "${package_zen}" "${package_zen_headers}" "${package_zen_docs}"
+    if need_update zen; then
+        uninstall_if_installed "${packages_zfs[@]}" "${packages_kernel[@]}"
+
+        sudo pacman -U "${packages_kernel[@]}"
+        sudo pacman -S "${packages_zfs[@]}"
+    fi
 }
-
 pipeline_zen
