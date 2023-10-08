@@ -2,18 +2,48 @@ function dot_dir() {
     echo "$HOME/dot/dot"
 }
 
-function install() {
+function bin_dir() {
+    echo "$HOME/dot/bin"
+}
+
+function __sudo() {
     local SUDO=""
     if (( "$EUID" != 0 )); then
         SUDO=sudo
     fi
+    echo "${SUDO}"
+}
 
+function install_aur() {
+    (
+        cd "$(bin_dir)" || exit
+        git clone "https://aur.archlinux.org/$1.git"
+    )
+
+    (
+        cd "$(bin_dir)/$1" || exit
+        makepkg -src
+
+        echo
+        echo "select package to install from:"
+        ls ./*".pkg.tar.zst"
+        echo ""
+
+        read -r pkg
+        "$(__sudo)" pacman -U "${pkg}"
+    )
+}
+
+function install() {
     case "$1" in
+        "aur")
+            install_aur "$2"
+            ;;
         "arch")
-            "${SUDO}" pacman -S --needed "${@:2}"
+            "$(__sudo)" pacman -S --needed "${@:2}"
             ;;
         *)
-            "${SUDO}" pacman -S --needed "${@:2}"
+            "$(__sudo)" pacman -S --needed "${@:2}"
             ;;
     esac
 }
