@@ -79,16 +79,17 @@ function pipeline() {
         packages_kernel_path+=("${package}-${version}${suffix}")
     done
 
-    local packages_zfs=("zfs-linux-${kernel}")
-    if ${install_zfs_header}; then
-        packages_zfs+=("zfs-linux-${kernel}-headers")
-    fi
+    local packages_zfs=("zfs-linux-${kernel}" "zfs-linux-${kernel}-headers")
 
     if need_update "${kernel}"; then
         uninstall_if_installed "${packages_zfs[@]}" "${packages_kernel[@]}"
 
         sudo pacman -U "${packages_kernel_path[@]}"
-        sudo pacman -S "${packages_zfs[@]}"
+        if ${install_zfs_header}; then
+            sudo pacman -S "${packages_zfs[@]}"
+        else
+            sudo pacman -S "${packages_zfs[1]}"
+        fi
     fi
 }
 
