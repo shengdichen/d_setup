@@ -8,7 +8,7 @@ pacman -S --needed \
     linux linux-headers linux-docs \
     linux-lts linux-lts-headers linux-lts-docs \
     linux-firmware intel-ucode \
-    fwupd
+    fwupd arch-install-scripts
 pacman -S --needed \
     mesa vulkan-intel lib32-vulkan-intel \
     vulkan-headers vulkan-tools intel-gpu-tools
