@@ -30,22 +30,29 @@ function python() {
     # 4. restart pycharm
 }
 
-function lua() {
-    install "arch" lua-language-server
-}
-
-function __js() {
-    install "arch" nodejs npm
-}
-
-function __misc() {
-    install arch \
+function langs() {
+    install "arch" \
+        lua-language-server \
         nodejs npm \
         ruby bash-language-server shellcheck \
-        sqlite sqlite-doc sqlite-analyzer sqlitebrowser \
+        sqlite sqlite-doc sqlite-analyzer sqlitebrowser
+}
+
+function libs() {
+    install "arch" \
         qt6-base qt6-wayland qt6-tools qt6-doc \
         qt5-base qt5-wayland qt5-tools qt5-doc \
         gtk4 gtk3
 
     npm install --global "sql-language-server" "vim-language-server"
 }
+
+function main() {
+    python
+    langs
+    libs
+
+    unset -f python langs libs
+}
+main
+unset -f main
