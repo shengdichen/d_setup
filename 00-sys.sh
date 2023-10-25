@@ -1,14 +1,22 @@
-pacman -S --needed \
-    base base-devel pacman-contrib \
-    vi neovim \
-    man-db man-pages \
-    man-pages-fr man-pages-de man-pages-ru man-pages-es \
-    man-pages-sv man-pages-it man-pages-pt_br man-pages-zh_tw \
-    exfatprogs \
-    linux linux-headers linux-docs \
-    linux-lts linux-lts-headers linux-lts-docs \
-    linux-firmware intel-ucode \
-    fwupd arch-install-scripts
+source "./util.sh"
+
+function base() {
+    install "arch" \
+        base base-devel pacman-contrib \
+        vi neovim \
+        man-db man-pages \
+        man-pages-fr man-pages-de man-pages-ru man-pages-es \
+        man-pages-sv man-pages-it man-pages-pt_br man-pages-zh_tw
+
+    # fs
+    install "arch" \
+        exfatprogs \
+        linux linux-headers linux-docs \
+        linux-lts linux-lts-headers linux-lts-docs \
+        linux-firmware intel-ucode \
+        fwupd arch-install-scripts
+}
+
 pacman -S --needed \
     mesa vulkan-intel lib32-vulkan-intel \
     vulkan-headers vulkan-tools intel-gpu-tools
@@ -72,5 +80,3 @@ pacman -S --needed \
 #       LABEL=ROOT / ext4 rw,relatime 0 1
 #       /SWAP none swap defaults 0 0
 # }}}
-
-# vim: filetype=conf foldmethod=marker
