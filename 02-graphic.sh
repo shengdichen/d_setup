@@ -6,7 +6,9 @@ function __base() {
         tmux vifm neovim vi fzf the_silver_searcher
 
     install "arch" \
+        fuse3 fuse2 \
         sshfs exfatprogs dosfstools \
+        android-file-transfer android-tools \
         pcmanfm-gtk3 gvfs gvfs-mtp gvfs-afc
 }
 

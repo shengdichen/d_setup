@@ -31,7 +31,7 @@ pacman -S --needed \
     networkmanager \
     networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
     tor nyx \
-    wget curl speedtest-cli
+    wget curl speedtest-cli rsync
 # systemctl start tor
 pacman -S --needed \
     bluez bluez-utils \
