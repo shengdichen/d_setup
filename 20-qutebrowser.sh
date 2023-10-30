@@ -3,6 +3,7 @@ source "./util.sh"
 function __install() {
     install "arch" \
         "qutebrowser" "tor"
+    clone_and_stow self d_qutebrowser
 
     systemctl enable --now "tor.service"
 }
@@ -15,16 +16,11 @@ function __install_dict() {
     )
 }
 
-function __dot() {
-    (cd "$(dot_dir)" && clone_and_stow self d_qutebrowser)
-}
-
 function main() {
     __install
     __install_dict
-    __dot
 
-    unfunction __install __install_dict __dot
+    unfunction __install __install_dict
 }
 main
 unfunction main

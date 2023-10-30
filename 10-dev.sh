@@ -2,7 +2,7 @@ source "./util.sh"
 
 function neovim() {
     local repo="d_nvim"
-    (cd "$(dot_dir)" && clone_and_stow self "${repo}")
+    clone_and_stow self "${repo}"
 
     (
     cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit

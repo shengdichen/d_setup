@@ -98,11 +98,15 @@ function _stow_nice() {
 }
 
 function clone_and_stow() {
-    # cater for failed cloning (bad permission, wrong address...)
-    if clone "${1}" "${2}"; then
-        _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${2}"
-        echo "Stowing completed"
-    fi
+    (
+        cd "$(dot_dir)" || exit 3
+
+        # cater for failed cloning (bad permission, wrong address...)
+        if clone "${1}" "${2}"; then
+            _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${2}"
+            echo "Stowing completed"
+        fi
+    )
 }
 
 function fetch_and_stow() {
