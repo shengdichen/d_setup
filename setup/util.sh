@@ -1,13 +1,9 @@
 function dot_dir() {
-    local d="${HOME}/dot/dot"
-    mkdir -p "${d}"
-    echo "${d}"
+    echo "${HOME}/dot/dot"
 }
 
 function bin_dir() {
-    local d="${HOME}/dot/bin"
-    mkdir -p "${d}"
-    echo "${d}"
+    echo "${HOME}/dot/bin"
 }
 
 function __sudo() {
