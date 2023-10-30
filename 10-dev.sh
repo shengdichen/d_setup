@@ -50,6 +50,9 @@ function python() {
 
 function langs() {
     install "arch" \
+        clang lld \
+
+    install "arch" \
         lua-language-server \
         nodejs npm \
         ruby bash-language-server shellcheck \
