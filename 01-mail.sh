@@ -9,9 +9,7 @@ function __install() {
 }
 
 function __dot() {
-    local base="d_mail"
-
-    (cd "$(dot_dir)" && clone_and_stow "$(clone_url github ${base})" "${base}")
+    (cd "$(dot_dir)" && clone_and_stow github d_mail)
 }
 
 function __dot_dir() {
@@ -92,8 +90,10 @@ function __extra() {
 function main() {
     __install
     __dot
+    create_box
+    fdm_conf
 
-    unfunction __install __dot
+    unfunction __install __dot create_box fdm_conf
 }
 main
 unfunction main
