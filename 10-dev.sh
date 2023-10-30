@@ -1,5 +1,23 @@
 source "./util.sh"
 
+function neovim() {
+    local repo="d_nvim"
+    (cd "$(dot_dir)" && clone_and_stow self "${repo}")
+
+    (
+    cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit
+    clone github "hrsh7th" "nvim-cmp"
+    clone github "hrsh7th" "cmp-nvim-lsp"
+    clone github "L3MON4D3" "LuaSnip"
+    clone github "saadparwaiz1" "cmp_luasnip"
+
+    # REF:
+    #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
+    cd "./LuaSnip" || exit
+    make install_jsregexp
+    )
+}
+
 function python() {
     install "arch" \
         python python-pip python-pipx python-poetry \

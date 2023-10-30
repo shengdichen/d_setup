@@ -70,15 +70,20 @@ function install() {
 function clone() {
     local repo link
     case "${1}" in
-        "github" | "GH" )
+        "self" )
             repo=${2}
             link="git@github.com:shengdichen/${repo}.git"
+            ;;
+        "github" )
+            repo=${3}
+            link="git@github.com:${2}/${repo}.git"
             ;;
         "aur" )
             repo=${2}
             link="https://aur.archlinux.org/${repo}.git"
             ;;
     esac
+
     if [[ ! -d ${repo} ]]; then
         git clone "${link}"
     fi

@@ -16,9 +16,7 @@ function __install_dict() {
 }
 
 function __dot() {
-    local base="d_qutebrowser"
-
-    (cd "$(dot_dir)" && clone_and_stow "$(clone_url github ${base})" "${base}")
+    (cd "$(dot_dir)" && clone_and_stow self d_qutebrowser)
 }
 
 function main() {

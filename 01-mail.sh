@@ -9,7 +9,7 @@ function __install() {
 }
 
 function __dot() {
-    (cd "$(dot_dir)" && clone_and_stow github d_mail)
+    (cd "$(dot_dir)" && clone_and_stow self d_mail)
 }
 
 function __dot_dir() {
