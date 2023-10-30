@@ -84,10 +84,18 @@ function clone() {
     fi
 }
 
+function _stow_nice() {
+    # REF:
+    #   https://github.com/aspiers/stow/issues/65
+
+    stow "$@" \
+        2> >(grep -v 'BUG in find_stowed_path? Absolute/relative mismatch' 1>&2)
+}
+
 function clone_and_stow() {
     # cater for failed cloning (bad permission, wrong address...)
     if clone "${1}" "${2}"; then
-        stow -R --target="${HOME}" --ignore="\.git.*" "${2}"
+        _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${2}"
         echo "Stowing completed"
     fi
 }
@@ -96,6 +104,6 @@ function fetch_and_stow() {
     (
         cd "${1}" || exit
         git fetch && git merge main
-        stow --restow "${1}"
+        _stow_nice --restow "${1}"
     )
 }
