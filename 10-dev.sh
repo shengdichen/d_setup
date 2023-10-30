@@ -36,6 +36,9 @@ function langs() {
         nodejs npm \
         ruby bash-language-server shellcheck \
         sqlite sqlite-doc sqlite-analyzer sqlitebrowser
+
+    install "arch" \
+        ghc cabal-install stack haskell-language-server
 }
 
 function libs() {
