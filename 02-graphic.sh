@@ -62,3 +62,12 @@ function __media() {
     install "aur" \
         wdisplays
 }
+
+function __game() {
+    install "arch" \
+        steam
+
+    install "arch" \
+        wine-staging wine-gecko wine-mono \
+        lutris
+}
