@@ -11,11 +11,11 @@ function bin_dir() {
 }
 
 function __sudo() {
-    local SUDO=""
-    if (( "$EUID" != 0 )); then
-        SUDO=sudo
+    local s=""
+    if (( EUID != 0 )); then
+        s=sudo
     fi
-    echo "${SUDO}"
+    echo "${s}"
 }
 
 function install_arch_cache() {
@@ -46,9 +46,9 @@ function install_aur() {
 }
 
 function install() {
-    case "$1" in
+    case "${1}" in
         "aur")
-            install_aur "$2"
+            install_aur "${2}"
             ;;
         "arch")
             "$(__sudo)" pacman -S --needed "${@:2}"
@@ -57,7 +57,7 @@ function install() {
             install_arch_cache "${@:2}"
             ;;
         *)
-            "$(__sudo)" pacman -S --needed "${@:2}"
+            echo "Wrong mode: install()"
             ;;
     esac
 }
@@ -80,24 +80,17 @@ function clone() {
 }
 
 function clone_and_stow() {
-    local remote="$1"
-    local local="$2"
-
-    if [[ ! -d ${local} ]]; then
-        git clone "${remote}" "${local}"
-    fi
-
-    if [[ -d ${local} ]]; then  # cater for failed cloning
-        stow -R --target="${HOME}" --ignore="\.git.*" "${local}"
+    # cater for failed cloning (bad permission, wrong address...)
+    if clone "${1}" "${2}"; then
+        stow -R --target="${HOME}" --ignore="\.git.*" "${2}"
         echo "Stowing completed"
     fi
 }
 
 function fetch_and_stow() {
-    local local="$1"
     (
-        cd "${local}" || exit
+        cd "${1}" || exit
         git fetch && git merge main
-        stow --restow "$1"
+        stow --restow "${1}"
     )
 }

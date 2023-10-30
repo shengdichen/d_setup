@@ -25,6 +25,10 @@ function kernel_version_required() {
 }
 
 function need_update() {
+    if is_installed "${1}"; then
+        return
+    fi
+
     local ver_remote ver_local
     ver_remote=$(kernel_version_required remote "${1}")
     ver_local=$(kernel_version_required local "${1}")
