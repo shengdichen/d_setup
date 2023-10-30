@@ -1,6 +1,6 @@
 source "./util.sh"
 
-function neovim() {
+function __nvim() {
     local repo="d_nvim"
     clone_and_stow self "${repo}"
 
@@ -18,14 +18,14 @@ function neovim() {
     )
 }
 
-function python() {
+function __python() {
     install "arch" \
         python python-pip python-pipx python-poetry \
-        pycharm-community-edition \
-        python-lsp-server python-lsp-black \
-        python-black python-aiohttp \
-        python-rope python-mccabe flake8 python-pylint \
-        python-pyflakes
+        pycharm-community-edition
+
+    install "arch" \
+        python-black python-aiohttp python-lsp-server python-lsp-black \
+        python-rope python-mccabe flake8 python-pylint python-pyflakes
 
     pipx install --include-deps pylsp-rope
 
@@ -49,34 +49,38 @@ function python() {
 }
 
 function langs() {
+    __python
+
     install "arch" \
+        lua luajit luarocks lua-language-server \
         clang lld \
-
-    install "arch" \
-        lua-language-server \
-        nodejs npm \
-        ruby bash-language-server shellcheck \
-        sqlite sqlite-doc sqlite-analyzer sqlitebrowser
-
-    install "arch" \
         ghc cabal-install stack haskell-language-server
+
+    install "arch" \
+        bash-language-server shellcheck \
+        nodejs npm ruby \
+    npm install --global "vim-language-server"
+
+    install "arch" \
+        sqlite sqlite-doc sqlite-analyzer sqlitebrowser
+    npm install --global "sql-language-server"
 }
 
 function libs() {
     install "arch" \
         qt6-base qt6-wayland qt6-tools qt6-doc \
         qt5-base qt5-wayland qt5-tools qt5-doc \
-        gtk4 gtk3
 
-    npm install --global "sql-language-server" "vim-language-server"
+    install "arch" \
+        gtk4 gtk3
 }
 
 function main() {
-    python
+    __nvim
     langs
     libs
 
-    unset -f python langs libs
+    unset -f __nvim __python langs libs
 }
 main
 unset -f main
