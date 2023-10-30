@@ -26,29 +26,34 @@ function install_arch_cache() {
 }
 
 function install_aur() {
-    (
-        cd "$(bin_dir)" || exit
-        clone aur "${1}"
-    )
+    function __f() {
+        (cd "$(bin_dir)" && clone aur "${1}")
 
-    (
-        cd "$(bin_dir)/${1}" || exit
-        makepkg -src
+        (
+            cd "$(bin_dir)/${1}" || exit
+            makepkg -src
 
-        echo
-        echo "select package to install"
-        install_arch_cache "$(\
-            find . -maxdepth 1 -type f | \
-            grep "\.pkg\.tar\.zst$" | \
-            fzf --reverse --height=50%\
-        )"
-    )
+            echo
+            echo "select package to install"
+            install_arch_cache "$(\
+                find . -maxdepth 1 -type f | \
+                grep "\.pkg\.tar\.zst$" | \
+                fzf --reverse --height=50%\
+            )"
+        )
+    }
+
+    for p in "${@}"; do
+        echo "Installing [AUR] ${p}"
+        __f "${p}"
+    done
+    unset -f __f
 }
 
 function install() {
     case "${1}" in
         "aur")
-            install_aur "${2}"
+            install_aur "${@:2}"
             ;;
         "arch")
             "$(__sudo)" pacman -S --needed "${@:2}"
