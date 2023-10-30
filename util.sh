@@ -46,6 +46,9 @@ function install() {
         "arch")
             "$(__sudo)" pacman -S --needed "${@:2}"
             ;;
+        "arch-cache")
+            "$(__sudo)" pacman -U --needed "${@:2}"
+            ;;
         *)
             "$(__sudo)" pacman -S --needed "${@:2}"
             ;;
