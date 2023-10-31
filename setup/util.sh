@@ -72,7 +72,7 @@ function clone() {
             ;;
         "github" )
             repo=${3}
-            link="git@github.com:${2}/${repo}.git"
+            link="https://github.com/${2}/${repo}.git"
             ;;
         "aur" )
             repo=${2}
