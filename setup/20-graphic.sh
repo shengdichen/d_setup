@@ -29,6 +29,18 @@ function __media() {
     clone_and_stow self d_cmus
     clone_and_stow self d_ncmpc
 
+    local mpd_lib="${HOME}/.config/mpd/bin/lib/"
+    if (($(find "${mpd_lib}" -maxdepth 1 | wc -l) <= 2)); then
+        ln -f "${HOME}/xdg/MDA/Aud/x" "${mpd_lib}"
+        if ! pgrep mpd 1>/dev/null 2>&1; then
+            mpd
+        fi
+        mpc --host=admin@localhost update
+        mpc --host=admin@localhost repeat
+        mpc --host=admin@localhost single
+        mpc --host=admin@localhost volume 37
+    fi
+
     install "arch" \
         firefox-developer-edition chromium w3m \
         qutebrowser python-adblock \
