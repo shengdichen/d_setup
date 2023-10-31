@@ -42,9 +42,11 @@ function __media() {
     fi
 
     install "arch" \
-        firefox-developer-edition chromium w3m \
+        firefox-developer-edition w3m \
         qutebrowser python-adblock \
         transmission-cli deluge-gtk
+    install "aur" \
+        ungoogled-chromium-bin
 }
 
 function __game() {
