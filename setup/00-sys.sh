@@ -97,34 +97,6 @@ function desktop() {
         wdisplays
 }
 
-# pacman.conf {{{
-# 0. enable multilib
-
-# 1. zfs {{{
-# 1. copy over /etc/pacman.conf
-# arch-zfs
-# accept key from: https://wiki.archlinux.org/title/Unofficial_user_repositories#archzfs
-# # pacman-key --recv-keys DDF7DB817396A49B2A2723F7403BD972F75D9D76
-# $ pacman-key --finger DDF7DB817396A49B2A2723F7403BD972F75D9D76
-# # pacman-key --lsign-key DDF7DB817396A49B2A2723F7403BD972F75D9D76
-# install kernel with script from
-# # zsh prv/zfs/zen/
-
-# add ignorepackage: /etc/pacman.conf
-#IgnorePkg=linux-zen
-#IgnorePkg=linux-zen-headers
-
-# // update grub to also realize the newly installed zen-kernel
-# grub-mkconfig -o /boot/grub/grub.cfg
-# }}}
-
-# 2. blackarch {{{
-# 0. remove legacy blackarch block in /etc/pacman.conf
-# 1. install blackarch
-#   https://www.blackarch.org/downloads.html#install-repo
-# }}}
-# }}}
-
 # 2. simplify /etc/fstab {{{
 # a. rename root-parition
 # # sudo e2label /dev/sda<ROOT> "ROOT"
