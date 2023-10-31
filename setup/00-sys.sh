@@ -84,11 +84,15 @@ function desktop() {
     install "arch" \
         alacritty foot \
         tmux vifm neovim vi fzf the_silver_searcher
+    clone_and_stow self d_foot
+    clone_and_stow self d_tmux
+    clone_and_stow self d_vifm
 
     install "arch" \
         wl-clipboard xorg-xwayland \
         sway swaylock swaybg xdg-desktop-portal-wlr \
         grim slurp wf-recorder capitaine-cursors light gammastep
+    clone_and_stow self d_sway
     install "aur" \
         wdisplays
 }

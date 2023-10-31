@@ -49,6 +49,7 @@ function __python() {
 }
 
 function langs() {
+    clone_and_stow self d_ideavim
     __python
 
     install "arch" \
