@@ -23,7 +23,7 @@ function install_arch_cache() {
 
 function install_aur() {
     function __f() {
-        (cd "$(bin_dir)" && clone aur "${1}")
+        clone_and_stow --no-stow -- aur "${1}"
 
         (
             cd "$(bin_dir)/${1}" || exit
@@ -63,26 +63,24 @@ function install() {
     esac
 }
 
-function clone() {
+function _clone_url() {
     local repo link
     case "${1}" in
         "self" )
-            repo=${2}
+            repo="${2}"
             link="git@github.com:shengdichen/${repo}.git"
             ;;
         "github" )
-            repo=${3}
+            repo="${3}"
             link="https://github.com/${2}/${repo}.git"
             ;;
         "aur" )
-            repo=${2}
+            repo="${2}"
             link="https://aur.archlinux.org/${repo}.git"
             ;;
     esac
 
-    if [[ ! -d ${repo} ]]; then
-        git clone "${link}"
-    fi
+    echo "${link}"
 }
 
 function _stow_nice() {
@@ -94,15 +92,42 @@ function _stow_nice() {
 }
 
 function clone_and_stow() {
+    local _link _sub=false _stow=true
+    while (( ${#} > 0 )); do
+        case "${1}" in
+            "--sub" )
+                _sub=true
+                shift ;;
+            "--no-stow" )
+                _stow=false
+                shift ;;
+            "--" )
+                _link="$(_clone_url "${@:2}")"
+                break
+        esac
+    done
+
+     function __clone() {
+        if "${1}"; then
+            git clone --recursive "${@:2}"
+        else
+            git clone "${@:2}"
+        fi
+    }
     (
         cd "$(dot_dir)" || exit 3
 
-        # cater for failed cloning (bad permission, wrong address...)
-        if clone "${1}" "${2}"; then
-            _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${2}"
-            echo "Stowing completed"
+        if [[ ! -d "${repo}" ]]; then
+            # cater for failed cloning (bad permission, wrong address...)
+            if __clone "${_sub}" "${_link}"; then
+                if "${_stow}"; then
+                    _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${2}"
+                    echo "Stowing completed"
+                fi
+            fi
         fi
     )
+    unset -f __clone
 }
 
 function fetch_and_stow() {
