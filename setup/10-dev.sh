@@ -59,7 +59,7 @@ function langs() {
 
     install "arch" \
         bash-language-server shellcheck \
-        nodejs npm ruby \
+        nodejs npm ruby
     npm install --global "vim-language-server"
 
     install "arch" \
