@@ -72,6 +72,14 @@ function desktop() {
         ttf-fira-code \
         noto-fonts noto-fonts-extra noto-fonts-cjk noto-fonts-emoji \
         font-manager
+    clone_and_stow self d_font
+
+    local _shevska="shevska"
+    (
+        cd "$(dot_dir)" || exit 3
+        clone self "${_shevska}"
+        cd "${_shevska}" && "${SHELL}" setup.sh
+    )
 
     install "arch" \
         alacritty foot \
