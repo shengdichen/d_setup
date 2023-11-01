@@ -1,12 +1,12 @@
 function __base() {
-    "${SHELL}" "./00-sys.sh"
+    "${SHELL}" "./00.sh"
     "${SHELL}" "./10-dev.sh"
-    "${SHELL}" "./20-mail.sh"
-    "${SHELL}" "./20-qutebrowser.sh"
+    "${SHELL}" "./10-mail.sh"
+    "${SHELL}" "./10-qutebrowser.sh"
 }
 
 function __extra() {
-    source "./20-graphic.sh"
+    source "./20.sh"
     __office
     __media
     __game
