@@ -3,7 +3,7 @@ source "./util.sh"
 function __install() {
     install "arch" \
         "qutebrowser" "tor"
-    clone_and_stow self d_qutebrowser
+    clone_and_stow -- self d_qutebrowser
 }
 
 function __extra() {

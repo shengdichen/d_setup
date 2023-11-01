@@ -7,7 +7,7 @@ function __install() {
     install "aur" \
         "protonmail-bridge-bin"
 
-    clone_and_stow self d_mail
+    clone_and_stow -- self d_mail
 }
 
 function __dot_dir() {

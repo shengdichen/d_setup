@@ -72,27 +72,27 @@ function desktop() {
         ttf-fira-code \
         noto-fonts noto-fonts-extra noto-fonts-cjk noto-fonts-emoji \
         font-manager
-    clone_and_stow self d_font
+    clone_and_stow -- self d_font
 
     local _shevska="shevska"
     (
         cd "$(dot_dir)" || exit 3
-        clone self "${_shevska}"
+        clone_and_stow --no-stow -- self "${_shevska}"
         cd "${_shevska}" && "${SHELL}" setup.sh
     )
 
     install "arch" \
         alacritty foot \
         tmux vifm neovim vi fzf the_silver_searcher
-    clone_and_stow self d_foot
-    clone_and_stow self d_tmux
-    clone_and_stow self d_vifm
+    clone_and_stow -- self d_foot
+    clone_and_stow -- self d_tmux
+    clone_and_stow -- self d_vifm
 
     install "arch" \
         wl-clipboard xorg-xwayland \
         sway swaylock swaybg xdg-desktop-portal-wlr \
         grim slurp wf-recorder capitaine-cursors light gammastep
-    clone_and_stow self d_sway
+    clone_and_stow -- self d_sway
     install "aur" \
         wdisplays
 }

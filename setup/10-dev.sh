@@ -2,14 +2,14 @@ source "./util.sh"
 
 function __nvim() {
     local repo="d_nvim"
-    clone_and_stow self "${repo}"
+    clone_and_stow --sub -- self "${repo}"
 
     (
     cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit
-    clone github "hrsh7th" "nvim-cmp"
-    clone github "hrsh7th" "cmp-nvim-lsp"
-    clone github "L3MON4D3" "LuaSnip"
-    clone github "saadparwaiz1" "cmp_luasnip"
+    clone_and_stow --no-stow -- github "hrsh7th" "nvim-cmp"
+    clone_and_stow --no-stow -- github "hrsh7th" "cmp-nvim-lsp"
+    clone_and_stow --no-stow -- github "L3MON4D3" "LuaSnip"
+    clone_and_stow --no-stow -- github "saadparwaiz1" "cmp_luasnip"
 
     # REF:
     #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
@@ -49,7 +49,7 @@ function __python() {
 }
 
 function langs() {
-    clone_and_stow self d_ideavim
+    clone_and_stow -- self d_ideavim
     __python
 
     install "arch" \
