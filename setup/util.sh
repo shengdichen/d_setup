@@ -27,15 +27,15 @@ function install_aur() {
 
         (
             cd "$(bin_dir)/${1}" || exit
-            makepkg -src
-
-            echo
-            echo "select package to install"
-            install_arch_cache "$(\
-                find . -maxdepth 1 -type f | \
-                grep "\.pkg\.tar\.zst$" | \
-                fzf --reverse --height=50%\
-            )"
+            if makepkg -src; then
+                echo
+                echo "select package to install"
+                install_arch_cache "$(\
+                    find . -maxdepth 1 -type f | \
+                    grep "\.pkg\.tar\.zst$" | \
+                    fzf --reverse --height=50%\
+                )"
+            fi
         )
     }
 
