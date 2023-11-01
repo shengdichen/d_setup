@@ -87,11 +87,10 @@ function __extra() {
 
 function main() {
     __install
-    __dot
     create_box
     fdm_conf
 
-    unfunction __install __dot create_box fdm_conf
+    unfunction __install __dot_dir create_box fdm_conf
 }
 main
 unfunction main
