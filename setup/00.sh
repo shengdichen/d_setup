@@ -12,7 +12,6 @@ function __base() {
 
     install "arch" \
         linux linux-headers linux-docs \
-        linux-lts linux-lts-headers linux-lts-docs \
         linux-firmware
 
     install "arch" \
