@@ -25,9 +25,9 @@ function __media() {
         pulsemixer mpv \
         sox cmus mpd mpc ncmpc \
         imv yt-dlp ytfzf
-    clone_and_stow -- self d_mpd
-    clone_and_stow -- self d_cmus
-    clone_and_stow -- self d_ncmpc
+    for d in "d_mpv" "d_mpd" "d_cmus" "d_ncmpc"; do
+        clone_and_stow -- self "${d}"
+    done
 
     local mpd_lib="${HOME}/.config/mpd/bin/lib/"
     if (($(find "${mpd_lib}" -maxdepth 1 | wc -l) <= 2)); then
