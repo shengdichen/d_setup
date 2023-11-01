@@ -151,3 +151,23 @@ function _stow_nice() {
     stow "$@" \
         2> >(grep -v 'BUG in find_stowed_path? Absolute/relative mismatch' 1>&2)
 }
+
+function service_start() {
+    local _services
+    while (( ${#} > 0 )); do
+        case "${1}" in
+            "--" )
+                _services=("${@:2}")
+                break
+        esac
+    done
+
+    for s in "${_services[@]}"; do
+        if systemctl is-active --quiet "${s}"; then
+            echo "[systemd:${s}] Active already, skipping"
+        else
+            echo "[systemd:${s}] Starting"
+            systemctl enable --now "${1}"
+        fi
+    done
+}

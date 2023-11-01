@@ -7,7 +7,7 @@ function __install() {
 }
 
 function __extra() {
-    systemctl enable --now "tor.service"
+    service_start -- tor
 
     # download (offline) dictionaries
     python "/usr/share/qutebrowser/scripts/dictcli.py" install \

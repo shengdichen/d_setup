@@ -34,7 +34,6 @@ function __base() {
         networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
         tor nyx \
         wget curl speedtest-cli rsync
-    # systemctl start tor
 
     install "arch" \
         bluez bluez-utils \
@@ -44,7 +43,7 @@ function __base() {
 
     install "arch" \
         tlp acpi
-    # systemctl enable tlp && systemctl start tlp
+    service_start -- tlp
     # sudo tlp setcharge 59 60 BAT0
 }
 
