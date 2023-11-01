@@ -14,7 +14,9 @@ function __nvim() {
     # REF:
     #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
     cd "./LuaSnip" || exit
-    make install_jsregexp
+    if [[ ! -e "./lua/luasnip-jsregexp.so" ]]; then
+        make install_jsregexp
+    fi
     )
 }
 
