@@ -28,6 +28,9 @@ function install() {
         "npm")
             __install_npm "${@:2}"
             ;;
+        "pipx")
+            __install_pipx "${@:2}"
+            ;;
         *)
             echo "Wrong mode: install()"
             ;;
@@ -73,6 +76,33 @@ function __install_npm() {
         else
             echo "[npm:${p}] Installing"
             npm install --global "${p}"
+        fi
+    done
+}
+
+function __install_pipx() {
+    local _optional=false _packs
+    while (( ${#} > 0 )); do
+        case "${1}" in
+            "--optional" )
+                _optional=true
+                shift ;;
+            "--" )
+                _packs="${@:2}"
+                break
+        esac
+    done
+
+    for p in "${_packs[@]}"; do
+        if pipx list --short | grep -q "^${p} "; then
+            echo "[pipx:${p}] Installed already, skipping"
+        else
+            echo "[pipx:${p}] Installing"
+            if "${_optional}"; then
+                pipx install --include-deps "${p}"
+            else
+                pipx install "${p}"
+            fi
         fi
     done
 }

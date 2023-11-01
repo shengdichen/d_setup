@@ -29,7 +29,8 @@ function __python() {
         python-black python-aiohttp python-lsp-server python-lsp-black \
         python-rope python-mccabe flake8 python-pylint python-pyflakes
 
-    pipx install --include-deps pylsp-rope
+    install "pipx" \
+        --optional -- pylsp-rope
 
     # pycharm-config:
     # 1. install plugin
