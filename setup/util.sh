@@ -14,28 +14,38 @@ function __sudo() {
     echo "${s}"
 }
 
-function install_arch_cache() {
-    for p in "${@}"; do
-        echo "Installing [ARCH-CACHE] ${p}"
-        "$(__sudo)" pacman -U --needed "${p}"
-    done
+function install() {
+    case "${1}" in
+        "aur")
+            _install_aur "${@:2}"
+            ;;
+        "arch")
+            "$(__sudo)" pacman -S --needed "${@:2}"
+            ;;
+        "arch-cache")
+            _install_arch_cache "${@:2}"
+            ;;
+        *)
+            echo "Wrong mode: install()"
+            ;;
+    esac
 }
 
-function install_aur() {
+function _install_aur() {
     function __f() {
-        (cd "$(bin_dir)" && clone aur "${1}")
+        clone_and_stow --cd "$(bin_dir)" --no-stow -- aur "${1}"
 
         (
             cd "$(bin_dir)/${1}" || exit
-            makepkg -src
-
-            echo
-            echo "select package to install"
-            install_arch_cache "$(\
-                find . -maxdepth 1 -type f | \
-                grep "\.pkg\.tar\.zst$" | \
-                fzf --reverse --height=50%\
-            )"
+            if makepkg -src; then
+                echo
+                echo "select package to install"
+                _install_arch_cache "$(\
+                    find . -maxdepth 1 -type f | \
+                    grep "\.pkg\.tar\.zst$" | \
+                    fzf --reverse --height=50%\
+                )"
+            fi
         )
     }
 
@@ -46,43 +56,78 @@ function install_aur() {
     unset -f __f
 }
 
-function install() {
-    case "${1}" in
-        "aur")
-            install_aur "${@:2}"
-            ;;
-        "arch")
-            "$(__sudo)" pacman -S --needed "${@:2}"
-            ;;
-        "arch-cache")
-            install_arch_cache "${@:2}"
-            ;;
-        *)
-            echo "Wrong mode: install()"
-            ;;
-    esac
+function _install_arch_cache() {
+    for p in "${@}"; do
+        echo "Installing [ARCH-CACHE] ${p}"
+        "$(__sudo)" pacman -U --needed "${p}"
+    done
 }
 
-function clone() {
+function clone_and_stow() {
+    local _cd _repo _link _sub=false _stow=true
+    while (( ${#} > 0 )); do
+        case "${1}" in
+            "--cd" )
+                _cd="${2}"
+                shift; shift ;;
+            "--sub" )
+                _sub=true
+                shift ;;
+            "--no-stow" )
+                _stow=false
+                shift ;;
+            "--" )
+                _repo="${3}"
+                _link="$(_clone_url "${@:2}")"
+                break
+        esac
+    done
+
+     function __clone() {
+        if "${1}"; then
+            git clone --recursive "${@:2}"
+        else
+            git clone "${@:2}"
+        fi
+    }
+    (
+        if [[ -z "${_cd}" ]]; then
+            cd "$(dot_dir)"
+        elif [[ "${_cd}" != "no" ]]; then
+            cd "${_cd}"
+        fi || exit 3
+
+        if [[ ! -d "${_repo}" ]]; then
+            # cater for failed cloning (bad permission, wrong address...)
+            if __clone "${_sub}" "${_link}"; then
+                if "${_stow}"; then
+                    _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${_repo}"
+                    echo "Stowing completed"
+                fi
+            fi
+        fi
+    )
+    unset -f __clone
+}
+
+function _clone_url() {
     local repo link
     case "${1}" in
         "self" )
-            repo=${2}
+            repo="${2}"
             link="git@github.com:shengdichen/${repo}.git"
             ;;
         "github" )
-            repo=${3}
-            link="git@github.com:${2}/${repo}.git"
+            repo="${2}"
+            link="https://github.com/${3}/${repo}.git"
             ;;
         "aur" )
-            repo=${2}
+            repo="${2}"
             link="https://aur.archlinux.org/${repo}.git"
             ;;
     esac
 
-    if [[ ! -d ${repo} ]]; then
-        git clone "${link}"
-    fi
+    echo "${link}"
 }
 
 function _stow_nice() {
@@ -91,24 +136,4 @@ function _stow_nice() {
 
     stow "$@" \
         2> >(grep -v 'BUG in find_stowed_path? Absolute/relative mismatch' 1>&2)
-}
-
-function clone_and_stow() {
-    (
-        cd "$(dot_dir)" || exit 3
-
-        # cater for failed cloning (bad permission, wrong address...)
-        if clone "${1}" "${2}"; then
-            _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${2}"
-            echo "Stowing completed"
-        fi
-    )
-}
-
-function fetch_and_stow() {
-    (
-        cd "${1}" || exit
-        git fetch && git merge main
-        _stow_nice --restow "${1}"
-    )
 }

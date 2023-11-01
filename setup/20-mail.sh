@@ -7,14 +7,14 @@ function __install() {
     install "aur" \
         "protonmail-bridge-bin"
 
-    clone_and_stow self d_mail
+    clone_and_stow -- self d_mail
 }
 
 function __dot_dir() {
     echo "$(dot_dir)/d_mail/"
 }
 
-function create_box() {
+function __create_box() {
     function __f() {
         local maildir=false dirs
         while (( ${#} > 0 )); do
@@ -58,7 +58,7 @@ function create_box() {
     unset -f __f
 }
 
-function fdm_conf() {
+function __fdm_conf() {
     chmod 600 "$(__dot_dir)/.config/fdm/config"
 }
 
@@ -87,11 +87,10 @@ function __extra() {
 
 function main() {
     __install
-    __dot
-    create_box
-    fdm_conf
+    __create_box
+    __fdm_conf
 
-    unfunction __install __dot create_box fdm_conf
+    unset -f __install __dot_dir __create_box __fdm_conf
 }
 main
-unfunction main
+unset -f main

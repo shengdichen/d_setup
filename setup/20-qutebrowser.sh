@@ -3,7 +3,7 @@ source "./util.sh"
 function __install() {
     install "arch" \
         "qutebrowser" "tor"
-    clone_and_stow self d_qutebrowser
+    clone_and_stow -- self d_qutebrowser
 }
 
 function __extra() {
@@ -18,7 +18,7 @@ function main() {
     __install
     __extra
 
-    unfunction __install __extra
+    unset -f __install __extra
 }
 main
-unfunction main
+unset -f main
