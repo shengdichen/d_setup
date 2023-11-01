@@ -25,6 +25,8 @@ function __media() {
         pulsemixer mpv \
         sox cmus mpd mpc ncmpc \
         imv yt-dlp ytfzf
+    install "pipx" \
+        -- tidal-dl
     for d in "d_mpv" "d_mpd" "d_cmus" "d_ncmpc"; do
         clone_and_stow -- self "${d}"
     done
