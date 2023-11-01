@@ -25,6 +25,9 @@ function install() {
         "arch-cache")
             _install_arch_cache "${@:2}"
             ;;
+        "npm")
+            __install_npm "${@:2}"
+            ;;
         *)
             echo "Wrong mode: install()"
             ;;
@@ -60,6 +63,17 @@ function _install_arch_cache() {
     for p in "${@}"; do
         echo "Installing [ARCH-CACHE] ${p}"
         "$(__sudo)" pacman -U --needed "${p}"
+    done
+}
+
+function __install_npm() {
+    for p in "${@}"; do
+        if npm list --global "${p}" 1>/dev/null; then
+            echo "[npm:${p}] Installed already, skipping"
+        else
+            echo "[npm:${p}] Installing"
+            npm install --global "${p}"
+        fi
     done
 }
 

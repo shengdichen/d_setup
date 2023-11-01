@@ -62,11 +62,13 @@ function langs() {
     install "arch" \
         bash-language-server shellcheck \
         nodejs npm ruby
-    npm install --global "vim-language-server"
+    install "npm" \
+        vim-language-server
 
     install "arch" \
         sqlite sqlite-doc sqlite-analyzer sqlitebrowser
-    npm install --global "sql-language-server"
+    install "npm" \
+        sql-language-server
 }
 
 function libs() {
