@@ -14,14 +14,24 @@ function __sudo() {
     echo "${s}"
 }
 
-function install_arch_cache() {
-    for p in "${@}"; do
-        echo "Installing [ARCH-CACHE] ${p}"
-        "$(__sudo)" pacman -U --needed "${p}"
-    done
+function install() {
+    case "${1}" in
+        "aur")
+            _install_aur "${@:2}"
+            ;;
+        "arch")
+            "$(__sudo)" pacman -S --needed "${@:2}"
+            ;;
+        "arch-cache")
+            _install_arch_cache "${@:2}"
+            ;;
+        *)
+            echo "Wrong mode: install()"
+            ;;
+    esac
 }
 
-function install_aur() {
+function _install_aur() {
     function __f() {
         clone_and_stow --no-stow -- aur "${1}"
 
@@ -30,7 +40,7 @@ function install_aur() {
             if makepkg -src; then
                 echo
                 echo "select package to install"
-                install_arch_cache "$(\
+                _install_arch_cache "$(\
                     find . -maxdepth 1 -type f | \
                     grep "\.pkg\.tar\.zst$" | \
                     fzf --reverse --height=50%\
@@ -46,49 +56,11 @@ function install_aur() {
     unset -f __f
 }
 
-function install() {
-    case "${1}" in
-        "aur")
-            install_aur "${@:2}"
-            ;;
-        "arch")
-            "$(__sudo)" pacman -S --needed "${@:2}"
-            ;;
-        "arch-cache")
-            install_arch_cache "${@:2}"
-            ;;
-        *)
-            echo "Wrong mode: install()"
-            ;;
-    esac
-}
-
-function _clone_url() {
-    local repo link
-    case "${1}" in
-        "self" )
-            repo="${2}"
-            link="git@github.com:shengdichen/${repo}.git"
-            ;;
-        "github" )
-            repo="${2}"
-            link="https://github.com/${3}/${repo}.git"
-            ;;
-        "aur" )
-            repo="${2}"
-            link="https://aur.archlinux.org/${repo}.git"
-            ;;
-    esac
-
-    echo "${link}"
-}
-
-function _stow_nice() {
-    # REF:
-    #   https://github.com/aspiers/stow/issues/65
-
-    stow "$@" \
-        2> >(grep -v 'BUG in find_stowed_path? Absolute/relative mismatch' 1>&2)
+function _install_arch_cache() {
+    for p in "${@}"; do
+        echo "Installing [ARCH-CACHE] ${p}"
+        "$(__sudo)" pacman -U --needed "${p}"
+    done
 }
 
 function clone_and_stow() {
@@ -136,10 +108,30 @@ function clone_and_stow() {
     unset -f __clone
 }
 
-function fetch_and_stow() {
-    (
-        cd "${1}" || exit
-        git fetch && git merge main
-        _stow_nice --restow "${1}"
-    )
+function _clone_url() {
+    local repo link
+    case "${1}" in
+        "self" )
+            repo="${2}"
+            link="git@github.com:shengdichen/${repo}.git"
+            ;;
+        "github" )
+            repo="${2}"
+            link="https://github.com/${3}/${repo}.git"
+            ;;
+        "aur" )
+            repo="${2}"
+            link="https://aur.archlinux.org/${repo}.git"
+            ;;
+    esac
+
+    echo "${link}"
+}
+
+function _stow_nice() {
+    # REF:
+    #   https://github.com/aspiers/stow/issues/65
+
+    stow "$@" \
+        2> >(grep -v 'BUG in find_stowed_path? Absolute/relative mismatch' 1>&2)
 }
