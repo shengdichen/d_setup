@@ -29,7 +29,8 @@ function __python() {
         python-black python-aiohttp python-lsp-server python-lsp-black \
         python-rope python-mccabe flake8 python-pylint python-pyflakes
 
-    pipx install --include-deps pylsp-rope
+    install "pipx" \
+        --optional -- pylsp-rope
 
     # pycharm-config:
     # 1. install plugin
@@ -62,11 +63,13 @@ function langs() {
     install "arch" \
         bash-language-server shellcheck \
         nodejs npm ruby
-    npm install --global "vim-language-server"
+    install "npm" \
+        vim-language-server
 
     install "arch" \
         sqlite sqlite-doc sqlite-analyzer sqlitebrowser
-    npm install --global "sql-language-server"
+    install "npm" \
+        sql-language-server
 }
 
 function libs() {

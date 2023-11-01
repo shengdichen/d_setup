@@ -25,6 +25,12 @@ function install() {
         "arch-cache")
             _install_arch_cache "${@:2}"
             ;;
+        "npm")
+            __install_npm "${@:2}"
+            ;;
+        "pipx")
+            __install_pipx "${@:2}"
+            ;;
         *)
             echo "Wrong mode: install()"
             ;;
@@ -60,6 +66,44 @@ function _install_arch_cache() {
     for p in "${@}"; do
         echo "Installing [ARCH-CACHE] ${p}"
         "$(__sudo)" pacman -U --needed "${p}"
+    done
+}
+
+function __install_npm() {
+    for p in "${@}"; do
+        if npm list --global "${p}" 1>/dev/null; then
+            echo "[npm:${p}] Installed already, skipping"
+        else
+            echo "[npm:${p}] Installing"
+            npm install --global "${p}"
+        fi
+    done
+}
+
+function __install_pipx() {
+    local _optional=false _packs
+    while (( ${#} > 0 )); do
+        case "${1}" in
+            "--optional" )
+                _optional=true
+                shift ;;
+            "--" )
+                _packs="${@:2}"
+                break
+        esac
+    done
+
+    for p in "${_packs[@]}"; do
+        if pipx list --short | grep -q "^${p} "; then
+            echo "[pipx:${p}] Installed already, skipping"
+        else
+            echo "[pipx:${p}] Installing"
+            if "${_optional}"; then
+                pipx install --include-deps "${p}"
+            else
+                pipx install "${p}"
+            fi
+        fi
     done
 }
 
@@ -136,4 +180,24 @@ function _stow_nice() {
 
     stow "$@" \
         2> >(grep -v 'BUG in find_stowed_path? Absolute/relative mismatch' 1>&2)
+}
+
+function service_start() {
+    local _services
+    while (( ${#} > 0 )); do
+        case "${1}" in
+            "--" )
+                _services=("${@:2}")
+                break
+        esac
+    done
+
+    for s in "${_services[@]}"; do
+        if systemctl is-active --quiet "${s}"; then
+            echo "[systemd:${s}] Active already, skipping"
+        else
+            echo "[systemd:${s}] Starting"
+            systemctl enable --now "${1}"
+        fi
+    done
 }
