@@ -71,8 +71,8 @@ function _clone_url() {
             link="git@github.com:shengdichen/${repo}.git"
             ;;
         "github" )
-            repo="${3}"
-            link="https://github.com/${2}/${repo}.git"
+            repo="${2}"
+            link="https://github.com/${3}/${repo}.git"
             ;;
         "aur" )
             repo="${2}"
@@ -92,9 +92,12 @@ function _stow_nice() {
 }
 
 function clone_and_stow() {
-    local _link _sub=false _stow=true
+    local _cd=true _repo _link _sub=false _stow=true
     while (( ${#} > 0 )); do
         case "${1}" in
+            "--no-cd" )
+                _cd=false
+                shift ;;
             "--sub" )
                 _sub=true
                 shift ;;
@@ -102,6 +105,7 @@ function clone_and_stow() {
                 _stow=false
                 shift ;;
             "--" )
+                _repo="${3}"
                 _link="$(_clone_url "${@:2}")"
                 break
         esac
@@ -115,13 +119,15 @@ function clone_and_stow() {
         fi
     }
     (
-        cd "$(dot_dir)" || exit 3
+        if "${_cd}"; then
+            cd "$(dot_dir)" || exit 3
+        fi
 
-        if [[ ! -d "${repo}" ]]; then
+        if [[ ! -d "${_repo}" ]]; then
             # cater for failed cloning (bad permission, wrong address...)
             if __clone "${_sub}" "${_link}"; then
                 if "${_stow}"; then
-                    _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${2}"
+                    _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${_repo}"
                     echo "Stowing completed"
                 fi
             fi
