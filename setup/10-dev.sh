@@ -13,7 +13,7 @@ function __nvim() {
 
     # REF:
     #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
-    cd "./LuaSnip" || exit
+    cd "./LuaSnip" || exit 3
     if [[ ! -e "./lua/luasnip-jsregexp.so" ]]; then
         make install_jsregexp
     fi
