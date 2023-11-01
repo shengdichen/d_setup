@@ -6,10 +6,10 @@ function __nvim() {
 
     (
     cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit 3
-    clone_and_stow --no-cd --no-stow -- github "nvim-cmp" "hrsh7th"
-    clone_and_stow --no-cd --no-stow -- github "cmp-nvim-lsp" "hrsh7th"
-    clone_and_stow --no-cd --no-stow -- github "LuaSnip" "L3MON4D3"
-    clone_and_stow --no-cd --no-stow -- github "cmp_luasnip" "saadparwaiz1"
+    clone_and_stow --cd no --no-stow -- github "nvim-cmp" "hrsh7th"
+    clone_and_stow --cd no --no-stow -- github "cmp-nvim-lsp" "hrsh7th"
+    clone_and_stow --cd no --no-stow -- github "LuaSnip" "L3MON4D3"
+    clone_and_stow --cd no --no-stow -- github "cmp_luasnip" "saadparwaiz1"
 
     # REF:
     #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations

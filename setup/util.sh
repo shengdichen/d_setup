@@ -33,7 +33,7 @@ function install() {
 
 function _install_aur() {
     function __f() {
-        clone_and_stow --no-stow -- aur "${1}"
+        clone_and_stow --cd "$(bin_dir)" --no-stow -- aur "${1}"
 
         (
             cd "$(bin_dir)/${1}" || exit
@@ -64,12 +64,12 @@ function _install_arch_cache() {
 }
 
 function clone_and_stow() {
-    local _cd=true _repo _link _sub=false _stow=true
+    local _cd _repo _link _sub=false _stow=true
     while (( ${#} > 0 )); do
         case "${1}" in
-            "--no-cd" )
-                _cd=false
-                shift ;;
+            "--cd" )
+                _cd="${2}"
+                shift; shift ;;
             "--sub" )
                 _sub=true
                 shift ;;
@@ -91,9 +91,11 @@ function clone_and_stow() {
         fi
     }
     (
-        if "${_cd}"; then
-            cd "$(dot_dir)" || exit 3
-        fi
+        if [[ -z "${_cd}" ]]; then
+            cd "$(dot_dir)"
+        elif [[ "${_cd}" != "no" ]]; then
+            cd "${_cd}"
+        fi || exit 3
 
         if [[ ! -d "${_repo}" ]]; then
             # cater for failed cloning (bad permission, wrong address...)
