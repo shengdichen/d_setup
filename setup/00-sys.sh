@@ -44,7 +44,6 @@ function __base() {
     install "arch" \
         tlp acpi
     service_start -- tlp
-    # sudo tlp setcharge 59 60 BAT0
 }
 
 function __graphics() {
