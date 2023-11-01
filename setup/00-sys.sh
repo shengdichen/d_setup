@@ -1,6 +1,6 @@
 source "./util.sh"
 
-function base() {
+function __base() {
     install "arch" \
         base base-devel pacman-contrib \
         vi neovim \
@@ -48,7 +48,7 @@ function base() {
     # sudo tlp setcharge 59 60 BAT0
 }
 
-function graphics() {
+function __graphics() {
     install "arch" \
         mesa vulkan-intel lib32-vulkan-intel \
         vulkan-headers vulkan-tools intel-gpu-tools
@@ -63,7 +63,7 @@ function graphics() {
         amdvlk lib32-amdvlk
 }
 
-function desktop() {
+function __desktop() {
     install "arch" \
         adobe-source-code-pro-fonts \
         adobe-source-han-sans-otc-fonts \
@@ -110,3 +110,13 @@ function desktop() {
 #       LABEL=ROOT / ext4 rw,relatime 0 1
 #       /SWAP none swap defaults 0 0
 # }}}
+
+function main() {
+    __base
+    __graphics
+    __desktop
+
+    unset -f __base __graphics __desktop
+}
+main
+unset -f main

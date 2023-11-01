@@ -18,7 +18,7 @@ function main() {
     __install
     __extra
 
-    unfunction __install __extra
+    unset -f __install __extra
 }
 main
-unfunction main
+unset -f main
