@@ -47,17 +47,22 @@ function __base() {
 
 function __graphics() {
     install "arch" \
-        mesa vulkan-intel lib32-vulkan-intel \
-        vulkan-headers vulkan-tools intel-gpu-tools
+        vulkan-icd-loader lib32-vulkan-icd-loader vulkan-headers vulkan-tools
 
     install "arch" \
-        vulkan-radeon lib32-vulkan-radeon \
-        libva-mesa-driver lib32-libva-mesa-driver \
-        mesa-vdpau lib32-mesa-vdpau \
+        mesa lib32-mesa \
+        vulkan-intel lib32-vulkan-intel \
+        intel-media-driver libva-intel-driver \
+        intel-gpu-tools
+
+    install "arch" \
+        mesa lib32-mesa \
+        vulkan-radeon lib32-vulkan-radeon amdvlk lib32-amdvlk \
+        libva-mesa-driver lib32-libva-mesa-driver mesa-vdpau lib32-mesa-vdpau \
         radeontop
 
     install "arch" \
-        amdvlk lib32-amdvlk
+        nvtop
 }
 
 function __desktop() {
