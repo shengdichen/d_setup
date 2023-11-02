@@ -38,13 +38,19 @@ function install() {
 }
 
 function _install_aur() {
+    function __makepkg_filtered() {
+        # hide (only) the package-has-been-built error
+        makepkg -src \
+            2> >(grep -v "ERROR: A package has already been built." 1>&2)
+    }
+
     function __f() {
         clone_and_stow --cd "$(bin_dir)" --no-stow -- aur "${1}"
 
         (
-            cd "$(bin_dir)/${1}" || exit
-            if makepkg -src; then
-                echo
+            cd "$(bin_dir)/${1}/" || exit
+            if __makepkg_filtered "${1}"; then
+                echo "[AUR:${p}] Installing"
                 echo "select package to install"
                 _install_arch_cache "$(\
                     find . -maxdepth 1 -type f | \
@@ -56,10 +62,9 @@ function _install_aur() {
     }
 
     for p in "${@}"; do
-        echo "Installing [AUR] ${p}"
         __f "${p}"
     done
-    unset -f __f
+    unset -f __makepkg_filtered __f
 }
 
 function _install_arch_cache() {
