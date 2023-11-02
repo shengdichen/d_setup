@@ -20,7 +20,7 @@ function install() {
             __install_aur "${@:2}"
             ;;
         "arch")
-            "$(__sudo)" pacman -S --needed "${@:2}"
+            __install_arch "${@:2}"
             ;;
         "arch-cache")
             __install_arch_cache "${@:2}"
@@ -35,6 +35,17 @@ function install() {
             echo "Wrong mode: install()"
             ;;
     esac
+}
+
+function __install_arch() {
+    echo "[pacman:(${@})]"
+
+    for p in "${@}"; do
+        if ! pacman -Qs "${1}" >/dev/null; then
+            echo "[pacman:${1}] Installing"
+            pacman -S --needed "${1}"
+        fi
+    done
 }
 
 function __install_aur() {
