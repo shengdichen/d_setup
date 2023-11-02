@@ -160,23 +160,20 @@ function clone_and_stow() {
 }
 
 function __clone_url() {
-    local repo link
+    local _link
     case "${1}" in
         "self" )
-            repo="${2}"
-            link="git@github.com:shengdichen/${repo}.git"
+            _link="git@github.com:shengdichen/${2}.git"
             ;;
         "github" )
-            repo="${2}"
-            link="https://github.com/${3}/${repo}.git"
+            _link="https://github.com/${3}/${2}.git"
             ;;
         "aur" )
-            repo="${2}"
-            link="https://aur.archlinux.org/${repo}.git"
+            _link="https://aur.archlinux.org/${2}.git"
             ;;
     esac
 
-    echo "${link}"
+    echo "${_link}"
 }
 
 function _stow_nice() {
