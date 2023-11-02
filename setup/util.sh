@@ -17,13 +17,13 @@ function __sudo() {
 function install() {
     case "${1}" in
         "aur")
-            _install_aur "${@:2}"
+            __install_aur "${@:2}"
             ;;
         "arch")
             "$(__sudo)" pacman -S --needed "${@:2}"
             ;;
         "arch-cache")
-            _install_arch_cache "${@:2}"
+            __install_arch_cache "${@:2}"
             ;;
         "npm")
             __install_npm "${@:2}"
@@ -37,7 +37,7 @@ function install() {
     esac
 }
 
-function _install_aur() {
+function __install_aur() {
     function __makepkg_filtered() {
         # hide (only) the package-has-been-built error
         makepkg -src \
@@ -52,7 +52,7 @@ function _install_aur() {
             if __makepkg_filtered "${1}"; then
                 echo "[AUR:${p}] Installing"
                 echo "select package to install"
-                _install_arch_cache "$(\
+                __install_arch_cache "$(\
                     find . -maxdepth 1 -type f | \
                     grep "\.pkg\.tar\.zst$" | \
                     fzf --reverse --height=50%\
@@ -67,7 +67,7 @@ function _install_aur() {
     unset -f __makepkg_filtered __f
 }
 
-function _install_arch_cache() {
+function __install_arch_cache() {
     for p in "${@}"; do
         echo "Installing [ARCH-CACHE] ${p}"
         "$(__sudo)" pacman -U --needed "${p}"
@@ -127,7 +127,7 @@ function clone_and_stow() {
                 shift ;;
             "--" )
                 _repo="${3}"
-                _link="$(_clone_url "${@:2}")"
+                _link="$(__clone_url "${@:2}")"
                 break
         esac
     done
@@ -159,7 +159,7 @@ function clone_and_stow() {
     unset -f __clone
 }
 
-function _clone_url() {
+function __clone_url() {
     local repo link
     case "${1}" in
         "self" )
