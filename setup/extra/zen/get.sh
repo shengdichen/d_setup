@@ -51,6 +51,19 @@ function uninstall_if_installed() {
     done
 }
 
+function __install() {
+    local _linux=("linux-${1}" "linux-${1}-headers" "linux-${1}-docs")
+    local _zfs_kernel="zfs-linux-${1}" _zfs_header="zfs-linux-${1}-headers"
+
+    uninstall_if_installed "${_zfs_kernel}" "${_zfs_header}" "${_linux[@]}"
+
+    __install_kernel "$(kernel_version_required remote "${1}")" "${_linux[@]}"
+    sudo pacman -S "${_zfs_kernel}"
+    if ${2}; then
+        sudo pacman -S "${_zfs_header}"
+    fi
+}
+
 function pipeline() {
     local kernel install_zfs_header=false
     while (( ${#} > 0 )); do
@@ -66,17 +79,8 @@ function pipeline() {
         esac
     done
 
-    local _linux=("linux-${kernel}" "linux-${kernel}-headers" "linux-${kernel}-docs")
-    local _zfs_kernel="zfs-linux-${kernel}" _zfs_header="zfs-linux-${kernel}-headers"
-
     if need_update "${kernel}"; then
-        uninstall_if_installed "${_zfs_kernel}" "${_zfs_header}" "${_linux[@]}"
-
-        __install_kernel "$(kernel_version_required remote "${kernel}")" "${_linux[@]}"
-        sudo pacman -S "${_zfs_kernel}"
-        if ${install_zfs_header}; then
-            sudo pacman -S "${_zfs_header}"
-        fi
+        __install "${kernel}" "${install_zfs_header}"
     fi
 }
 
