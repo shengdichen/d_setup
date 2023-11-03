@@ -19,7 +19,7 @@ function __linux_version_required() {
     sed "s/.*linux-${2}=\\(\\S*\\).*/\\1/"
 }
 
-function need_update() {
+function __need_install() {
     if is_installed "$(__zfs "${1}")"; then
         [[
             "$(__linux_version_required "remote" "${1}")" !=
@@ -28,19 +28,6 @@ function need_update() {
     else
         true
     fi
-}
-
-function __install_kernel() {
-    local urls=()
-    for p in "${@:2}"; do
-        urls+=("$(__url "${p}" ${1})")
-    done
-    sudo pacman -U "${urls[@]}"
-}
-
-function __url() {
-    local f="${1}-${2}-x86_64.pkg.tar.zst"
-    echo "https://archive.archlinux.org/packages/${1[1]}/${1}/${f}"
 }
 
 function uninstall_if_installed() {
@@ -57,11 +44,24 @@ function __install() {
 
     uninstall_if_installed "${_zfs_kernel}" "${_zfs_header}" "${_linux[@]}"
 
-    __install_kernel "$(kernel_version_required remote "${1}")" "${_linux[@]}"
+    __install_linux "$(__linux_version_required remote "${1}")" "${_linux[@]}"
     sudo pacman -S "${_zfs_kernel}"
     if ${2}; then
         sudo pacman -S "${_zfs_header}"
     fi
+}
+
+function __install_linux() {
+    local urls=()
+    for p in "${@:2}"; do
+        urls+=("$(__url "${p}" "${1}")")
+    done
+    sudo pacman -U "${urls[@]}"
+}
+
+function __url() {
+    local f="${1}-${2}-x86_64.pkg.tar.zst"
+    echo "https://archive.archlinux.org/packages/${1[1]}/${1}/${f}"
 }
 
 function pipeline() {
@@ -79,7 +79,7 @@ function pipeline() {
         esac
     done
 
-    if need_update "${kernel}"; then
+    if __need_install "${kernel}"; then
         __install "${kernel}" "${install_zfs_header}"
     fi
 }
