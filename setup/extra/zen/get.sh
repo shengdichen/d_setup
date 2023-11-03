@@ -37,9 +37,11 @@ function need_update() {
 }
 
 function __install_kernel() {
+    local urls=()
     for p in "${@:2}"; do
-        sudo pacman -U "$(__url "${p}" ${1})"
+        urls+=("$(__url "${p}" ${1})")
     done
+    sudo pacman -U "${urls[@]}"
 }
 
 function __url() {
