@@ -72,13 +72,13 @@ function pipeline() {
         esac
     done
 
-    local packages_kernel=("linux-${kernel}" "linux-${kernel}-headers" "linux-${kernel}-docs")
+    local _linux=("linux-${kernel}" "linux-${kernel}-headers" "linux-${kernel}-docs")
     local _zfs_kernel="zfs-linux-${kernel}" _zfs_header="zfs-linux-${kernel}-headers"
 
     if need_update "${kernel}"; then
-        uninstall_if_installed "${_zfs_kernel}" "${_zfs_header}" "${packages_kernel[@]}"
+        uninstall_if_installed "${_zfs_kernel}" "${_zfs_header}" "${_linux[@]}"
 
-        __install_kernel "$(kernel_version_required remote "${kernel}")" "${packages_kernel[@]}"
+        __install_kernel "$(kernel_version_required remote "${kernel}")" "${_linux[@]}"
         sudo pacman -S "${_zfs_kernel}"
         if ${install_zfs_header}; then
             sudo pacman -S "${_zfs_header}"
