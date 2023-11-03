@@ -89,8 +89,9 @@ function main() {
         "zen" | "lts" )
             pipeline -k "${1}";;
         * )
-            pipeline -k "zen"
-            pipeline -k "lts"
+            for k in "zen" "lts"; do
+                pipeline -k "${k}"
+            done
             ;;
     esac
 }
