@@ -2,38 +2,32 @@ function is_installed() {
     pacman -Qs "${1}" >/dev/null
 }
 
-function kernel_version_required() {
-    local package="zfs-linux-${2}"
+function __zfs() {
+    echo "zfs-linux-${1}"
+}
 
-    function __f() {
-        pacman -"${1}"i "${package}" | \
-        grep "^Depends On" | \
-        sed "s/.*linux-${2}=\\(\\S*\\).*/\\1/"
-    }
-
+function __linux_version_required() {
+    local flag
     if [[ "${1}" == "remote" ]]; then
-        __f "S" "${2}"
+        flag="S"
     elif [[ "${1}" == "local" ]]; then
-        if is_installed "${package}"; then
-            __f "Q" "${2}"
-        else
-            echo "placeholder"
-        fi
+        flag="Q"
     fi
 
-    unset -f __f
+    pacman -"${flag}"i "$(__zfs "${2}")" | \
+    grep "^Depends On" | \
+    sed "s/.*linux-${2}=\\(\\S*\\).*/\\1/"
 }
 
 function need_update() {
-    if is_installed "${1}"; then
-        return
+    if is_installed "$(__zfs "${1}")"; then
+        [[
+            "$(__linux_version_required "remote" "${1}")" !=
+            "$(__linux_version_required "local" "${1}")"
+        ]]
+    else
+        true
     fi
-
-    local ver_remote ver_local
-    ver_remote=$(kernel_version_required remote "${1}")
-    ver_local=$(kernel_version_required local "${1}")
-
-    [[ "${ver_remote}" != "${ver_local}" ]]
 }
 
 function __install_kernel() {
