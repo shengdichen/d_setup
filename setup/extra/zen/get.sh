@@ -40,12 +40,12 @@ function uninstall_if_installed() {
 
 function __install() {
     local _linux=("linux-${1}" "linux-${1}-headers" "linux-${1}-docs")
-    local _zfs_kernel="zfs-linux-${1}" _zfs_header="zfs-linux-${1}-headers"
+    local _zfs=("zfs-linux-${1}" "zfs-utils") _zfs_header="zfs-linux-${1}-headers"
 
-    uninstall_if_installed "${_zfs_kernel}" "${_zfs_header}" "${_linux[@]}"
+    uninstall_if_installed "${_zfs[@]}" "${_zfs_header}" "${_linux[@]}"
 
     __install_linux "$(__linux_version_required remote "${1}")" "${_linux[@]}"
-    sudo pacman -S "${_zfs_kernel}"
+    sudo pacman -S "${_zfs[@]}"
     if ${2}; then
         sudo pacman -S "${_zfs_header}"
     fi
