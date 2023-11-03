@@ -52,7 +52,7 @@ function __url() {
 function uninstall_if_installed() {
     for p in "${@}"; do
         if is_installed "${p}"; then
-            sudo pacman -Rns "${p}"
+            sudo pacman -Rns --noconfirm "${p}"
         fi
     done
 }
