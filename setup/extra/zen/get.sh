@@ -37,10 +37,14 @@ function need_update() {
 }
 
 function download() {
-    local file="${1}-${2}-x86_64.pkg.tar.zst"
     if [ ! -f "${file}" ]; then
-        wget "https://archive.archlinux.org/packages/${1[1]}/${1}/${file}"
+        wget "$(__url "${@}")"
     fi
+}
+
+function __url() {
+    local f="${1}-${2}-x86_64.pkg.tar.zst"
+    echo "https://archive.archlinux.org/packages/${1[1]}/${1}/${f}"
 }
 
 function download_packages_kernel() {
