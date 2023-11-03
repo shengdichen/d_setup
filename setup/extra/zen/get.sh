@@ -36,21 +36,15 @@ function need_update() {
     [[ "${ver_remote}" != "${ver_local}" ]]
 }
 
-function download() {
-    if [ ! -f "${file}" ]; then
-        wget "$(__url "${@}")"
-    fi
+function __install_kernel() {
+    for p in "${@:2}"; do
+        sudo pacman -U "$(__url "${p}" ${1})"
+    done
 }
 
 function __url() {
     local f="${1}-${2}-x86_64.pkg.tar.zst"
     echo "https://archive.archlinux.org/packages/${1[1]}/${1}/${f}"
-}
-
-function download_packages_kernel() {
-    for p in "${@:2}"; do
-        download "${p}" "${1}"
-    done
 }
 
 function uninstall_if_installed() {
@@ -76,23 +70,13 @@ function pipeline() {
         esac
     done
 
-    local suffix="-x86_64.pkg.tar.zst"
     local packages_kernel=("linux-${kernel}" "linux-${kernel}-headers" "linux-${kernel}-docs")
-    local packages_kernel_path=()
-    local version
-    version=$(kernel_version_required remote "${kernel}")
-
-    download_packages_kernel "${version}" "${packages_kernel[@]}"
-    for package in "${packages_kernel[@]}"; do
-        packages_kernel_path+=("${package}-${version}${suffix}")
-    done
-
     local _zfs_kernel="zfs-linux-${kernel}" _zfs_header="zfs-linux-${kernel}-headers"
 
     if need_update "${kernel}"; then
         uninstall_if_installed "${_zfs_kernel}" "${_zfs_header}" "${packages_kernel[@]}"
 
-        sudo pacman -U "${packages_kernel_path[@]}"
+        __install_kernel "$(kernel_version_required remote "${kernel}")" "${packages_kernel[@]}"
         sudo pacman -S "${_zfs_kernel}"
         if ${install_zfs_header}; then
             sudo pacman -S "${_zfs_header}"
