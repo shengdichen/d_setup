@@ -1,7 +1,7 @@
 source "../../util.sh"
 
 function __install() {
-    install "pipx" undervolt
+    install "arch" throttled
 
     service_start -- throttled
 }
