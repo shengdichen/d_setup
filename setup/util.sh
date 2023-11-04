@@ -17,13 +17,13 @@ function __sudo() {
 function install() {
     case "${1}" in
         "aur")
-            _install_aur "${@:2}"
+            __install_aur "${@:2}"
             ;;
         "arch")
-            "$(__sudo)" pacman -S --needed "${@:2}"
+            __install_arch "${@:2}"
             ;;
         "arch-cache")
-            _install_arch_cache "${@:2}"
+            __install_arch_cache "${@:2}"
             ;;
         "npm")
             __install_npm "${@:2}"
@@ -37,16 +37,33 @@ function install() {
     esac
 }
 
-function _install_aur() {
+function __install_arch() {
+    echo "[pacman:(${@})]"
+
+    for p in "${@}"; do
+        if ! pacman -Qs "${1}" >/dev/null; then
+            echo "[pacman:${1}] Installing"
+            pacman -S --needed "${1}"
+        fi
+    done
+}
+
+function __install_aur() {
+    function __makepkg_filtered() {
+        # hide (only) the package-has-been-built error
+        makepkg -src \
+            2> >(grep -v "ERROR: A package has already been built." 1>&2)
+    }
+
     function __f() {
         clone_and_stow --cd "$(bin_dir)" --no-stow -- aur "${1}"
 
         (
-            cd "$(bin_dir)/${1}" || exit
-            if makepkg -src; then
-                echo
+            cd "$(bin_dir)/${1}/" || exit
+            if __makepkg_filtered "${1}"; then
+                echo "[AUR:${p}] Installing"
                 echo "select package to install"
-                _install_arch_cache "$(\
+                __install_arch_cache "$(\
                     find . -maxdepth 1 -type f | \
                     grep "\.pkg\.tar\.zst$" | \
                     fzf --reverse --height=50%\
@@ -56,13 +73,12 @@ function _install_aur() {
     }
 
     for p in "${@}"; do
-        echo "Installing [AUR] ${p}"
         __f "${p}"
     done
-    unset -f __f
+    unset -f __makepkg_filtered __f
 }
 
-function _install_arch_cache() {
+function __install_arch_cache() {
     for p in "${@}"; do
         echo "Installing [ARCH-CACHE] ${p}"
         "$(__sudo)" pacman -U --needed "${p}"
@@ -122,7 +138,7 @@ function clone_and_stow() {
                 shift ;;
             "--" )
                 _repo="${3}"
-                _link="$(_clone_url "${@:2}")"
+                _link="$(__clone_url "${@:2}")"
                 break
         esac
     done
@@ -154,24 +170,21 @@ function clone_and_stow() {
     unset -f __clone
 }
 
-function _clone_url() {
-    local repo link
+function __clone_url() {
+    local _link
     case "${1}" in
         "self" )
-            repo="${2}"
-            link="git@github.com:shengdichen/${repo}.git"
+            _link="git@github.com:shengdichen/${2}.git"
             ;;
         "github" )
-            repo="${2}"
-            link="https://github.com/${3}/${repo}.git"
+            _link="https://github.com/${3}/${2}.git"
             ;;
         "aur" )
-            repo="${2}"
-            link="https://aur.archlinux.org/${repo}.git"
+            _link="https://aur.archlinux.org/${2}.git"
             ;;
     esac
 
-    echo "${link}"
+    echo "${_link}"
 }
 
 function _stow_nice() {
