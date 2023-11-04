@@ -13,5 +13,10 @@ function __set_conf() {
         "/etc/throttled.conf"
 }
 
+function __monitor() {
+    "$(__sudo)" "/usr/lib/throttled/throttled.py" --monitor
+}
+
 __install
 __set_conf
+__monitor
