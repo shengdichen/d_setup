@@ -26,7 +26,8 @@ function __base() {
         fuse3 fuse2 \
         exfatprogs nfs-utils dosfstools sshfs \
         android-file-transfer android-tools \
-        pcmanfm-gtk3 gvfs gvfs-mtp gvfs-afc
+        pcmanfm-gtk3 gvfs gvfs-mtp gvfs-afc gvfs-gphoto2 \
+        libimobiledevice ifuse
 
     install "arch" \
         networkmanager \
