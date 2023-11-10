@@ -38,7 +38,7 @@ function install() {
 }
 
 function __install_arch() {
-    echo "[pacman:(${@})]"
+    echo "[pacman:(${*})]"
 
     for p in "${@}"; do
         if ! pacman -Qs "${1}" >/dev/null; then
@@ -104,7 +104,7 @@ function __install_pipx() {
                 _optional=true
                 shift ;;
             "--" )
-                _packs="${@:2}"
+                _packs=("${@:2}")
                 break
         esac
     done
