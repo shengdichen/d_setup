@@ -33,11 +33,11 @@ function __python() {
         --optional -- pylsp-rope
 
     # pycharm-config:
-    # 1. install plugin
-    #   dard-purple
-    #   ideavim
-    #   black-connect
-    # 2. configure:
+    # 1. plugin
+    #       dark-purple
+    #       ideavim
+    #       black-connect
+    # 2. configure
     #   a. visual:
     #       Settings->Appearance&Behavior->Appearance->Theme: dark purple
     #       Settings->Appearance&Behavior->Appearance->Use custom font: Avenir
@@ -45,9 +45,9 @@ function __python() {
     #   b. blackd:
     #       Settings->Tools->BlackConnect:
     #           Detect Path for blackd
-    # 3. bind:
-    #   Settings->Keymap:
-    #   Run->Run/Debug->Run: Alt-Shift-Enter
+    # 3. keybind
+    #   a. Settings->Keymap:
+    #       Run->Run/Debug->Run: Alt-Shift-Enter
     # 4. restart pycharm
 }
 
