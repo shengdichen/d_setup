@@ -37,9 +37,9 @@ function __media() {
         if ! pgrep mpd 1>/dev/null 2>&1; then
             mpd
         fi
-        mpc --host=admin@localhost update
-        mpc --host=admin@localhost repeat
-        mpc --host=admin@localhost single
+        for cmd in "update" "repeat" "single"; do
+            mpc --host=admin@localhost "${cmd}"
+        done
         mpc --host=admin@localhost volume 37
     fi
 
