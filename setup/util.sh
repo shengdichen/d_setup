@@ -41,9 +41,9 @@ function __install_arch() {
     echo "[pacman:(${*})]"
 
     for p in "${@}"; do
-        if ! pacman -Qs "${1}" >/dev/null; then
-            echo "[pacman:${1}] Installing"
-            pacman -S --needed "${1}"
+        if ! pacman -Qs "${p}" >/dev/null; then
+            echo "[pacman:${p}] Installing"
+            "$(__sudo)" pacman -S --needed "${p}"
         fi
     done
 }
