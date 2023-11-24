@@ -13,6 +13,8 @@ function __base() {
     install "arch" \
         linux linux-headers linux-docs \
         linux-firmware
+    install "aur" \
+        aic94xx-firmware ast-firmware wd719x-firmware upd72020x-fw mkinitcpio-firmware
 
     install "arch" \
         lshw efibootmgr intel-ucode fwupd arch-install-scripts
