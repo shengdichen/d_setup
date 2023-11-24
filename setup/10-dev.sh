@@ -51,6 +51,14 @@ function __python() {
     # 4. restart pycharm
 }
 
+function __java() {
+    install "arch" \
+        jdk-openjdk openjdk-doc openjdk-src \
+        jdk17-openjdk openjdk17-doc openjdk17-src \
+        jdk11-openjdk openjdk11-doc openjdk11-src \
+        intellij-idea-community-edition
+}
+
 function langs() {
     clone_and_stow -- self d_ideavim
     __python
