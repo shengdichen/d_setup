@@ -59,6 +59,12 @@ function __java() {
         intellij-idea-community-edition
 }
 
+function __js() {
+    install "arch" \
+        nodejs npm \
+        typescript typescript-language-server
+}
+
 function langs() {
     clone_and_stow -- self d_ideavim
     __python
@@ -70,7 +76,7 @@ function langs() {
 
     install "arch" \
         bash-language-server shellcheck \
-        nodejs npm ruby
+        ruby
     install "npm" \
         vim-language-server
 
