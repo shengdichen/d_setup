@@ -7,9 +7,14 @@ function __nvim() {
     (
     cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit 3
     clone_and_stow --cd no --no-stow -- github "nvim-cmp" "hrsh7th"
+    # cmp integration with neovim's (builtin) lsp
     clone_and_stow --cd no --no-stow -- github "cmp-nvim-lsp" "hrsh7th"
+
     clone_and_stow --cd no --no-stow -- github "LuaSnip" "L3MON4D3"
+    # cmp integration with luasnip
     clone_and_stow --cd no --no-stow -- github "cmp_luasnip" "saadparwaiz1"
+    # snippets collection
+    clone_and_stow --cd no --no-stow -- github "friendly-snippets" "rafamadriz"
 
     # REF:
     #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
@@ -26,11 +31,18 @@ function __python() {
         pycharm-community-edition
 
     install "arch" \
-        python-black python-aiohttp python-lsp-server python-lsp-black \
-        python-rope python-mccabe flake8 python-pylint python-pyflakes
+        python-lsp-server \
+        python-black python-aiohttp python-lsp-black \
+        python-mccabe flake8 python-pylint python-pyflakes
 
-    install "pipx" \
-        --optional -- pylsp-rope
+    install "arch" python-rope
+    install "aur" python-pylsp-rope
+
+    install "arch" python-isort
+    install "aur" python-lsp-isort
+
+    install "arch" mypy
+    install "aur" python-lsp-mypy
 
     # pycharm-config:
     # 1. plugin
@@ -63,6 +75,9 @@ function __js() {
     install "arch" \
         nodejs npm \
         typescript typescript-language-server
+
+    # install "npm" vscode-langservers-extracted
+    install "aur" vscode-langservers-extracted
 }
 
 function langs() {
