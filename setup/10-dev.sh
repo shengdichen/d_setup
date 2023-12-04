@@ -1,5 +1,9 @@
 source "./util.sh"
 
+function vscode() {
+    install "aur" vscodium-insiders-bin
+}
+
 function __nvim() {
     local repo="d_nvim"
     clone_and_stow --sub -- self "${repo}"
@@ -69,6 +73,8 @@ function __java() {
         jdk17-openjdk openjdk17-doc openjdk17-src \
         jdk11-openjdk openjdk11-doc openjdk11-src \
         intellij-idea-community-edition
+
+    install "aur" android-studio
 }
 
 function __js() {
