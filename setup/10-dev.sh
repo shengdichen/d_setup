@@ -35,7 +35,7 @@ function __python() {
         pycharm-community-edition
 
     install "arch" \
-        python-lsp-server \
+        python-lsp-server ruff-lsp \
         python-black python-aiohttp python-lsp-black \
         python-mccabe flake8 python-pylint python-pyflakes
 
@@ -47,6 +47,9 @@ function __python() {
 
     install "arch" mypy
     install "aur" python-lsp-mypy
+
+    install "arch" python-ruff
+    install "aur" python-lsp-ruff
 
     # pycharm-config:
     # 1. plugin
