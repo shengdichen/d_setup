@@ -74,7 +74,7 @@ function __desktop() {
         adobe-source-han-sans-otc-fonts \
         adobe-source-han-serif-otc-fonts \
         libertinus-font \
-        ttf-fira-code \
+        ttf-fira-code terminus-font \
         noto-fonts noto-fonts-extra noto-fonts-cjk noto-fonts-emoji \
         font-manager
     clone_and_stow -- self d_font
