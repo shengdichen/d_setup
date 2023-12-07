@@ -20,6 +20,9 @@ function __nvim() {
     # snippets collection
     clone_and_stow --cd no --no-stow -- github "friendly-snippets" "rafamadriz"
 
+    clone_and_stow --cd no --no-stow -- github "gitsigns.nvim" "lewis6991"
+    clone_and_stow --cd no --no-stow -- github "indent-blankline.nvim" "lukas-reineke"
+
     # REF:
     #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
     cd "./LuaSnip" || exit 3
