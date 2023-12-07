@@ -6,7 +6,7 @@ function sync_time() {
         curl -s --head http://google.com | \
         grep "^${date_pattern}" | \
         sed "s/${date_pattern}//g"\
-    )"
+    )" 1>/dev/null
     "$(__sudo)" hwclock -w --utc
 }
 
