@@ -13,6 +13,8 @@ function __base() {
     install "arch" \
         linux linux-headers linux-docs \
         linux-firmware
+    install "aur" \
+        aic94xx-firmware ast-firmware wd719x-firmware upd72020x-fw mkinitcpio-firmware
 
     install "arch" \
         lshw efibootmgr intel-ucode fwupd arch-install-scripts
@@ -26,7 +28,8 @@ function __base() {
         fuse3 fuse2 \
         exfatprogs nfs-utils dosfstools sshfs \
         android-file-transfer android-tools \
-        pcmanfm-gtk3 gvfs gvfs-mtp gvfs-afc
+        pcmanfm-gtk3 gvfs gvfs-mtp gvfs-afc gvfs-gphoto2 \
+        libimobiledevice ifuse
 
     install "arch" \
         networkmanager \
@@ -71,7 +74,7 @@ function __desktop() {
         adobe-source-han-sans-otc-fonts \
         adobe-source-han-serif-otc-fonts \
         libertinus-font \
-        ttf-fira-code \
+        ttf-fira-code terminus-font \
         noto-fonts noto-fonts-extra noto-fonts-cjk noto-fonts-emoji \
         font-manager
     clone_and_stow -- self d_font

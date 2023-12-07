@@ -1,5 +1,9 @@
 source "./util.sh"
 
+function vscode() {
+    install "aur" vscodium-insiders-bin
+}
+
 function __nvim() {
     local repo="d_nvim"
     clone_and_stow --sub -- self "${repo}"
@@ -7,9 +11,17 @@ function __nvim() {
     (
     cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit 3
     clone_and_stow --cd no --no-stow -- github "nvim-cmp" "hrsh7th"
+    # cmp integration with neovim's (builtin) lsp
     clone_and_stow --cd no --no-stow -- github "cmp-nvim-lsp" "hrsh7th"
+
     clone_and_stow --cd no --no-stow -- github "LuaSnip" "L3MON4D3"
+    # cmp integration with luasnip
     clone_and_stow --cd no --no-stow -- github "cmp_luasnip" "saadparwaiz1"
+    # snippets collection
+    clone_and_stow --cd no --no-stow -- github "friendly-snippets" "rafamadriz"
+
+    clone_and_stow --cd no --no-stow -- github "gitsigns.nvim" "lewis6991"
+    clone_and_stow --cd no --no-stow -- github "indent-blankline.nvim" "lukas-reineke"
 
     # REF:
     #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
@@ -26,11 +38,21 @@ function __python() {
         pycharm-community-edition
 
     install "arch" \
-        python-black python-aiohttp python-lsp-server python-lsp-black \
-        python-rope python-mccabe flake8 python-pylint python-pyflakes
+        python-lsp-server ruff-lsp \
+        python-black python-aiohttp python-lsp-black \
+        python-mccabe flake8 python-pylint python-pyflakes
 
-    install "pipx" \
-        --optional -- pylsp-rope
+    install "arch" python-rope
+    install "aur" python-pylsp-rope
+
+    install "arch" python-isort
+    install "aur" python-lsp-isort
+
+    install "arch" mypy
+    install "aur" python-lsp-mypy
+
+    install "arch" python-ruff
+    install "aur" python-lsp-ruff
 
     # pycharm-config:
     # 1. plugin
@@ -51,6 +73,25 @@ function __python() {
     # 4. restart pycharm
 }
 
+function __java() {
+    install "arch" \
+        jdk-openjdk openjdk-doc openjdk-src \
+        jdk17-openjdk openjdk17-doc openjdk17-src \
+        jdk11-openjdk openjdk11-doc openjdk11-src \
+        intellij-idea-community-edition
+
+    install "aur" android-studio
+}
+
+function __js() {
+    install "arch" \
+        nodejs npm \
+        typescript typescript-language-server
+
+    # install "npm" vscode-langservers-extracted
+    install "aur" vscode-langservers-extracted
+}
+
 function langs() {
     clone_and_stow -- self d_ideavim
     __python
@@ -62,7 +103,7 @@ function langs() {
 
     install "arch" \
         bash-language-server shellcheck \
-        nodejs npm ruby
+        ruby
     install "npm" \
         vim-language-server
 
