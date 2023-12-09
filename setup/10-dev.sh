@@ -73,6 +73,12 @@ function __python() {
     # 4. restart pycharm
 }
 
+function __natural() {
+    install "npm" alex write-good textlint
+    # install "pipx" proselint
+    install "aur" languagetool-rust
+}
+
 function __java() {
     install "arch" \
         jdk-openjdk openjdk-doc openjdk-src \
@@ -99,11 +105,12 @@ function langs() {
     install "arch" \
         lua luajit luarocks lua-language-server \
         clang lld \
-        ghc cabal-install stack haskell-language-server
+        ghc cabal-install stack haskell-language-server \
+        ruby
 
     install "arch" \
-        bash-language-server shellcheck \
-        ruby
+        bash-language-server shellcheck shfmt
+
     install "npm" \
         vim-language-server
 
