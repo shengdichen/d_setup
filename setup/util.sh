@@ -19,6 +19,9 @@ function install() {
         "aur")
             __install_aur "${@:2}"
             ;;
+        "aurhelper")
+            __install_aurhelper "${@:2}"
+            ;;
         "arch")
             __install_arch "${@:2}"
             ;;
@@ -76,6 +79,24 @@ function __install_aur() {
         __f "${p}"
     done
     unset -f __makepkg_filtered __f
+}
+
+function __install_aurhelper() {
+    local helper="paru"
+    if ! pacman -Qs "${helper}" >/dev/null; then
+        __install_aur "${helper}"
+    fi
+
+    for p in "${@}"; do
+        # REF:
+        #   https://bbs.archlinux.org/viewtopic.php?id=76218
+        if ! pacman -Qm "${p}" >/dev/null; then
+            echo "[paru:${p}] Installing"
+            paru -S --needed "${p}"
+        else
+            echo "[paru:${p}] Installed already, skipping"
+        fi
+    done
 }
 
 function __install_arch_cache() {
