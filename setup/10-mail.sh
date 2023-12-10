@@ -17,14 +17,16 @@ function __dot_dir() {
 function __create_box() {
     function __f() {
         local maildir=false dirs
-        while (( ${#} > 0 )); do
+        while ((${#} > 0)); do
             case "${1}" in
-                "-m" )
+                "-m")
                     maildir=true
-                    shift ;;
-                "--" )
+                    shift
+                    ;;
+                "--")
                     dirs=("${@:2}")
                     break
+                    ;;
             esac
         done
 
