@@ -73,12 +73,6 @@ function __python() {
     # 4. restart pycharm
 }
 
-function __natural() {
-    install "npm" alex write-good textlint
-    # install "pipx" proselint
-    install "aur" languagetool-rust
-}
-
 function __java() {
     install "arch" \
         jdk-openjdk openjdk-doc openjdk-src \
@@ -110,6 +104,7 @@ function langs() {
 
     install "arch" \
         bash-language-server shellcheck shfmt
+    install "aurhelper" beautysh
 
     install "npm" \
         vim-language-server
@@ -118,6 +113,9 @@ function langs() {
         sqlite sqlite-doc sqlite-analyzer sqlitebrowser
     install "npm" \
         sql-language-server
+
+    install "npm" alex write-good textlint
+    install "aurhelper" proselint languagetool-rust
 }
 
 function libs() {
