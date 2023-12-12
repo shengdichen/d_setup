@@ -45,7 +45,6 @@ function __base() {
 
     install "arch" \
         tlp acpi
-    service_start -- tlp
 }
 
 function __graphics() {
