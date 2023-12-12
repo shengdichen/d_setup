@@ -43,16 +43,16 @@ function __python() {
         python-mccabe flake8 python-pylint python-pyflakes
 
     install "arch" python-rope
-    install "aur" python-pylsp-rope
+    install "aurhelper" python-pylsp-rope
 
     install "arch" python-isort
-    install "aur" python-lsp-isort
+    install "aurhelper" python-lsp-isort
 
     install "arch" mypy
-    install "aur" python-lsp-mypy
+    install "aurhelper" python-lsp-mypy
 
-    install "arch" python-ruff
-    install "aur" python-lsp-ruff
+    install "arch" python-ruff ruff-lsp
+    install "aurhelper" python-lsp-ruff
 
     # pycharm-config:
     # 1. plugin
@@ -88,8 +88,7 @@ function __js() {
         nodejs npm \
         typescript typescript-language-server
 
-    # install "npm" vscode-langservers-extracted
-    install "aur" vscode-langservers-extracted
+    install "aurhelper" vscode-langservers-extracted
 }
 
 function langs() {
