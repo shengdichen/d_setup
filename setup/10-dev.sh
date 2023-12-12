@@ -93,7 +93,7 @@ function __js() {
 }
 
 function langs() {
-    clone_and_stow -- self d_ideavim
+    clone_and_stow -- self d_dev
     __python
 
     install "arch" \
