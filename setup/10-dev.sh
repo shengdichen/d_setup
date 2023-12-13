@@ -128,6 +128,11 @@ function libs() {
 
     install "arch" \
         gtk4 gtk3
+
+    install "arch" \
+        traceroute mtr \
+        openbsd-netcat nmap \
+        whois
 }
 
 function main() {
