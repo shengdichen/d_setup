@@ -3,7 +3,7 @@ source "./util.sh"
 function __base() {
     install "arch" \
         base base-devel pacman-contrib \
-        vi neovim \
+        vi neovim
 
     install "arch" \
         man-db man-pages \

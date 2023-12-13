@@ -8,7 +8,7 @@ function bin_dir() {
 
 function __sudo() {
     local s=""
-    if (( EUID != 0 )); then
+    if ((EUID != 0)); then
         s=sudo
     fi
     echo "${s}"
@@ -18,6 +18,9 @@ function install() {
     case "${1}" in
         "aur")
             __install_aur "${@:2}"
+            ;;
+        "aurhelper")
+            __install_aurhelper "${@:2}"
             ;;
         "arch")
             __install_arch "${@:2}"
@@ -63,10 +66,10 @@ function __install_aur() {
             if __makepkg_filtered "${1}"; then
                 echo "[AUR:${p}] Installing"
                 echo "select package to install"
-                __install_arch_cache "$(\
-                    find . -maxdepth 1 -type f | \
-                    grep "\.pkg\.tar\.zst$" | \
-                    fzf --reverse --height=50%\
+                __install_arch_cache "$(
+                    find . -maxdepth 1 -type f |
+                        grep "\.pkg\.tar\.zst$" |
+                        fzf --reverse --height=50%
                 )"
             fi
         )
@@ -76,6 +79,24 @@ function __install_aur() {
         __f "${p}"
     done
     unset -f __makepkg_filtered __f
+}
+
+function __install_aurhelper() {
+    local helper="paru"
+    if ! pacman -Qs "${helper}" >/dev/null; then
+        __install_aur "${helper}"
+    fi
+
+    for p in "${@}"; do
+        # REF:
+        #   https://bbs.archlinux.org/viewtopic.php?id=76218
+        if ! pacman -Qm "${p}" >/dev/null; then
+            echo "[paru:${p}] Installing"
+            paru -S --needed "${p}"
+        else
+            echo "[paru:${p}] Installed already, skipping"
+        fi
+    done
 }
 
 function __install_arch_cache() {
@@ -98,14 +119,16 @@ function __install_npm() {
 
 function __install_pipx() {
     local _optional=false _packs
-    while (( ${#} > 0 )); do
+    while ((${#} > 0)); do
         case "${1}" in
-            "--optional" )
+            "--optional")
                 _optional=true
-                shift ;;
-            "--" )
+                shift
+                ;;
+            "--")
                 _packs=("${@:2}")
                 break
+                ;;
         esac
     done
 
@@ -125,25 +148,30 @@ function __install_pipx() {
 
 function clone_and_stow() {
     local _cd _repo _link _sub=false _stow=true
-    while (( ${#} > 0 )); do
+    while ((${#} > 0)); do
         case "${1}" in
-            "--cd" )
+            "--cd")
                 _cd="${2}"
-                shift; shift ;;
-            "--sub" )
+                shift
+                shift
+                ;;
+            "--sub")
                 _sub=true
-                shift ;;
-            "--no-stow" )
+                shift
+                ;;
+            "--no-stow")
                 _stow=false
-                shift ;;
-            "--" )
+                shift
+                ;;
+            "--")
                 _repo="${3}"
                 _link="$(__clone_url "${@:2}")"
                 break
+                ;;
         esac
     done
 
-     function __clone() {
+    function __clone() {
         if "${1}"; then
             git clone --recursive "${@:2}"
         else
@@ -173,13 +201,13 @@ function clone_and_stow() {
 function __clone_url() {
     local _link
     case "${1}" in
-        "self" )
+        "self")
             _link="git@github.com:shengdichen/${2}.git"
             ;;
-        "github" )
+        "github")
             _link="https://github.com/${3}/${2}.git"
             ;;
-        "aur" )
+        "aur")
             _link="https://aur.archlinux.org/${2}.git"
             ;;
     esac
@@ -197,11 +225,12 @@ function _stow_nice() {
 
 function service_start() {
     local _services
-    while (( ${#} > 0 )); do
+    while ((${#} > 0)); do
         case "${1}" in
-            "--" )
+            "--")
                 _services=("${@:2}")
                 break
+                ;;
         esac
     done
 

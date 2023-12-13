@@ -9,26 +9,26 @@ function __nvim() {
     clone_and_stow --sub -- self "${repo}"
 
     (
-    cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit 3
-    clone_and_stow --cd no --no-stow -- github "nvim-cmp" "hrsh7th"
-    # cmp integration with neovim's (builtin) lsp
-    clone_and_stow --cd no --no-stow -- github "cmp-nvim-lsp" "hrsh7th"
+        cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit 3
+        clone_and_stow --cd no --no-stow -- github "nvim-cmp" "hrsh7th"
+        # cmp integration with neovim's (builtin) lsp
+        clone_and_stow --cd no --no-stow -- github "cmp-nvim-lsp" "hrsh7th"
 
-    clone_and_stow --cd no --no-stow -- github "LuaSnip" "L3MON4D3"
-    # cmp integration with luasnip
-    clone_and_stow --cd no --no-stow -- github "cmp_luasnip" "saadparwaiz1"
-    # snippets collection
-    clone_and_stow --cd no --no-stow -- github "friendly-snippets" "rafamadriz"
+        clone_and_stow --cd no --no-stow -- github "LuaSnip" "L3MON4D3"
+        # cmp integration with luasnip
+        clone_and_stow --cd no --no-stow -- github "cmp_luasnip" "saadparwaiz1"
+        # snippets collection
+        clone_and_stow --cd no --no-stow -- github "friendly-snippets" "rafamadriz"
 
-    clone_and_stow --cd no --no-stow -- github "gitsigns.nvim" "lewis6991"
-    clone_and_stow --cd no --no-stow -- github "indent-blankline.nvim" "lukas-reineke"
+        clone_and_stow --cd no --no-stow -- github "gitsigns.nvim" "lewis6991"
+        clone_and_stow --cd no --no-stow -- github "indent-blankline.nvim" "lukas-reineke"
 
-    # REF:
-    #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
-    cd "./LuaSnip" || exit 3
-    if [[ ! -e "./lua/luasnip-jsregexp.so" ]]; then
-        make install_jsregexp
-    fi
+        # REF:
+        #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
+        cd "./LuaSnip" || exit 3
+        if [[ ! -e "./lua/luasnip-jsregexp.so" ]]; then
+            make install_jsregexp
+        fi
     )
 }
 
@@ -43,16 +43,16 @@ function __python() {
         python-mccabe flake8 python-pylint python-pyflakes
 
     install "arch" python-rope
-    install "aur" python-pylsp-rope
+    install "aurhelper" python-pylsp-rope
 
     install "arch" python-isort
-    install "aur" python-lsp-isort
+    install "aurhelper" python-lsp-isort
 
     install "arch" mypy
-    install "aur" python-lsp-mypy
+    install "aurhelper" python-lsp-mypy
 
-    install "arch" python-ruff
-    install "aur" python-lsp-ruff
+    install "arch" python-ruff ruff-lsp
+    install "aurhelper" python-lsp-ruff
 
     # pycharm-config:
     # 1. plugin
@@ -88,22 +88,23 @@ function __js() {
         nodejs npm \
         typescript typescript-language-server
 
-    # install "npm" vscode-langservers-extracted
-    install "aur" vscode-langservers-extracted
+    install "aurhelper" vscode-langservers-extracted
 }
 
 function langs() {
-    clone_and_stow -- self d_ideavim
+    clone_and_stow -- self d_dev
     __python
 
     install "arch" \
         lua luajit luarocks lua-language-server \
         clang lld \
-        ghc cabal-install stack haskell-language-server
+        ghc cabal-install stack haskell-language-server \
+        ruby
 
     install "arch" \
-        bash-language-server shellcheck \
-        ruby
+        bash-language-server shellcheck shfmt
+    install "aurhelper" beautysh
+
     install "npm" \
         vim-language-server
 
@@ -111,12 +112,15 @@ function langs() {
         sqlite sqlite-doc sqlite-analyzer sqlitebrowser
     install "npm" \
         sql-language-server
+
+    install "npm" alex write-good textlint
+    install "aurhelper" proselint languagetool-rust
 }
 
 function libs() {
     install "arch" \
         qt6-base qt6-wayland qt6-tools qt6-doc \
-        qt5-base qt5-wayland qt5-tools qt5-doc \
+        qt5-base qt5-wayland qt5-tools qt5-doc
 
     install "arch" \
         gtk4 gtk3
