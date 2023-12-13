@@ -48,7 +48,7 @@ function __media() {
         firefox-developer-edition w3m \
         qutebrowser python-adblock \
         transmission-cli deluge-gtk
-    install "aur" \
+    install "aurhelper" \
         ungoogled-chromium-bin
 }
 
