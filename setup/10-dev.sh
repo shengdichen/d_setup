@@ -89,8 +89,12 @@ function __java() {
 
 function __js() {
     install "arch" \
-        nodejs npm \
-        typescript typescript-language-server
+        nodejs npm typescript \
+        typescript-language-server eslint_d
+
+    install "npm" \
+        prettier-standard standard ts-standard \
+        @fsouza/prettierd
 
     install "aurhelper" vscode-langservers-extracted
 }
@@ -98,6 +102,7 @@ function __js() {
 function langs() {
     clone_and_stow -- self d_dev
     __python
+    __js
 
     install "arch" \
         lua luajit luarocks lua-language-server \
