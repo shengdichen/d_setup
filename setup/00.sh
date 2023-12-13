@@ -4,6 +4,7 @@ function __base() {
     install "arch" \
         base base-devel pacman-contrib \
         vi neovim
+    clone_and_stow -- self d_git
 
     install "arch" \
         man-db man-pages \
