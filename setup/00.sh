@@ -1,6 +1,14 @@
 source "./util.sh"
 
 function __base() {
+    clone_and_stow -- self d_zsh
+    local _xdg="d_xdg"
+    (
+        cd "$(dot_dir)" || exit 3
+        clone_and_stow --no-stow -- self "${_xdg}"
+        cd "${_xdg}" && "${SHELL}" setup.sh
+    )
+
     install "arch" \
         base base-devel pacman-contrib \
         vi neovim
