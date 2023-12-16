@@ -1,3 +1,5 @@
+SCRIPT_NAME="$(basename "${0}")"
+
 __check_root() {
     if ((EUID != 0)); then
         echo "Must be executed as root, exiting"
@@ -19,6 +21,10 @@ __confirm() {
         printf "Exiting"
         exit 3
     fi
+}
+
+__is_installed() {
+    pacman -Qs "${1}" >/dev/null
 }
 
 # pre {{{
@@ -74,11 +80,20 @@ sync_time() {
 }
 
 bulk_work() {
+    genfstab -U /mnt >/mnt/etc/fstab
+
+    pacman -Syy
+    pacman -S archlinux-keyring
     pacstrap -K /mnt \
         base base-devel vi neovim \
-        linux linux-firmware bash-completion
+        linux-zen linux-lts linux-firmware bash-completion
 
-    genfstab -U /mnt >>/mnt/etc/fstab
+    if arch-chroot /mnt pacman -Q | grep linux-zen >/dev/null; then
+        __confirm "pre-chroot-DONE"
+    else
+        echo "Installation failed, bad internet maybe?"
+        exit 3
+    fi
 }
 
 pre_chroot() {
@@ -92,16 +107,41 @@ pre_chroot() {
 # }}}
 
 # post {{{
-function base() {
+base() {
     source /usr/share/bash-completion/bash_completion
-    passwd
+
+    __separator "basic misc"
+
+    local pack_keyring="archlinux-keyring"
+    if ! __is_installed "${pack_keyring}"; then
+        if ! pacman -S "${pack_keyring}"; then
+            rm -rf /etc/pacman.d/gnupg
+            pacman-key --init
+            pacman-key --populate
+            pacman -S "${pack_keyring}"
+        fi
+        echo
+    fi
+
+    local root_pw_flag
+    root_pw_flag="$(passwd --status | awk '{print $2}')"
+    if [ "${root_pw_flag}" = "NP" ]; then
+        printf "[root] "
+        passwd
+        echo
+    fi
 
     ln -sf /usr/share/zoneinfo/Europe/Vaduz /etc/localtime
     hwclock --systohc
+
+    __confirm "basic misc"
 }
 
-function locale() {
-    cat <<STOP >/etc/locale.gen
+localization() {
+    __separator "locale"
+
+    if ! locale -a | grep "sv_SE.utf8" >/dev/null; then
+        cat <<STOP >/etc/locale.gen
 en_US.UTF-8 UTF-8
 
 fr_CH.UTF-8 UTF-8
@@ -120,49 +160,75 @@ it_IT.UTF-8 UTF-8
 pt_BR.UTF-8 UTF-8
 sv_SE.UTF-8 UTF-8
 STOP
-    locale-gen
+        locale-gen
+    fi
 
     cat <<STOP >/etc/locale.conf
 LANG=en_US.UTF-8
 STOP
+
+    __confirm "localization"
 }
 
-function network() {
-    local _hname
-    printf "Hostname: "
-    read -r _hname
-    echo "${_hname}" >/etc/hostname
+network() {
+    __separator "network"
+
+    local hostname_file="/etc/hostname"
+    if [ ! -f "${hostname_file}" ]; then
+        local _hname
+        printf "Hostname: "
+        read -r _hname
+        echo "${_hname}" >"${hostname_file}"
+    fi
 
     cat <<STOP >/etc/hosts
 127.0.0.1 localhost
 ::1 localhost
 STOP
 
-    pacman -S networkmanager dhclient
-    cat <<STOP >/etc/NetworkManager/conf.d/dhcp-client.conf
+    if ! __is_installed networkmanager; then
+        pacman -S networkmanager dhclient
+        cat <<STOP >/etc/NetworkManager/conf.d/dhcp-client.conf
 [main]
 dhcp=dhclient
 STOP
-    systemctl enable NetworkManager.service
+        systemctl enable NetworkManager.service
+    fi
+
+    __confirm "network"
 }
 
-function boot() {
-    mkinitcpio -P
-    pacman -S grub efibootmgr
+boot() {
+    __separator "boot"
 
-    local _boot_dir="/boot"
-    grub-install \
-        --target=x86_64-efi \
-        --efi-directory="${_boot_dir}/" \
-        --bootloader-id=MAIN
-    grub-mkconfig -o "${_boot_dir}/grub/grub.cfg"
+    if ! __is_installed grub; then
+        pacman -S grub efibootmgr
+    fi
+
+    local efi_dir="efi" grub_dir="/boot/grub"
+    if [ ! -d "${grub_dir}" ]; then
+        mkinitcpio -P
+
+        grub-install \
+            --target=x86_64-efi \
+            --efi-directory="${efi_dir}/" \
+            --bootloader-id=MAIN
+
+        grub-mkconfig -o "${grub_dir}/grub.cfg"
+    fi
+
+    __confirm "boot"
 }
 
-function post_chroot() {
+post_chroot() {
     base
-    locale
+    localization
     network
     boot
+
+    if [ -f "${SCRIPT_NAME}" ]; then
+        rm "${SCRIPT_NAME}"
+    fi
 }
 # }}}
 
