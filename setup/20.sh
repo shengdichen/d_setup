@@ -13,6 +13,7 @@ function __office() {
     clone_and_stow -- self d_xournalpp
 
     # obtain lyx (from cache or aur)
+    clone_and_stow -- self d_lyx
 
     install "arch" \
         fcitx5-im fcitx5-rime fcitx5-mozc \
@@ -47,7 +48,7 @@ function __media() {
         firefox-developer-edition w3m \
         qutebrowser python-adblock \
         transmission-cli deluge-gtk
-    install "aur" \
+    install "aurhelper" \
         ungoogled-chromium-bin
 }
 

@@ -239,7 +239,7 @@ function service_start() {
             echo "[systemd:${s}] Active already, skipping"
         else
             echo "[systemd:${s}] Starting"
-            systemctl enable --now "${1}"
+            systemctl enable --now "${s}"
         fi
     done
 }

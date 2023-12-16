@@ -20,8 +20,12 @@ function __nvim() {
         # snippets collection
         clone_and_stow --cd no --no-stow -- github "friendly-snippets" "rafamadriz"
 
+        clone_and_stow --cd no --no-stow -- github "plenary.nvim" "nvim-lua"
+        clone_and_stow --cd no --no-stow -- github "none-ls.nvim" "nvimtools"
+
         clone_and_stow --cd no --no-stow -- github "gitsigns.nvim" "lewis6991"
         clone_and_stow --cd no --no-stow -- github "indent-blankline.nvim" "lukas-reineke"
+        clone_and_stow --cd no --no-stow -- github "neodev.nvim" "folke"
 
         # REF:
         #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
@@ -85,8 +89,12 @@ function __java() {
 
 function __js() {
     install "arch" \
-        nodejs npm \
-        typescript typescript-language-server
+        nodejs npm typescript \
+        typescript-language-server eslint_d
+
+    install "npm" \
+        prettier-standard standard ts-standard \
+        @fsouza/prettierd
 
     install "aurhelper" vscode-langservers-extracted
 }
@@ -94,6 +102,7 @@ function __js() {
 function langs() {
     clone_and_stow -- self d_dev
     __python
+    __js
 
     install "arch" \
         lua luajit luarocks lua-language-server \
@@ -124,6 +133,11 @@ function libs() {
 
     install "arch" \
         gtk4 gtk3
+
+    install "arch" \
+        traceroute mtr \
+        openbsd-netcat nmap \
+        whois
 }
 
 function main() {

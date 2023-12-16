@@ -4,8 +4,8 @@ function __install() {
     install "arch" \
         "neomutt" "notmuch" "fdm" "isync" "msmtp"
 
-    install "aur" \
-        "protonmail-bridge-bin"
+    install "aurhelper" \
+        "protonmail-bridge-core"
 
     clone_and_stow -- self d_mail
 }
