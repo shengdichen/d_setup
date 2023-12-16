@@ -1,47 +1,82 @@
-function create_user() {
-    if (( EUID != 0 )); then
-        echo "Not root, exiting"
+SCRIPT_NAME="$(basename "${0}")"
+
+__check_root() {
+    if ((EUID != 0)); then
+        echo "Must be executed as root, exiting"
         exit 3
     fi
+}
+__check_root
 
-    pacman -S zsh zsh-completions zsh-syntax-highlighting
+pacman_setup() {
+    if ! pacman -Syy; then
+        echo "pacman -Syy failed, bad internet maybe?"
+        echo "relaunch when ready"
+    fi
+    printf "[pacman.refresh] DONE " && read -r && clear
 
+    printf "[pacman.zfs] START " && read -r
+    # REF:
+    #   https://wiki.archlinux.org/title/Unofficial_user_repositories#archzfs
+    local _archzfs_key="DDF7DB817396A49B2A2723F7403BD972F75D9D76"
+    pacman-key --recv-keys "${_archzfs_key}"
+    pacman-key --finger "${_archzfs_key}"
+    pacman-key --lsign-key "${_archzfs_key}"
+    printf "[pacman.zfs] DONE " && read -r && clear
+
+    printf "[pacman.blackarch] START " && read -r
+    # REF:
+    #   https://www.blackarch.org/downloads.html#install-repo
+    local _blackarch="strap.sh"
+    curl -O "https://blackarch.org/${_blackarch}"
+    chmod +x "${_blackarch}"
+    ./"${_blackarch}"
+    rm "${_blackarch}"
+    printf "[pacman.blackarch] DONE " && read -r && clear
+
+    local conf="pacman.conf"
+    if [ ! -f "./${conf}" ]; then
+        curl -L -O "shengdichen.xyz/install/${conf}"
+    fi
+    cp "./${conf}" "/etc/."
+    rm "./${conf}"
+    clear
+
+    printf "reload pacman when ready: " && read -r
+    pacman -Syy
+    pacman -Fyy
+    pacman -Syu
+}
+
+birth() {
     local _me="shc"
-    useradd -m -d /home/main -G wheel -s /bin/zsh "${_me}"
-    groupmod -n god "${_me}"
-    passwd "${_me}"
 
-    visudo
+    if ! id "${_me}" >/dev/null 2>&1; then
+        pacman -S zsh zsh-completions zsh-syntax-highlighting
 
-    # TODO: switch to shc
-    for d in ".local/share/" ".config/" ".cache/"; do
-        mkdir -p "${HOME}/${d}"
-    done
+        local _me="shc"
+        useradd -m -d /home/main -G wheel -s /bin/zsh "${_me}"
+        groupmod -n god "${_me}"
+
+        printf "[%s] " ${_me}
+        passwd "${_me}"
+        printf "%s is born " ${_me}
+    else
+        printf "%s is already alive" ${_me}
+    fi
+    read -r && clear
+
+    printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL| " && read -r
+    EDITOR=nvim visudo
+    printf "[visudo] DONE " && read -r && clear
 }
 
-function get_ssh_config_raw() {
-    local _mnt="/mnt" _ssh_dir="${HOME}/.ssh"
-    sudo mount "$(find /dev -maxdepth 1 | fzf)" "${_mnt}"
-
-    mkdir -p "${_ssh_dir}"
-    # TODO: get the file names
-    cp "${_mnt}/priv_key" "${_mnt}/priv_key" "${_ssh_dir}/."
-    exit
+cleanup() {
+    rm "${SCRIPT_NAME}"
+    true >"${HOME}/.bash_history"
+    echo "Setup complete, switch user when ready"
 }
 
-function setup() {
-    git clone git@github.com:shengdichen/d_setup.git "${HOME}/dot"
-    local _ptr=
-    sshfs \
-    "ssh_syngy_ext:${3}" \
-    "$(realpath "${4}")" \
-    -o "reconnect,idmap=user"
-}
-
-function get_prv() {
-    (
-    cd "${HOME}/dot/dot" || exit 3
-    stow -R --target="${HOME}" --ignore="\.git.*" --ignore="script" "d_prv"
-    )
-}
-get_prv
+pacman_setup
+birth
+cleanup
