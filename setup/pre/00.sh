@@ -96,6 +96,16 @@ bulk_work() {
     fi
 }
 
+pre_chroot() {
+    __separator "before_proceeding"
+
+    partitioning
+    check_network
+    sync_time
+    bulk_work
+}
+# }}}
+
 transition_to_post() {
     printf "Ready to chroot: automatic setup (default); [m]anual: "
     local input
@@ -107,18 +117,6 @@ transition_to_post() {
         arch-chroot /mnt sh "${SCRIPT_NAME}" post
     fi
 }
-
-pre_chroot() {
-    __separator "before_proceeding"
-
-    partitioning
-    check_network
-    sync_time
-    bulk_work
-
-    transition_to_post
-}
-# }}}
 
 # post {{{
 base() {
@@ -240,11 +238,11 @@ post_chroot() {
     network
     boot
 
-    __confirm "chroot-complete"
-    if [ -f "${SCRIPT_NAME}" ]; then  # invoked as post-mode
+    if [ -f "${SCRIPT_NAME}" ]; then # invoked in post-mode
         rm "${SCRIPT_NAME}"
         echo "Ctrl-D to exit chroot"
     fi
+    __confirm "chroot-complete"
 }
 # }}}
 
@@ -260,6 +258,9 @@ case "${1}" in
         ;;
     "pre")
         pre_chroot
+        ;;
+    "transition")
+        transition_to_post
         ;;
     "post")
         post_chroot
