@@ -82,7 +82,7 @@ function __install_aur() {
 }
 
 function __install_aurhelper() {
-    local helper="paru"
+    local helper="paru-bin"
     if ! pacman -Qs "${helper}" >/dev/null; then
         __install_aur "${helper}"
     fi
