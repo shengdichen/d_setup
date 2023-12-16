@@ -120,7 +120,10 @@ prv() {
 _post() {
     rm "${SCRIPT_NAME}"
 
-    echo "Setup complete, run |~/dot/dot/setup.sh| when ready"
+    echo
+    echo "Setup complete, run:"
+    echo "    \$ sh ~/dot/dot/setup.sh"
+    echo "when ready"
 }
 
 _pre

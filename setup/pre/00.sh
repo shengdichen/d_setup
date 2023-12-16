@@ -251,10 +251,15 @@ post_chroot() {
 # }}}
 
 cleanup() {
-    rm "${SCRIPT_NAME}"
+    curl -L -O "shengdichen.xyz/install/01.sh"
+    mv -f 01.sh "/mnt/root/."
     umount -R /mnt
-    echo "Installation complete; reboot when ready: "
-    read -r
+
+    rm "${SCRIPT_NAME}"
+    echo "Installation complete; run"
+    echo "    # sh 01.sh"
+    echo "after rebooting."
+    printf "Ready when you are: " && read -r
     reboot
 }
 

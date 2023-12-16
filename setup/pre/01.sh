@@ -92,8 +92,9 @@ birth() {
     # previous version := ...(ALL:ALL)...
     # newer version := ...(ALL)...
     if ! grep "^%wheel ALL=(.*ALL) ALL$" /etc/sudoers; then
-        printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL| " && read -r
+        printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL|: " && read -r
         EDITOR=nvim visudo
+        clear
         printf "[visudo] DONE " && read -r && clear
     fi
 
@@ -105,6 +106,8 @@ birth() {
 cleanup() {
     rm "${SCRIPT_NAME}"
     true >"${HOME}/.bash_history"
+
+    echo
     echo "Setup complete, switch user and run:"
     echo "    \$ sh 02.sh"
     echo
