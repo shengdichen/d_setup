@@ -96,6 +96,18 @@ bulk_work() {
     fi
 }
 
+transition_to_post() {
+    printf "Ready to chroot: automatic setup (default); [m]anual: "
+    local input
+    read -r input
+    if [ "${input}" = "m" ]; then
+        arch-chroot /mnt curl -L -O "shengdichen.xyz/install/chroot.sh"
+        arch-chroot /mnt
+    else
+        arch-chroot /mnt sh "${SCRIPT_NAME}" post
+    fi
+}
+
 pre_chroot() {
     __separator "before_proceeding"
 
@@ -103,6 +115,8 @@ pre_chroot() {
     check_network
     sync_time
     bulk_work
+
+    transition_to_post
 }
 # }}}
 
@@ -226,11 +240,19 @@ post_chroot() {
     network
     boot
 
-    if [ -f "${SCRIPT_NAME}" ]; then
+    __confirm "chroot-complete"
+    if [ -f "${SCRIPT_NAME}" ]; then  # invoked as post-mode
         rm "${SCRIPT_NAME}"
+        echo "Ctrl-D to exit chroot"
     fi
 }
 # }}}
+
+cleanup() {
+    rm "${SCRIPT_NAME}"
+    umount -R /mnt
+    echo "Installation complete; reboot when ready"
+}
 
 case "${1}" in
     "vbox")
@@ -242,10 +264,10 @@ case "${1}" in
     "post")
         post_chroot
         ;;
+    "cleanup")
+        cleanup
+        ;;
     *)
-        # arch-chroot /mnt
-        # post_chroot
-        # exit
         echo "Huh, which mode? [pre] or [post]"
         ;;
 esac
