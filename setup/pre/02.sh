@@ -89,13 +89,15 @@ prv() {
             sshfs "ssh_matrix_ext:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
         )
 
+        local branch="main"
         mkdir -p "${DOT_ROOT}/${DOT_PRV}"
         (
             cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
-            git init
+            # specify |-b| to prevent warning for missing default brach name
+            git init -b "${branch}"
             git remote add origin "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}"
             git fetch
-            git checkout -b main origin/main
+            git merge origin/"${branch}"
         )
 
         # get ready for stowing(-override)
