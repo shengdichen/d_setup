@@ -107,11 +107,20 @@ pre_chroot() {
 # }}}
 
 transition_to_post() {
+    cp -f "${SCRIPT_NAME}" /mnt/.
+
     printf "Ready to chroot: automatic setup (default); [m]anual: "
     local input
     read -r input
+    echo
+
     if [ "${input}" = "m" ]; then
-        arch-chroot /mnt curl -L -O "shengdichen.xyz/install/chroot.sh"
+        echo "Run"
+        echo "    # sh ${SCRIPT_NAME} post"
+        echo "in chroot."
+        echo
+        printf "Ready when you are: "
+        read -r
         arch-chroot /mnt
     else
         arch-chroot /mnt sh "${SCRIPT_NAME}" post
@@ -125,19 +134,16 @@ base() {
     __separator "basic misc"
 
     local pack_keyring="archlinux-keyring"
-    if ! __is_installed "${pack_keyring}"; then
-        if ! pacman -S "${pack_keyring}"; then
-            rm -rf /etc/pacman.d/gnupg
-            pacman-key --init
-            pacman-key --populate
-            pacman -S "${pack_keyring}"
-        fi
-        echo
+    if ! pacman -S "${pack_keyring}"; then
+        rm -rf /etc/pacman.d/gnupg
+        pacman-key --init
+        pacman-key --populate
+        pacman -S "${pack_keyring}"
     fi
+    echo
 
-    local root_pw_flag
-    root_pw_flag="$(passwd --status | awk '{print $2}')"
-    if [ "${root_pw_flag}" = "NP" ]; then
+    # re-password only if needed
+    if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
         printf "[root] "
         passwd
         echo
@@ -238,18 +244,18 @@ post_chroot() {
     network
     boot
 
-    if [ -f "${SCRIPT_NAME}" ]; then # invoked in post-mode
-        rm "${SCRIPT_NAME}"
-        echo "Ctrl-D to exit chroot"
-    fi
-    __confirm "chroot-complete"
+    rm "${SCRIPT_NAME}"
+    printf "All done here, Ctrl-D to exit chroot: "
+    read -r
 }
 # }}}
 
 cleanup() {
     rm "${SCRIPT_NAME}"
     umount -R /mnt
-    echo "Installation complete; reboot when ready"
+    echo "Installation complete; reboot when ready: "
+    read -r
+    reboot
 }
 
 case "${1}" in
