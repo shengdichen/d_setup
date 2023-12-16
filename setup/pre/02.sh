@@ -1,7 +1,35 @@
+SCRIPT_NAME="$(basename "${0}")"
+
 MOUNT_ROOT="${HOME}/mnt"
 MOUNT_MATRIX="m"
 DOT_ROOT="${HOME}/dot/dot"
 DOT_PRV="d_prv"
+
+_pre() {
+    if [ "${EUID}" -eq 0 ]; then
+        echo "Must be non-root, (create and) switch to user"
+        exit 3
+    fi
+
+    sudo pacman -Syu
+    sudo pacman -S --needed \
+        openssh git stow \
+        sshfs fuse2 unzip
+
+    if [ -d "${HOME}/.ssh" ]; then
+        rm -r "${HOME}/.ssh"
+    fi
+
+    if [ -d "${HOME}/dot" ]; then
+        (
+            cd "${DOT_ROOT}" || exit 3
+            if [ -d "${DOT_PRV}" ]; then
+                stow -D "${DOT_PRV}"
+            fi
+        )
+    fi
+    rm -rf "${HOME}/dot"
+}
 
 raw_ssh() {
     if [ -d "${HOME}/.ssh" ]; then
@@ -80,24 +108,15 @@ prv() {
     unset -f clone stow
 }
 
-uninstall() {
-    if [ -d "${HOME}/.ssh" ]; then
-        rm -r "${HOME}/.ssh"
-    fi
+_post() {
+    rm "${SCRIPT_NAME}"
 
-    if [ -d "${HOME}/dot" ]; then
-        (
-            cd "${DOT_ROOT}" || exit 3
-            if [ -d "${DOT_PRV}" ]; then
-                stow -D "${DOT_PRV}"
-            fi
-        )
-    fi
-    rm -rf "${HOME}/dot"
+    echo "Setup complete, run |~/dot/dot/setup.sh| when ready"
 }
 
-uninstall
+_pre
 raw_ssh
 clone_setup
 prv
-unset -f uninstall raw_ssh clone_setup prv
+_post
+unset -f _pre raw_ssh clone_setup prv _post
