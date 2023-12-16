@@ -30,6 +30,29 @@ partitioning() {
     printf "\n"
 }
 
+partitioning_vbox() {
+    __separator "vbox-start"
+    local disk="/dev/sda" efi_size="512MB"
+    parted "${disk}" mklabel gpt
+
+    parted "${disk}" mkpart "efi" fat32 "1MB" "${efi_size}"
+    parted "${disk}" set 1 esp on
+    mkfs.fat -F 32 "${disk}1"
+
+    parted "${disk}" mkpart "root" ext4 "${efi_size}" 100%
+    mkfs.ext4 "${disk}2"
+    e2label "${disk}2" "ROOT"
+
+    # MUST mount /mnt before sub-mountpoints (e.g., /mnt/efi)
+    mount "${disk}2" /mnt
+    mount --mkdir "${disk}1" /mnt/efi
+
+    __separator "vbox-end"
+    echo
+    lsblk
+    __confirm "partitioning"
+}
+
 check_network() {
     echo "2. check internet connection, [ping] right now"
     ping -c 3 shengdichen.xyz
@@ -144,6 +167,9 @@ function post_chroot() {
 # }}}
 
 case "${1}" in
+    "vbox")
+        partitioning_vbox
+        ;;
     "pre")
         pre_chroot
         ;;
