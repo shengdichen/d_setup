@@ -37,12 +37,20 @@ raw_ssh() {
         return
     fi
 
-    local mount_tmp="${MOUNT_ROOT}/mount_tmp"
-    mkdir -p "${mount_tmp}"
-    sudo mount /dev/sdb1 "${mount_tmp}"
-
     local zip_name=".ssh.zip"
-    cp -f "${mount_tmp}/x/Dox/sys/${zip_name}" "${HOME}"
+    if [ ! -f "${zip_name}" ]; then
+        local mount_tmp="${MOUNT_ROOT}/mount_tmp"
+        mkdir -p "${mount_tmp}"
+        if sudo mount /dev/sdb1 "${mount_tmp}"; then
+            cp -f "${mount_tmp}/x/Dox/sys/${zip_name}" "${HOME}"
+        else
+            echo
+            echo "[ssh-conf] neither local nor on usb. Exiting"
+            echo
+            exit 3
+        fi
+    fi
+
     (
         cd || exit 3
         if unzip "${zip_name}"; then
