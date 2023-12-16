@@ -85,7 +85,7 @@ bulk_work() {
     pacman -Syy
     pacman -S archlinux-keyring
     pacstrap -K /mnt \
-        base base-devel vi neovim \
+        base base-devel vi neovim less \
         linux-zen linux-lts linux-firmware bash-completion
 
     if arch-chroot /mnt pacman -Q | grep linux-zen >/dev/null; then
