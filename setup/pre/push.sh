@@ -4,7 +4,7 @@ push_to_xyz() {
         script_root="domains/shengdichen.xyz/public_html/install"
 
     ssh "${profile}" mkdir -p ${script_root}
-    for f in "00.sh" "01.sh" "02.sh" "pacman.conf"; do
+    for f in "00.sh" "01.sh" "02.sh" "pacman.conf" "pacman.conf.pacnew"; do
         scp \
             "./${f}" \
             "${profile}:${script_root}/."

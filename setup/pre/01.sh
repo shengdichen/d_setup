@@ -8,13 +8,7 @@ __check_root() {
 }
 __check_root
 
-pacman_setup() {
-    if ! pacman -Syy; then
-        echo "pacman -Syy failed, bad internet maybe?"
-        echo "relaunch when ready"
-    fi
-    printf "[pacman.refresh] DONE " && read -r && clear
-
+pacman_zfs() {
     printf "[pacman.zfs] START " && read -r
     # REF:
     #   https://wiki.archlinux.org/title/Unofficial_user_repositories#archzfs
@@ -23,7 +17,9 @@ pacman_setup() {
     pacman-key --finger "${_archzfs_key}"
     pacman-key --lsign-key "${_archzfs_key}"
     printf "[pacman.zfs] DONE " && read -r && clear
+}
 
+pacman_blackarch() {
     printf "[pacman.blackarch] START " && read -r
     # REF:
     #   https://www.blackarch.org/downloads.html#install-repo
@@ -33,7 +29,9 @@ pacman_setup() {
     ./"${_blackarch}"
     rm "${_blackarch}"
     printf "[pacman.blackarch] DONE " && read -r && clear
+}
 
+pacman_conf_takeover() {
     local conf="pacman.conf"
     if [ ! -f "./${conf}" ]; then
         curl -L -O "shengdichen.xyz/install/${conf}"
@@ -41,11 +39,37 @@ pacman_setup() {
     cp "./${conf}" "/etc/."
     rm "./${conf}"
     clear
+}
 
-    printf "reload pacman when ready: " && read -r
-    pacman -Syy
-    pacman -Fyy
+pacman_setup() {
+    if [ ! -f /etc/pacman.conf.pacnew ]; then
+        # create backup if needed
+        cp -f /etc/pacman.conf /etc/pacman.conf.pacnew
+    else
+        # restore from backup
+        cp -f /etc/pacman.conf.pacnew /etc/pacman.conf
+    fi
+
+    local pack_keyring="archlinux-keyring"
+    if ! pacman -Syu; then
+        if ! pacman -S "${pack_keyring}"; then
+            rm -rf /etc/pacman.d/gnupg
+            pacman-key --init
+            pacman-key --populate
+            pacman -S "${pack_keyring}"
+        fi
+    fi
+    printf "[pacman.prework] DONE" && read -r
+    clear
+
+    pacman_blackarch
+    pacman_zfs
+    pacman_conf_takeover
+
+    printf "[pacman.reload] START: " && read -r
     pacman -Syu
+    pacman -Fyy
+    printf "[pacman.reload] DONE " && read -r
 }
 
 birth() {
