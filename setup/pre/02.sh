@@ -81,41 +81,32 @@ clone_setup() {
 }
 
 prv() {
-    clone() {
-        # source of prv
-        mkdir -p "${MOUNT_ROOT}/${MOUNT_MATRIX}"
-        (
-            cd "${MOUNT_ROOT}" || exit 3
-            sshfs "ssh_matrix_ext:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
-        )
+    # source of prv
+    mkdir -p "${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    (
+        cd "${MOUNT_ROOT}" || exit 3
+        sshfs "ssh_matrix_ext:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
+    )
 
-        local branch="main"
-        mkdir -p "${DOT_ROOT}/${DOT_PRV}"
-        (
-            cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
-            # specify |-b| to prevent warning for missing default brach name
-            git init -b "${branch}"
-            git remote add origin "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}"
-            git fetch
-            git merge origin/"${branch}"
-        )
+    local branch="main"
+    mkdir -p "${DOT_ROOT}/${DOT_PRV}"
+    (
+        cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
+        # specify |-b| to prevent warning for missing default brach name
+        git init -b "${branch}"
+        git remote add origin "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}"
+        git fetch
+        git merge origin/"${branch}"
+    )
 
-        # get ready for stowing(-override)
-        rm -r "${HOME}/.ssh"
-        fusermount -u "${MOUNT_ROOT}/${MOUNT_MATRIX}"
-        rmdir "${MOUNT_ROOT}/${MOUNT_MATRIX}"
-    }
+    # get ready for stowing(-override)
+    rm -r "${HOME}/.ssh"
+    fusermount -u "${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    rmdir "${MOUNT_ROOT}/${MOUNT_MATRIX}"
 
-    stow() {
-        (
-            cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
-            ${SHELL} setup.sh
-        )
-    }
-
-    clone
-    stow
-    unset -f clone stow
+    (
+        cd "${DOT_ROOT}/${DOT_PRV}" && ${SHELL} setup.sh
+    )
 }
 
 _post() {

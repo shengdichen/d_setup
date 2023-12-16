@@ -52,9 +52,8 @@ birth() {
     local _me="shc"
 
     if ! id "${_me}" >/dev/null 2>&1; then
-        pacman -S zsh zsh-completions zsh-syntax-highlighting
+        pacman -S --needed zsh zsh-completions zsh-syntax-highlighting
 
-        local _me="shc"
         useradd -m -d /home/main -G wheel -s /bin/zsh "${_me}"
         groupmod -n god "${_me}"
 
@@ -80,3 +79,4 @@ cleanup() {
 pacman_setup
 birth
 cleanup
+unset -f __check_root pacman_setup birth cleanup
