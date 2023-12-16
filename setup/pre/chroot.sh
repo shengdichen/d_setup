@@ -1,26 +1,70 @@
-if ((EUID != 0)); then
-    echo "Must be executed as root, exiting"
-    exit 3
-fi
+__check_root() {
+    if ((EUID != 0)); then
+        echo "Must be executed as root, exiting"
+        exit 3
+    fi
+}
+__check_root
+
+__separator() {
+    echo "---------- ${1} ----------"
+}
+
+__confirm() {
+    printf "%s> confirm (default); [q]uit " "${1}"
+
+    local input=""
+    read -r input
+    if [ "${input}" = "q" ] || [ "${input}" = "Q" ]; then
+        printf "Exiting"
+        exit 3
+    fi
+}
 
 # pre {{{
-function sync_time() {
-    local date_pattern="Date: "
-    date -s "$(
+partitioning() {
+    echo "1. paritioning MUST be done manually"
+    echo "HINT for efi-system: (1 efi ~ 200MB, 1 system-disk: as much as possibe)"
+
+    __confirm "partitioning"
+    printf "\n"
+}
+
+check_network() {
+    echo "2. check internet connection, [ping] right now"
+    ping -c 3 shengdichen.xyz
+    echo
+    __confirm "network"
+}
+
+sync_time() {
+    local date_pattern="Date: " time_curr
+    time_curr="$(
         curl -s --head http://google.com |
             grep "^${date_pattern}" |
             sed "s/${date_pattern}//g"
     )"
+    printf "set-time-to> %s\n" "${time_curr}"
+
+    date -s "${time_curr}" >/dev/null
     hwclock -w --utc
 }
 
-function pre_chroot() {
-    sync_time
-
+bulk_work() {
     pacstrap -K /mnt \
         base base-devel vi neovim \
         linux linux-firmware bash-completion
+
     genfstab -U /mnt >>/mnt/etc/fstab
+}
+
+pre_chroot() {
+    __separator "before_proceeding"
+
+    partitioning
+    check_network
+    sync_time
+    bulk_work
 }
 # }}}
 
@@ -99,9 +143,19 @@ function post_chroot() {
 }
 # }}}
 
-pre_chroot
-arch-chroot /mnt
-post_chroot
-exit
+case "${1}" in
+    "pre")
+        pre_chroot
+        ;;
+    "post")
+        post_chroot
+        ;;
+    *)
+        # arch-chroot /mnt
+        # post_chroot
+        # exit
+        echo "Huh, which mode? [pre] or [post]"
+        ;;
+esac
 
 # vim: foldmethod=marker
