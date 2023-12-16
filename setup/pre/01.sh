@@ -73,31 +73,41 @@ pacman_setup() {
 }
 
 birth() {
-    local _me="shc"
+    local _me="shc" _rank="god" _home="main"
+
+    pacman -S --needed zsh zsh-completions zsh-syntax-highlighting
 
     if ! id "${_me}" >/dev/null 2>&1; then
-        pacman -S --needed zsh zsh-completions zsh-syntax-highlighting
-
-        useradd -m -d /home/main -G wheel -s /bin/zsh "${_me}"
-        groupmod -n god "${_me}"
+        useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
+        groupmod -n "${_rank}" "${_me}"
 
         printf "[%s] " ${_me}
         passwd "${_me}"
-        printf "%s is born " ${_me}
+        printf "%s is born: " ${_me}
     else
-        printf "%s is already alive" ${_me}
+        printf "%s is already alive: " ${_me}
     fi
     read -r && clear
 
-    printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL| " && read -r
-    EDITOR=nvim visudo
-    printf "[visudo] DONE " && read -r && clear
+    # previous version := ...(ALL:ALL)...
+    # newer version := ...(ALL)...
+    if ! grep "^%wheel ALL=(.*ALL) ALL$" /etc/sudoers; then
+        printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL| " && read -r
+        EDITOR=nvim visudo
+        printf "[visudo] DONE " && read -r && clear
+    fi
+
+    curl -L -O "shengdichen.xyz/install/02.sh"
+    chown "${_me}:${_rank}" 02.sh
+    mv -f 02.sh "/home/${_home}/."
 }
 
 cleanup() {
     rm "${SCRIPT_NAME}"
     true >"${HOME}/.bash_history"
-    echo "Setup complete, switch user when ready"
+    echo "Setup complete, switch user and run:"
+    echo "    \$ sh 02.sh"
+    echo
 }
 
 pacman_setup
