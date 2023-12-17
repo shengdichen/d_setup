@@ -49,9 +49,7 @@ function __base() {
         wireplumber \
         pipewire pipewire-docs pipewire-alsa pipewire-pulse pipewire-jack \
         gstreamer gstreamer-vaapi gst-libav gst-plugins-base gst-plugins-good
-
-    install "arch" \
-        tlp acpi
+    service_start -- bluetooth
 }
 
 function __graphics() {
