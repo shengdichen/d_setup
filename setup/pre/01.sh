@@ -98,6 +98,8 @@ birth() {
         printf "[visudo] DONE " && read -r && clear
     fi
 
+    rm "/home/${_home}/.bash"*
+
     curl -L -O "shengdichen.xyz/install/02.sh"
     chown "${_me}:${_rank}" 02.sh
     mv -f 02.sh "/home/${_home}/."
