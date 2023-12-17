@@ -254,14 +254,19 @@ post_chroot() {
 
 cleanup() {
     curl -L -O "shengdichen.xyz/install/01.sh"
-    mv -f 01.sh "/mnt/root/."
-    umount -R /mnt
-
+    mv -f 01.sh "/mnt/."
+    echo
+    printf "01-stage> ready when you are: "
+    read -r && clear
+    if ! arch-chroot /mnt sh 01.sh; then
+        echo "Installation complete; run"
+        echo "    # sh 01.sh"
+        echo "after rebooting."
+        printf "Ready when you are: "
+        read -r
+    fi
     rm "${SCRIPT_NAME}"
-    echo "Installation complete; run"
-    echo "    # sh 01.sh"
-    echo "after rebooting."
-    printf "Ready when you are: " && read -r
+    umount -R /mnt
     reboot
 }
 
@@ -282,7 +287,9 @@ case "${1}" in
         cleanup
         ;;
     *)
-        echo "Huh, which mode? [pre] or [post]"
+        pre_chroot
+        transition_to_post
+        cleanup
         ;;
 esac
 
