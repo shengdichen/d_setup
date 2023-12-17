@@ -81,8 +81,11 @@ birth() {
         useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
         groupmod -n "${_rank}" "${_me}"
 
-        printf "[%s] " ${_me}
-        passwd "${_me}"
+        while true; do
+            printf "[%s] " ${_me}
+            if passwd "${_me}"; then break; fi
+            echo
+        done
         printf "%s is born: " ${_me}
     else
         printf "%s is already alive: " ${_me}

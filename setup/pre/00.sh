@@ -146,9 +146,11 @@ base() {
 
     # re-password only if needed
     if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
-        printf "[root] "
-        passwd
-        echo
+        while true; do
+            printf "[root] "
+            if passwd; then break; fi
+            echo
+        done
     fi
 
     ln -sf /usr/share/zoneinfo/Europe/Vaduz /etc/localtime
