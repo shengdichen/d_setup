@@ -132,15 +132,6 @@ sync_time() {
 }
 
 bulk_work() {
-    __start "fstab"
-    local fstab="/mnt/etc/fstab"
-    if [ ! -e "${fstab}" ]; then
-        genfstab -U /mnt >>"${fstab}"
-    fi
-    __separator
-    cat "${fstab}"
-    __confirm "fstab"
-
     __start "pacstrap"
     pacman -Syy
     pacman -S archlinux-keyring
@@ -154,6 +145,13 @@ bulk_work() {
         exit 3
     fi
     __confirm "pacstrap"
+
+    __start "fstab"
+    local fstab="/mnt/etc/fstab"
+    genfstab -U /mnt >"${fstab}"
+    __separator
+    cat "${fstab}"
+    __confirm "fstab"
 }
 
 pre_chroot() {
