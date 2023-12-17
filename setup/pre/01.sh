@@ -70,12 +70,14 @@ pacman_setup() {
     pacman -Syu
     pacman -Fyy
     printf "[pacman.reload] DONE " && read -r
+    clear
 }
 
 birth() {
     local _me="shc" _rank="god" _home="main"
 
     pacman -S --needed zsh zsh-completions zsh-syntax-highlighting
+    clear
 
     if ! id "${_me}" >/dev/null 2>&1; then
         useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
@@ -116,6 +118,8 @@ cleanup() {
     echo "Setup complete, switch user and run:"
     echo "    \$ sh 02.sh"
     echo
+    printf "Ready: "
+    read -r
 }
 
 pacman_setup

@@ -249,7 +249,7 @@ post_chroot() {
     boot
 
     rm "${SCRIPT_NAME}"
-    printf "All done here, Ctrl-D to exit chroot: "
+    printf "All done here in chroot: "
     read -r
 }
 # }}}
