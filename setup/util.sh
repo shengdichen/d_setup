@@ -40,11 +40,15 @@ function install() {
     esac
 }
 
+__is_installed_arch() {
+    pacman -Qi "${1}" >/dev/null 2>&1
+}
+
 function __install_arch() {
     echo "[pacman:(${*})]"
 
     for p in "${@}"; do
-        if ! pacman -Qs "${p}" >/dev/null; then
+        if ! __is_installed_arch "${p}"; then
             echo "[pacman:${p}] Installing"
             "$(__sudo)" pacman -S --needed "${p}"
         fi
@@ -83,14 +87,14 @@ function __install_aur() {
 
 function __install_aurhelper() {
     local helper="paru-bin"
-    if ! pacman -Qs "${helper}" >/dev/null; then
+    if ! __is_installed_arch "${helper}"; then
         __install_aur "${helper}"
     fi
 
     for p in "${@}"; do
         # REF:
         #   https://bbs.archlinux.org/viewtopic.php?id=76218
-        if ! pacman -Qm "${p}" >/dev/null; then
+        if ! pacman -Qm "${p}" >/dev/null 2>&1; then
             echo "[paru:${p}] Installing"
             paru -S --needed "${p}"
         else
