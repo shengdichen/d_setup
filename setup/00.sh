@@ -31,7 +31,7 @@ function __base() {
         tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip
 
     install "arch" \
-        s-tui ethtool smartmontools lsof \
+        s-tui smartmontools lsof \
         fuse3 fuse2 \
         exfatprogs nfs-utils dosfstools sshfs \
         android-file-transfer android-tools \

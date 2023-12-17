@@ -1,6 +1,13 @@
 source "../util.sh"
 
-function set_threshold() {
+__install() {
+    install "arch" \
+        ethtool tlp acpi
+
+    service_start -- tlp
+}
+
+set_threshold() {
     local threshold
     case "${1}" in
         "low")
@@ -22,5 +29,4 @@ function set_threshold() {
     done
 }
 
-service_start -- tlp
 set_threshold default
