@@ -84,20 +84,27 @@ partitioning_vbox() {
         clear
     done
 
+    local part_delimiter=""
+    case "${disk}" in
+        "/dev/nvme"*)
+            part_delimiter="p"
+            ;;
+    esac
+
     parted "${disk}" mklabel gpt
 
     local efi_size="512MB"
     parted "${disk}" mkpart "efi" fat32 "1MB" "${efi_size}"
     parted "${disk}" set 1 esp on
-    mkfs.fat -F 32 "${disk}1"
+    mkfs.fat -F 32 "${disk}${part_delimiter}1"
 
     parted "${disk}" mkpart "root" ext4 "${efi_size}" 100%
-    mkfs.ext4 "${disk}2"
-    e2label "${disk}2" "ROOT"
+    mkfs.ext4 "${disk}${part_delimiter}2"
+    e2label "${disk}${part_delimiter}2" "ROOT"
 
     # MUST mount /mnt before sub-mountpoints (e.g., /mnt/efi)
-    mount "${disk}2" /mnt
-    mount --mkdir "${disk}1" /mnt/efi
+    mount "${disk}${part_delimiter}2" /mnt
+    mount --mkdir "${disk}${part_delimiter}1" /mnt/efi
 
     __separator
     lsblk
