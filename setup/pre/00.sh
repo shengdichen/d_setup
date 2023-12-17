@@ -29,8 +29,10 @@ __is_installed() {
 
 # pre {{{
 partitioning() {
-    echo "1. paritioning MUST be done manually"
-    echo "HINT for efi-system: (1 efi ~ 200MB, 1 system-disk: as much as possibe)"
+    if ! mount | grep " on /mnt" >/dev/null; then
+        echo "parition and mount to /mnt first, exiting"
+        exit 3
+    fi
 
     __confirm "partitioning"
     printf "\n"
