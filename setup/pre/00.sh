@@ -8,6 +8,11 @@ __check_root() {
 }
 __check_root
 
+__start() {
+    printf "%s> START" "${1}"
+    printf "\n"
+}
+
 __continue() {
     printf "\n"
     printf "Continue: "
@@ -16,18 +21,31 @@ __continue() {
 }
 
 __separator() {
-    echo "---------- ${1} ----------"
+    local msg=""
+    if [ -n "${1}" ]; then
+        msg=" ${1} "
+    fi
+    echo
+    echo "----------${msg}----------"
+    echo
 }
 
 __confirm() {
-    printf "%s> confirm (default); [q]uit " "${1}"
-
-    local input=""
-    read -r input
-    if [ "${input}" = "q" ] || [ "${input}" = "Q" ]; then
-        printf "Exiting"
-        exit 3
-    fi
+    printf "\n"
+    while true; do
+        printf "%s> [C]onfirm; [q]uit " "${1}"
+        local input=""
+        read -r input
+        if [ "${input}" = "q" ] || [ "${input}" = "Q" ]; then
+            printf "Exiting"
+            exit 3
+        elif [ "${input}" = "c" ] || [ "${input}" = "C" ] || [ -z "${input}" ]; then
+            clear
+            return
+        else
+            echo "Huh, ${input}?"
+        fi
+    done
 }
 
 __is_installed() {
@@ -36,17 +54,19 @@ __is_installed() {
 
 # pre {{{
 partitioning() {
+    __start "partitioning"
+
     if ! mount | grep " on /mnt" >/dev/null; then
         echo "parition and mount to /mnt first, exiting"
         exit 3
     fi
 
+    __separator
+    lsblk
     __confirm "partitioning"
-    printf "\n"
 }
 
 partitioning_vbox() {
-    __separator "vbox-start"
     pacman -Syy
     pacman -S --needed fzf
     __continue
@@ -79,20 +99,22 @@ partitioning_vbox() {
     mount "${disk}2" /mnt
     mount --mkdir "${disk}1" /mnt/efi
 
-    __separator "vbox-end"
-    echo
+    __separator
     lsblk
-    __confirm "partitioning"
+    __continue
 }
 
 check_network() {
-    echo "2. check internet connection, [ping] right now"
+    __start "networking"
+
+    __separator
     ping -c 3 shengdichen.xyz
-    echo
     __confirm "network"
 }
 
 sync_time() {
+    __start "time"
+
     local date_pattern="Date: " time_curr
     time_curr="$(
         curl -s --head http://google.com |
@@ -103,28 +125,38 @@ sync_time() {
 
     date -s "${time_curr}" >/dev/null
     hwclock -w --utc
+
+    __separator
+    timedatectl
+    __confirm "time"
 }
 
 bulk_work() {
-    genfstab -U /mnt >/mnt/etc/fstab
+    __start "fstab"
+    local fstab="/mnt/etc/fstab"
+    if [ ! -e "${fstab}" ]; then
+        genfstab -U /mnt >>"${fstab}"
+    fi
+    __separator
+    cat "${fstab}"
+    __confirm "fstab"
 
+    __start "pacstrap"
     pacman -Syy
     pacman -S archlinux-keyring
     pacstrap -K /mnt \
         base base-devel vi neovim less \
         linux-zen linux-lts linux-firmware bash-completion
 
-    if arch-chroot /mnt pacman -Q | grep linux-zen >/dev/null; then
-        __confirm "pre-chroot-DONE"
-    else
+    __separator
+    if ! arch-chroot /mnt pacman -Q | grep linux-zen >/dev/null; then
         echo "Installation failed, bad internet maybe?"
         exit 3
     fi
+    __confirm "pacstrap"
 }
 
 pre_chroot() {
-    __separator "before_proceeding"
-
     partitioning
     check_network
     sync_time
@@ -133,6 +165,9 @@ pre_chroot() {
 # }}}
 
 transition_to_post() {
+    clear
+    __start "in-chroot"
+
     cp -f "${SCRIPT_NAME}" /mnt/.
 
     printf "Ready to chroot: automatic setup (default); [m]anual: "
@@ -155,9 +190,8 @@ transition_to_post() {
 
 # post {{{
 base() {
+    __start "chroot.base"
     source /usr/share/bash-completion/bash_completion
-
-    __separator "basic misc"
 
     local pack_keyring="archlinux-keyring"
     if ! pacman -S "${pack_keyring}"; then
@@ -166,7 +200,8 @@ base() {
         pacman-key --populate
         pacman -S "${pack_keyring}"
     fi
-    echo
+
+    clear
 
     # re-password only if needed
     if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
@@ -180,11 +215,13 @@ base() {
     ln -sf /usr/share/zoneinfo/Europe/Vaduz /etc/localtime
     hwclock --systohc
 
-    __confirm "basic misc"
+    __separator
+    __confirm "chroot.base"
+
 }
 
 localization() {
-    __separator "locale"
+    __start "localization"
 
     if ! locale -a | grep "sv_SE.utf8" >/dev/null; then
         cat <<STOP >/etc/locale.gen
@@ -213,11 +250,12 @@ STOP
 LANG=en_US.UTF-8
 STOP
 
+    __separator
     __confirm "localization"
 }
 
 network() {
-    __separator "network"
+    __start "network"
 
     local hostname_file="/etc/hostname"
     if [ ! -f "${hostname_file}" ]; then
@@ -232,6 +270,8 @@ network() {
 ::1 localhost
 STOP
 
+    clear
+
     if ! __is_installed networkmanager; then
         pacman -S networkmanager dhclient
         cat <<STOP >/etc/NetworkManager/conf.d/dhcp-client.conf
@@ -241,11 +281,12 @@ STOP
         systemctl enable NetworkManager.service
     fi
 
+    __separator ""
     __confirm "network"
 }
 
 boot() {
-    __separator "boot"
+    __start "boot"
 
     if ! __is_installed grub; then
         pacman -S grub efibootmgr
@@ -263,6 +304,7 @@ boot() {
         grub-mkconfig -o "${grub_dir}/grub.cfg"
     fi
 
+    __separator ""
     __confirm "boot"
 }
 
@@ -273,6 +315,8 @@ post_chroot() {
     boot
 
     rm "${SCRIPT_NAME}"
+    __separator ""
+    __confirm "boot"
     printf "All done here in chroot: "
     read -r
 }
