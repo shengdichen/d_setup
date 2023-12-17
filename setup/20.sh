@@ -60,3 +60,11 @@ function __game() {
         wine-staging wine-gecko wine-mono \
         lutris
 }
+
+__social() {
+    install "arch" \
+        signal-desktop
+
+    install "aurhelper" \
+        teams-for-linux
+}
