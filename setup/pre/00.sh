@@ -8,6 +8,13 @@ __check_root() {
 }
 __check_root
 
+__continue() {
+    printf "\n"
+    printf "Continue: "
+    read -r
+    clear
+}
+
 __separator() {
     echo "---------- ${1} ----------"
 }
@@ -40,9 +47,26 @@ partitioning() {
 
 partitioning_vbox() {
     __separator "vbox-start"
-    local disk="/dev/sda" efi_size="512MB"
+    pacman -Syy
+    pacman -S --needed fzf
+    __continue
+
+    local disk
+    while true; do
+        echo "select (full) disk for partitioning"
+        disk="$(lsblk -o PATH,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
+        local input
+        printf "[%s] for partitioning: retry (default); [c]onfirm " "${disk}"
+        read -r input
+        if [ "${input}" = "c" ]; then
+            break
+        fi
+        clear
+    done
+
     parted "${disk}" mklabel gpt
 
+    local efi_size="512MB"
     parted "${disk}" mkpart "efi" fat32 "1MB" "${efi_size}"
     parted "${disk}" set 1 esp on
     mkfs.fat -F 32 "${disk}1"
