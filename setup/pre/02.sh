@@ -123,7 +123,12 @@ _post() {
     echo
     echo "Setup complete, run:"
     echo "    \$ sh ~/dot/dot/setup.sh"
-    echo "when ready"
+    printf "when ready: "
+    clear
+    (
+        cd "${HOME}/dot/setup" || exit 3
+        "${SHELL}" "00.sh"
+    )
 }
 
 _pre
