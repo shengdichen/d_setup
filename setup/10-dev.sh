@@ -1,7 +1,30 @@
 source "./util.sh"
 
-function vscode() {
+obesities() {
+    # pycharm-config:
+    # 1. plugin
+    #       dark-purple
+    #       ideavim
+    #       black-connect
+    # 2. configure
+    #   a. visual:
+    #       Settings->Appearance&Behavior->Appearance->Theme: dark purple
+    #       Settings->Appearance&Behavior->Appearance->Use custom font: Avenir
+    #       Settings->Editor->Font: Shevska
+    #   b. blackd:
+    #       Settings->Tools->BlackConnect:
+    #           Detect Path for blackd
+    # 3. keybind
+    #   a. Settings->Keymap:
+    #       Run->Run/Debug->Run: Alt-Shift-Enter
+    # 4. restart pycharm
+
     install "aur" vscodium-insiders-bin
+
+    install "arch" \
+        pycharm-community-edition \
+        intellij-idea-community-edition
+    install "aur" android-studio
 }
 
 function __nvim() {
@@ -38,8 +61,7 @@ function __nvim() {
 
 function __python() {
     install "arch" \
-        python python-pip python-pipx python-poetry \
-        pycharm-community-edition
+        python python-pip python-pipx python-poetry
 
     install "arch" \
         python-lsp-server ruff-lsp \
@@ -57,34 +79,13 @@ function __python() {
 
     install "arch" python-ruff ruff-lsp
     install "aurhelper" python-lsp-ruff
-
-    # pycharm-config:
-    # 1. plugin
-    #       dark-purple
-    #       ideavim
-    #       black-connect
-    # 2. configure
-    #   a. visual:
-    #       Settings->Appearance&Behavior->Appearance->Theme: dark purple
-    #       Settings->Appearance&Behavior->Appearance->Use custom font: Avenir
-    #       Settings->Editor->Font: Shevska
-    #   b. blackd:
-    #       Settings->Tools->BlackConnect:
-    #           Detect Path for blackd
-    # 3. keybind
-    #   a. Settings->Keymap:
-    #       Run->Run/Debug->Run: Alt-Shift-Enter
-    # 4. restart pycharm
 }
 
 function __java() {
     install "arch" \
         jdk-openjdk openjdk-doc openjdk-src \
         jdk17-openjdk openjdk17-doc openjdk17-src \
-        jdk11-openjdk openjdk11-doc openjdk11-src \
-        intellij-idea-community-edition
-
-    install "aur" android-studio
+        jdk11-openjdk openjdk11-doc openjdk11-src
 }
 
 function __js() {
@@ -94,19 +95,20 @@ function __js() {
 
     install "npm" \
         prettier-standard standard ts-standard \
-        @fsouza/prettierd
-
-    install "aurhelper" vscode-langservers-extracted
+        @fsouza/prettierd \
+        vscode-langservers-extracted
 }
 
 function langs() {
     clone_and_stow -- self d_dev
     __python
+    __java
     __js
 
     install "arch" \
         lua luajit luarocks lua-language-server \
         clang lld \
+        rust \
         ghc cabal-install stack haskell-language-server \
         ruby
 

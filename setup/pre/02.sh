@@ -37,12 +37,20 @@ raw_ssh() {
         return
     fi
 
-    local mount_tmp="${MOUNT_ROOT}/mount_tmp"
-    mkdir -p "${mount_tmp}"
-    sudo mount /dev/sdb1 "${mount_tmp}"
-
     local zip_name=".ssh.zip"
-    cp -f "${mount_tmp}/x/Dox/sys/${zip_name}" "${HOME}"
+    if [ ! -f "${zip_name}" ]; then
+        local mount_tmp="${MOUNT_ROOT}/mount_tmp"
+        mkdir -p "${mount_tmp}"
+        if sudo mount /dev/sdb1 "${mount_tmp}"; then
+            cp -f "${mount_tmp}/x/Dox/sys/${zip_name}" "${HOME}"
+        else
+            echo
+            echo "[ssh-conf] neither local nor on usb. Exiting"
+            echo
+            exit 3
+        fi
+    fi
+
     (
         cd || exit 3
         if unzip "${zip_name}"; then
@@ -81,45 +89,46 @@ clone_setup() {
 }
 
 prv() {
-    clone() {
-        # source of prv
-        mkdir -p "${MOUNT_ROOT}/${MOUNT_MATRIX}"
-        (
-            cd "${MOUNT_ROOT}" || exit 3
-            sshfs "ssh_matrix_ext:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
-        )
+    # source of prv
+    mkdir -p "${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    (
+        cd "${MOUNT_ROOT}" || exit 3
+        sshfs "ssh_matrix_ext:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
+    )
 
-        mkdir -p "${DOT_ROOT}/${DOT_PRV}"
-        (
-            cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
-            git init
-            git remote add origin "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}"
-            git fetch
-            git checkout -b main origin/main
-        )
+    local branch="main"
+    mkdir -p "${DOT_ROOT}/${DOT_PRV}"
+    (
+        cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
+        # specify |-b| to prevent warning for missing default brach name
+        git init -b "${branch}"
+        git remote add origin "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}"
+        git fetch
+        git merge origin/"${branch}"
+    )
 
-        # get ready for stowing(-override)
-        rm -r "${HOME}/.ssh"
-        fusermount -u "${MOUNT_ROOT}/${MOUNT_MATRIX}"
-        rmdir "${MOUNT_ROOT}/${MOUNT_MATRIX}"
-    }
+    # get ready for stowing(-override)
+    rm -r "${HOME}/.ssh"
+    fusermount -u "${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    rmdir "${MOUNT_ROOT}/${MOUNT_MATRIX}"
 
-    stow() {
-        (
-            cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
-            ${SHELL} setup.sh
-        )
-    }
-
-    clone
-    stow
-    unset -f clone stow
+    (
+        cd "${DOT_ROOT}/${DOT_PRV}" && ${SHELL} setup.sh
+    )
 }
 
 _post() {
     rm "${SCRIPT_NAME}"
 
-    echo "Setup complete, run |~/dot/dot/setup.sh| when ready"
+    echo
+    echo "Setup complete, run:"
+    echo "    \$ sh ~/dot/dot/setup.sh"
+    printf "when ready: "
+    clear
+    (
+        cd "${HOME}/dot/setup" || exit 3
+        "${SHELL}" "00.sh"
+    )
 }
 
 _pre

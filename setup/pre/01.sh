@@ -8,13 +8,7 @@ __check_root() {
 }
 __check_root
 
-pacman_setup() {
-    if ! pacman -Syy; then
-        echo "pacman -Syy failed, bad internet maybe?"
-        echo "relaunch when ready"
-    fi
-    printf "[pacman.refresh] DONE " && read -r && clear
-
+pacman_zfs() {
     printf "[pacman.zfs] START " && read -r
     # REF:
     #   https://wiki.archlinux.org/title/Unofficial_user_repositories#archzfs
@@ -23,7 +17,9 @@ pacman_setup() {
     pacman-key --finger "${_archzfs_key}"
     pacman-key --lsign-key "${_archzfs_key}"
     printf "[pacman.zfs] DONE " && read -r && clear
+}
 
+pacman_blackarch() {
     printf "[pacman.blackarch] START " && read -r
     # REF:
     #   https://www.blackarch.org/downloads.html#install-repo
@@ -33,7 +29,9 @@ pacman_setup() {
     ./"${_blackarch}"
     rm "${_blackarch}"
     printf "[pacman.blackarch] DONE " && read -r && clear
+}
 
+pacman_conf_takeover() {
     local conf="pacman.conf"
     if [ ! -f "./${conf}" ]; then
         curl -L -O "shengdichen.xyz/install/${conf}"
@@ -41,42 +39,90 @@ pacman_setup() {
     cp "./${conf}" "/etc/."
     rm "./${conf}"
     clear
+}
 
-    printf "reload pacman when ready: " && read -r
-    pacman -Syy
-    pacman -Fyy
+pacman_setup() {
+    if [ ! -f /etc/pacman.conf.pacnew ]; then
+        # create backup if needed
+        cp -f /etc/pacman.conf /etc/pacman.conf.pacnew
+    else
+        # restore from backup
+        cp -f /etc/pacman.conf.pacnew /etc/pacman.conf
+    fi
+
+    local pack_keyring="archlinux-keyring"
+    if ! pacman -Syu; then
+        if ! pacman -S "${pack_keyring}"; then
+            rm -rf /etc/pacman.d/gnupg
+            pacman-key --init
+            pacman-key --populate
+            pacman -S "${pack_keyring}"
+        fi
+    fi
+    printf "[pacman.prework] DONE" && read -r
+    clear
+
+    pacman_blackarch
+    pacman_zfs
+    pacman_conf_takeover
+
+    printf "[pacman.reload] START: " && read -r
     pacman -Syu
+    pacman -Fyy
+    printf "[pacman.reload] DONE " && read -r
+    clear
 }
 
 birth() {
-    local _me="shc"
+    local _me="shc" _rank="god" _home="main"
+
+    pacman -S --needed zsh zsh-completions zsh-syntax-highlighting
+    clear
 
     if ! id "${_me}" >/dev/null 2>&1; then
-        pacman -S zsh zsh-completions zsh-syntax-highlighting
+        useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
+        groupmod -n "${_rank}" "${_me}"
 
-        local _me="shc"
-        useradd -m -d /home/main -G wheel -s /bin/zsh "${_me}"
-        groupmod -n god "${_me}"
-
-        printf "[%s] " ${_me}
-        passwd "${_me}"
-        printf "%s is born " ${_me}
+        while true; do
+            printf "[%s] " ${_me}
+            if passwd "${_me}"; then break; fi
+            echo
+        done
+        printf "%s is born: " ${_me}
     else
-        printf "%s is already alive" ${_me}
+        printf "%s is already alive: " ${_me}
     fi
     read -r && clear
 
-    printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL| " && read -r
-    EDITOR=nvim visudo
-    printf "[visudo] DONE " && read -r && clear
+    # previous version := ...(ALL:ALL)...
+    # newer version := ...(ALL)...
+    if ! grep "^%wheel ALL=(.*ALL) ALL$" /etc/sudoers; then
+        printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL|: " && read -r
+        EDITOR=nvim visudo
+        clear
+        printf "[visudo] DONE " && read -r && clear
+    fi
+
+    rm "/home/${_home}/.bash"*
+
+    curl -L -O "shengdichen.xyz/install/02.sh"
+    chown "${_me}:${_rank}" 02.sh
+    mv -f 02.sh "/home/${_home}/."
 }
 
 cleanup() {
     rm "${SCRIPT_NAME}"
     true >"${HOME}/.bash_history"
-    echo "Setup complete, switch user when ready"
+
+    echo
+    echo "Setup complete, switch user and run:"
+    echo "    \$ sh 02.sh"
+    echo
+    printf "Ready: "
+    read -r
 }
 
 pacman_setup
 birth
 cleanup
+unset -f __check_root pacman_setup birth cleanup
