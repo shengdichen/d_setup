@@ -1,6 +1,8 @@
-source "./util.sh"
+#!/usr/bin/env dash
 
-function __office() {
+. "./util.sh"
+
+__office() {
     install "arch" \
         zathura zathura-pdf-mupdf zathura-djvu zathura-ps \
         pdfarranger img2pdf
@@ -21,7 +23,7 @@ function __office() {
     clone_and_stow -- self d_ime
 }
 
-function __media() {
+__media() {
     install "arch" \
         pulsemixer mpv \
         sox cmus mpd mpc ncmpc \
@@ -33,7 +35,7 @@ function __media() {
     done
 
     local mpd_lib="${HOME}/.config/mpd/bin/lib/"
-    if (($(find "${mpd_lib}" -maxdepth 1 | wc -l) <= 2)); then
+    if [ "$(find "${mpd_lib}" -maxdepth 1 | wc -l)" -le 2 ]; then
         ln -f "${HOME}/xdg/MDA/Aud/x" "${mpd_lib}"
         if ! pgrep mpd 1>/dev/null 2>&1; then
             mpd
@@ -52,7 +54,7 @@ function __media() {
         ungoogled-chromium-bin
 }
 
-function __game() {
+__game() {
     install "arch" \
         steam
 
