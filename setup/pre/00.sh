@@ -1,7 +1,9 @@
+#!/usr/bin/env dash
+
 SCRIPT_NAME="$(basename "${0}")"
 
 __check_root() {
-    if ((EUID != 0)); then
+    if [ "$(id -u)" -ne 0 ]; then
         echo "Must be executed as root, exiting"
         exit 3
     fi
@@ -201,7 +203,7 @@ transition_to_post() {
 # post {{{
 base() {
     __start "chroot.base"
-    source /usr/share/bash-completion/bash_completion
+    . /usr/share/bash-completion/bash_completion
 
     local pack_keyring="archlinux-keyring"
     if ! pacman -S "${pack_keyring}"; then

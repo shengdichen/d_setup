@@ -1,3 +1,5 @@
+#!/usr/bin/env dash
+
 make_media() {
     local iso="archlinux-x86_64.iso"
     if [ ! -f ${iso} ]; then

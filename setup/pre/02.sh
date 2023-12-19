@@ -1,3 +1,5 @@
+#!/usr/bin/env dash
+
 SCRIPT_NAME="$(basename "${0}")"
 
 MOUNT_ROOT="${HOME}/mnt"
@@ -6,7 +8,7 @@ DOT_ROOT="${HOME}/dot/dot"
 DOT_PRV="d_prv"
 
 _pre() {
-    if [ "${EUID}" -eq 0 ]; then
+    if [ "$(id -u)" -eq 0 ]; then
         echo "Must be non-root, (create and) switch to user"
         exit 3
     fi
