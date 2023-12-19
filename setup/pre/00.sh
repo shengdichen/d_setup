@@ -67,6 +67,10 @@ partitioning() {
 }
 
 partitioning_vbox() {
+    if ! efibootmgr; then
+        echo "Not in EFI mode, exiting"
+        exit 3
+    fi
     pacman -Syy
     pacman -S --needed fzf
     __continue
@@ -93,8 +97,8 @@ partitioning_vbox() {
 
     parted "${disk}" mklabel gpt
 
-    local efi_size="512MB"
-    parted "${disk}" mkpart "efi" fat32 "1MB" "${efi_size}"
+    local efi_size="512MB" efi_part="efi"
+    parted "${disk}" mkpart "${efi_part}" fat32 "1MB" "${efi_size}"
     parted "${disk}" set 1 esp on
     mkfs.fat -F 32 "${disk}${part_delimiter}1"
 
@@ -103,8 +107,9 @@ partitioning_vbox() {
     e2label "${disk}${part_delimiter}2" "ROOT"
 
     # MUST mount /mnt before sub-mountpoints (e.g., /mnt/efi)
-    mount "${disk}${part_delimiter}2" /mnt
-    mount --mkdir "${disk}${part_delimiter}1" /mnt/efi
+    local mnt_base="/mnt"
+    mount "${disk}${part_delimiter}2" "${mnt_base}"
+    mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/boot/${efi_part}"
 
     __separator
     lsblk
@@ -297,9 +302,10 @@ boot() {
         pacman -S grub efibootmgr
     fi
 
-    local efi_dir="efi" grub_dir="/boot/grub"
+    local efi_dir="/efi" grub_dir="/boot/grub"
     if [ ! -d "${grub_dir}" ]; then
         mkinitcpio -P
+        clear
 
         grub-install \
             --target=x86_64-efi \
@@ -310,6 +316,7 @@ boot() {
     fi
 
     __separator ""
+    efibootmgr
     __confirm "boot"
 }
 
