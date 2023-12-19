@@ -15,6 +15,7 @@ _pre() {
 
     sudo pacman -Syu
     sudo pacman -S --needed \
+        fzf \
         openssh git stow \
         sshfs fuse2 unzip
 
@@ -43,8 +44,16 @@ raw_ssh() {
     if [ ! -f "${zip_name}" ]; then
         local mount_tmp="${MOUNT_ROOT}/mount_tmp"
         mkdir -p "${mount_tmp}"
-        if sudo mount /dev/sdb1 "${mount_tmp}"; then
-            cp -f "${mount_tmp}/x/Dox/sys/${zip_name}" "${HOME}"
+
+        local disk
+        echo "select source-disk"
+        disk="$(lsblk -o PATH,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
+
+        if sudo mount "${disk}" "${mount_tmp}"; then
+            if ! cp -f "${mount_tmp}/x/Dox/sys/${zip_name}" "${HOME}"; then
+                echo "[ssh-conf] not found on [${disk}], exiting"
+                exit 3
+            fi
         else
             echo
             echo "[ssh-conf] neither local nor on usb. Exiting"
