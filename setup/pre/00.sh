@@ -1,6 +1,7 @@
 #!/usr/bin/env dash
 
 SCRIPT_NAME="$(basename "${0}")"
+EFI_MOUNT="/boot/efi"
 
 __check_root() {
     if [ "$(id -u)" -ne 0 ]; then
@@ -111,7 +112,7 @@ partitioning_vbox() {
     # MUST mount /mnt before sub-mountpoints (e.g., /mnt/efi)
     local mnt_base="/mnt"
     mount "${disk}${part_delimiter}2" "${mnt_base}"
-    mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/boot/${efi_part}"
+    mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/${EFI_MOUNT}"
 
     __separator
     lsblk
@@ -304,14 +305,15 @@ boot() {
         pacman -S grub efibootmgr
     fi
 
-    local efi_dir="/efi" grub_dir="/boot/grub"
+    local grub_dir="/boot/grub"
     if [ ! -d "${grub_dir}" ]; then
+        clear
         mkinitcpio -P
         clear
 
         grub-install \
             --target=x86_64-efi \
-            --efi-directory="${efi_dir}/" \
+            --efi-directory="${EFI_MOUNT}" \
             --bootloader-id=MAIN
 
         grub-mkconfig -o "${grub_dir}/grub.cfg"
