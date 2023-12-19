@@ -106,6 +106,7 @@ function langs() {
     __js
 
     install "arch" \
+        dash checkbashisms \
         lua luajit luarocks lua-language-server \
         clang lld \
         rust \

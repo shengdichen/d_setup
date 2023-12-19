@@ -31,7 +31,7 @@ function __base() {
         tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip
 
     install "arch" \
-        s-tui ethtool smartmontools lsof \
+        s-tui smartmontools lsof \
         fuse3 fuse2 \
         exfatprogs nfs-utils dosfstools sshfs \
         android-file-transfer android-tools \
@@ -49,9 +49,7 @@ function __base() {
         wireplumber \
         pipewire pipewire-docs pipewire-alsa pipewire-pulse pipewire-jack \
         gstreamer gstreamer-vaapi gst-libav gst-plugins-base gst-plugins-good
-
-    install "arch" \
-        tlp acpi
+    service_start -- bluetooth
 }
 
 function __graphics() {

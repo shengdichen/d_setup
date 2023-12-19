@@ -1,8 +1,22 @@
 source "../util.sh"
 
-__base() {
+__explicit() {
     install "aur" \
-        aic94xx-firmware ast-firmware wd719x-firmware upd72020x-fw mkinitcpio-firmware
-
+        aic94xx-firmware ast-firmware wd719x-firmware upd72020x-fw
 }
-__base
+
+__monopoly() {
+
+    install "aurhelper" \
+        mkinitcpio-firmware
+}
+
+case "${1}" in
+    "explicit")
+        __explicit
+        ;;
+    *)
+        __monopoly
+        ;;
+esac
+unset -f __explicit __monopoly
