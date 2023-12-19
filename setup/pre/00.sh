@@ -18,7 +18,7 @@ __start() {
 __continue() {
     printf "\n"
     printf "Continue: "
-    read -r
+    read -r _
     clear
 }
 
@@ -193,7 +193,7 @@ transition_to_post() {
         echo "in chroot."
         echo
         printf "Ready when you are: "
-        read -r
+        read -r _
         arch-chroot /mnt
     else
         arch-chroot /mnt sh "${SCRIPT_NAME}" post
@@ -332,7 +332,7 @@ post_chroot() {
     __separator ""
     __confirm "boot"
     printf "All done here in chroot: "
-    read -r
+    read -r _
 }
 # }}}
 
@@ -341,13 +341,13 @@ cleanup() {
     mv -f 01.sh "/mnt/."
     echo
     printf "01-stage> ready when you are: "
-    read -r && clear
+    read -r _ && clear
     if ! arch-chroot /mnt sh 01.sh; then
         echo "Installation complete; run"
         echo "    # sh 01.sh"
         echo "after rebooting."
         printf "Ready when you are: "
-        read -r
+        read -r _
     fi
     rm "${SCRIPT_NAME}"
     umount -R /mnt

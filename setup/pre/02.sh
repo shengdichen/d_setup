@@ -68,7 +68,7 @@ raw_ssh() {
         rmdir "${mount_tmp}"
         echo "Safely unmounted, remove storage now!"
         echo -n "Hit [Enter] when ready:"
-        read -r
+        read -r _
     else
         echo
         echo "Unmount failed, you might be fine ignoring this though"
