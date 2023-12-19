@@ -297,7 +297,7 @@ boot() {
         pacman -S grub efibootmgr
     fi
 
-    local efi_dir="efi" grub_dir="/boot/grub"
+    local efi_dir="/efi" grub_dir="/boot/grub"
     if [ ! -d "${grub_dir}" ]; then
         mkinitcpio -P
 
