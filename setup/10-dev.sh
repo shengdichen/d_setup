@@ -1,4 +1,6 @@
-source "./util.sh"
+#!/usr/bin/env dash
+
+. "./util.sh"
 
 obesities() {
     # pycharm-config:
@@ -27,7 +29,7 @@ obesities() {
     install "aur" android-studio
 }
 
-function __nvim() {
+__nvim() {
     local repo="d_nvim"
     clone_and_stow --sub -- self "${repo}"
 
@@ -53,13 +55,13 @@ function __nvim() {
         # REF:
         #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
         cd "./LuaSnip" || exit 3
-        if [[ ! -e "./lua/luasnip-jsregexp.so" ]]; then
+        if [ ! -e "./lua/luasnip-jsregexp.so" ]; then
             make install_jsregexp
         fi
     )
 }
 
-function __python() {
+__python() {
     install "arch" \
         python python-pip python-pipx python-poetry
 
@@ -81,14 +83,14 @@ function __python() {
     install "aurhelper" python-lsp-ruff
 }
 
-function __java() {
+__java() {
     install "arch" \
         jdk-openjdk openjdk-doc openjdk-src \
         jdk17-openjdk openjdk17-doc openjdk17-src \
         jdk11-openjdk openjdk11-doc openjdk11-src
 }
 
-function __js() {
+__js() {
     install "arch" \
         nodejs npm typescript \
         typescript-language-server eslint_d
@@ -99,7 +101,7 @@ function __js() {
         vscode-langservers-extracted
 }
 
-function langs() {
+langs() {
     clone_and_stow -- self d_dev
     __python
     __java
@@ -129,7 +131,7 @@ function langs() {
     install "aurhelper" proselint languagetool-rust
 }
 
-function libs() {
+libs() {
     install "arch" \
         qt6-base qt6-wayland qt6-tools qt6-doc \
         qt5-base qt5-wayland qt5-tools qt5-doc
@@ -143,7 +145,7 @@ function libs() {
         whois
 }
 
-function main() {
+main() {
     __nvim
     langs
     libs

@@ -1,18 +1,20 @@
-function __base() {
+#!/usr/bin/env dash
+
+__base() {
     "${SHELL}" "./00.sh"
     "${SHELL}" "./10-dev.sh"
     "${SHELL}" "./10-mail.sh"
     "${SHELL}" "./10-qutebrowser.sh"
 }
 
-function __extra() {
-    source "./20.sh"
+__extra() {
+    . "./20.sh"
     __office
     __media
     __game
 }
 
-function main() {
+main() {
     __base
     __extra
 

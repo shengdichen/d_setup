@@ -1,12 +1,14 @@
-source "./util.sh"
+#!/usr/bin/env dash
 
-function __install() {
+. "./util.sh"
+
+__install() {
     install "arch" \
         "qutebrowser" "tor"
     clone_and_stow -- self d_qutebrowser
 }
 
-function __extra() {
+__extra() {
     service_start -- tor
 
     # download (offline) dictionaries
@@ -24,7 +26,7 @@ function __extra() {
     )
 }
 
-function main() {
+main() {
     __install
     __extra
 
