@@ -61,7 +61,7 @@ pacman_setup() {
             pacman -S "${pack_keyring}"
         fi
     fi
-    printf "[pacman.prework] DONE" && read -r _
+    printf "[pacman.prework] DONE " && read -r _
     clear
 
     pacman_blackarch
@@ -90,9 +90,9 @@ birth() {
             if passwd "${_me}"; then break; fi
             echo
         done
-        printf "%s is born: " ${_me}
+        printf "%s is born " ${_me}
     else
-        printf "%s is already alive: " ${_me}
+        printf "%s is already alive " ${_me}
     fi
     read -r _ && clear
 
