@@ -1,4 +1,6 @@
-source "../util.sh"
+#!/usr/bin/env dash
+
+. "../util.sh"
 
 __install() {
     install "arch" \
@@ -8,19 +10,35 @@ __install() {
 }
 
 set_threshold() {
+    local choice
+    local low="low" default="default" high="high" custom="custom"
+    if [ "${#}" -eq 0 ]; then
+        printf "select profile, |custom| to specify manually:\n"
+        choice="$(printf "%s\n%s\n%s\n%s" "${low}" "${default}" "${high}" "${custom}" | fzf --reverse --height="33%")"
+    else
+        choice="${1}"
+    fi
+
     local threshold
-    case "${1}" in
-        "low")
+    case "${choice}" in
+        "${low}")
             threshold=59
             ;;
-        "default")
+        "${default}")
             threshold=79
             ;;
-        "high")
+        "${high}")
             threshold=93
             ;;
-        *)
-            threshold="${1}"
+        "${custom}")
+            while true; do
+                printf "charge threshold: " && read -r threshold
+                if [ "${threshold}" -gt 9 ] && [ "${threshold}" -lt 99 ]; then
+                    break
+                else
+                    printf "invalid threshold, try again\n\n"
+                fi
+            done
             ;;
     esac
 
@@ -29,4 +47,6 @@ set_threshold() {
     done
 }
 
-set_threshold default
+__install
+printf "\n"
+set_threshold "${@}"
