@@ -145,7 +145,7 @@ __install_pipx() {
 }
 
 clone_and_stow() {
-    local _cd="" _sub=false _stow=true
+    local _cd="" _sub="" _stow="yes"
     while [ "${#}" -gt 0 ]; do
         case "${1}" in
             "--cd")
@@ -154,11 +154,11 @@ clone_and_stow() {
                 shift
                 ;;
             "--sub")
-                _sub=true
+                _sub="yes"
                 shift
                 ;;
             "--no-stow")
-                _stow=false
+                _stow=""
                 shift
                 ;;
             "--")
@@ -171,10 +171,11 @@ clone_and_stow() {
     _link="$(__clone_url "${@}")"
 
     __clone() {
-        local recursive=""
-        if "${1}"; then recursive="--recursive"; fi
-        shift
-        git clone "${recursive}" "${@}"
+        if [ "${_sub}" ]; then
+            git clone --recursive "${_link}"
+        else
+            git clone "${_link}"
+        fi
     }
 
     (
@@ -186,8 +187,8 @@ clone_and_stow() {
 
         if [ ! -d "${_repo}" ]; then
             # cater for failed cloning (bad permission, wrong address...)
-            if __clone "${_sub}" "${_link}"; then
-                if "${_stow}"; then
+            if __clone; then
+                if [ "${_stow}" ]; then
                     _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${_repo}"
                     echo "Stowing completed"
                 fi

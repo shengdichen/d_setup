@@ -18,16 +18,16 @@ __dot_dir() {
 
 __create_box() {
     __f() {
-        local maildir=false
+        local maildir=""
         if [ "${1}" = "--maildir" ]; then
-            maildir=true
+            maildir="yes"
             shift
         fi
         local target="${1}"
 
         mkdir -p "${target}"
         chmod 700 "${target}"
-        if "${maildir}"; then
+        if [ "${maildir}" ]; then
             for maild in "cur" "new"; do
                 mkdir -p "${target}/${maild}"
             done
