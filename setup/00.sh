@@ -1,6 +1,8 @@
-source "./util.sh"
+#!/usr/bin/env dash
 
-function __base() {
+. "./util.sh"
+
+__base() {
     clone_and_stow -- self d_zsh
     local _xdg="d_xdg"
     (
@@ -52,7 +54,7 @@ function __base() {
     service_start -- bluetooth
 }
 
-function __graphics() {
+__graphics() {
     install "arch" \
         vulkan-icd-loader lib32-vulkan-icd-loader vulkan-headers vulkan-tools
 
@@ -72,7 +74,7 @@ function __graphics() {
         nvtop
 }
 
-function __desktop() {
+__desktop() {
     install "arch" \
         adobe-source-code-pro-fonts \
         adobe-source-han-sans-otc-fonts \
@@ -120,7 +122,7 @@ function __desktop() {
 #       /SWAP none swap defaults 0 0
 # }}}
 
-function main() {
+main() {
     __base
     __graphics
     __desktop
