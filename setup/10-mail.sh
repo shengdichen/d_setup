@@ -55,27 +55,24 @@ __fdm_conf() {
     chmod 600 "$(__dot_dir)/.config/fdm/config"
 }
 
-__extra() {
-    # 0. manually setup protonbridge:
-    #   login;
-    #   Settings:
-    #       Automatic updates: off
-    #       Open on startup: off
-    #       Collect usage diagnostics: off
-
-    #   exit
-    # 1. get password files (TODO: move to |pass| to skip this step)
-
-    # 2. get mails
+__sync_all() {
     mbsync --all
+}
 
-    # 3. import notmuch
-    #   3.1 export (old machine)
-    #   $ notmuch dump --output=notmuch.dump
-    #   3.2 init (new machine)
-    #   $ notmuch new
-    #   3.2 import (new machine)
-    #   $ notmuch restore --input=notmuch.dump
+__notmuch() {
+    local dump_file="notmuch.dump"
+    case "${1}" in
+        "export")
+            notmuch dump --output="${dump_file}"
+            ;;
+        "import")
+            notmuch new
+            notmuch restore --input="${dump_file}"
+            ;;
+        *)
+            exit 3
+            ;;
+    esac
 }
 
 main() {
