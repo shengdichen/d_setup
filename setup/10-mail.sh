@@ -1,6 +1,8 @@
-source "./util.sh"
+#!/usr/bin/env dash
 
-function __install() {
+. "./util.sh"
+
+__install() {
     install "arch" \
         "neomutt" "notmuch" "fdm" "isync" "msmtp"
 
@@ -10,61 +12,50 @@ function __install() {
     clone_and_stow -- self d_mail
 }
 
-function __dot_dir() {
+__dot_dir() {
     echo "$(dot_dir)/d_mail/"
 }
 
-function __create_box() {
-    function __f() {
-        local maildir=false dirs
-        while ((${#} > 0)); do
-            case "${1}" in
-                "-m")
-                    maildir=true
-                    shift
-                    ;;
-                "--")
-                    dirs=("${@:2}")
-                    break
-                    ;;
-            esac
-        done
+__create_box() {
+    __f() {
+        local maildir=false
+        if [ "${1}" = "--maildir" ]; then
+            maildir=true
+            shift
+        fi
+        local target="${1}"
 
-        for d in "${dirs[@]}"; do
-            mkdir -p "${d}"
-            chmod 700 "${d}"
-            if "${maildir}"; then
-                for maild in "cur" "new"; do
-                    mkdir -p "${d}/${maild}"
-                done
-            fi
-        done
+        mkdir -p "${target}"
+        chmod 700 "${target}"
+        if "${maildir}"; then
+            for maild in "cur" "new"; do
+                mkdir -p "${target}/${maild}"
+            done
+        fi
     }
 
-    local boxes_raw=() boxes_maildir=() box_dir
-    box_dir="$(__dot_dir)/.local/share/mail/"
+    local mailbox_root
+    mailbox_root="$(__dot_dir)/.local/share/mail/"
 
     for d in "eth" "gmail" "outlook"; do
-        boxes_raw+=("${box_dir}/raw/${d}")
+        __f "${mailbox_root}/raw/${d}"
     done
-    __f -- "${boxes_raw[@]}"
 
     for d in "xyz/.INBOX" "xyz/.Sent"; do
-        boxes_maildir+=("${box_dir}/raw/${d}")
+        __f --maildir "${mailbox_root}/raw/${d}"
     done
     for d in "draft" "hold" "trash" "x"; do
-        boxes_maildir+=("${box_dir}/all/.${d}")
+        __f --maildir "${mailbox_root}/all/.${d}"
     done
-    __f -m -- "${boxes_maildir[@]}"
 
     unset -f __f
 }
 
-function __fdm_conf() {
+__fdm_conf() {
     chmod 600 "$(__dot_dir)/.config/fdm/config"
 }
 
-function __extra() {
+__extra() {
     # 0. manually setup protonbridge:
     #   login;
     #   Settings:
@@ -87,7 +78,7 @@ function __extra() {
     #   $ notmuch restore --input=notmuch.dump
 }
 
-function main() {
+main() {
     __install
     __create_box
     __fdm_conf
