@@ -1,2 +1,5 @@
 --target=~/
+
 --ignore=\.git.*
+--ignore=setup.sh
+--ignore=no_stow
