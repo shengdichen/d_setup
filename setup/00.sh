@@ -10,6 +10,7 @@ __base() {
         clone_and_stow --no-stow -- self "${_xdg}"
         cd "${_xdg}" && "${SHELL}" setup.sh
     )
+    clone_and_stow --sub -- self d_nvim
 
     install "arch" \
         base base-devel pacman-contrib \
@@ -86,11 +87,7 @@ __desktop() {
     clone_and_stow -- self d_font
 
     local _shevska="shevska"
-    (
-        cd "$(dot_dir)" || exit 3
-        clone_and_stow --no-stow -- self "${_shevska}"
-        cd "${_shevska}" && "${SHELL}" setup.sh
-    )
+    clone_and_stow -- self "${_shevska}"
 
     install "arch" \
         alacritty foot \

@@ -145,7 +145,7 @@ __install_pipx() {
 }
 
 clone_and_stow() {
-    local _cd="" _sub="" _stow="yes"
+    local _cd="" _sub=""
     while [ "${#}" -gt 0 ]; do
         case "${1}" in
             "--cd")
@@ -157,17 +157,13 @@ clone_and_stow() {
                 _sub="yes"
                 shift
                 ;;
-            "--no-stow")
-                _stow=""
-                shift
-                ;;
             "--")
                 shift
                 break
                 ;;
         esac
     done
-    local _repo="${2}" _link
+    local _repo="${2}" _link _setup_file="setup.sh"
     _link="$(__clone_url "${@}")"
 
     __clone() {
@@ -188,10 +184,17 @@ clone_and_stow() {
         if [ ! -d "${_repo}" ]; then
             # cater for failed cloning (bad permission, wrong address...)
             if __clone; then
-                if [ "${_stow}" ]; then
+                printf "%s.setup> " "${_repo}"
+                if [ -f "${_repo}/${_setup_file}" ]; then
+                    (
+                        printf "explicit\n"
+                        cd "${_repo}" && "./${_setup_file}"
+                    )
+                else
+                    printf "default\n"
                     _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${_repo}"
-                    echo "Stowing completed"
                 fi
+                printf "%s.setup> done! " "${_repo}" && read -r _
             fi
         fi
     )

@@ -29,38 +29,6 @@ obesities() {
     install "aur" android-studio
 }
 
-__nvim() {
-    local repo="d_nvim"
-    clone_and_stow --sub -- self "${repo}"
-
-    (
-        cd "$(dot_dir)/${repo}/.config/nvim/conf/rpre/pack/start/start" || exit 3
-        clone_and_stow --cd no --no-stow -- github "nvim-cmp" "hrsh7th"
-        # cmp integration with neovim's (builtin) lsp
-        clone_and_stow --cd no --no-stow -- github "cmp-nvim-lsp" "hrsh7th"
-
-        clone_and_stow --cd no --no-stow -- github "LuaSnip" "L3MON4D3"
-        # cmp integration with luasnip
-        clone_and_stow --cd no --no-stow -- github "cmp_luasnip" "saadparwaiz1"
-        # snippets collection
-        clone_and_stow --cd no --no-stow -- github "friendly-snippets" "rafamadriz"
-
-        clone_and_stow --cd no --no-stow -- github "plenary.nvim" "nvim-lua"
-        clone_and_stow --cd no --no-stow -- github "none-ls.nvim" "nvimtools"
-
-        clone_and_stow --cd no --no-stow -- github "gitsigns.nvim" "lewis6991"
-        clone_and_stow --cd no --no-stow -- github "indent-blankline.nvim" "lukas-reineke"
-        clone_and_stow --cd no --no-stow -- github "neodev.nvim" "folke"
-
-        # REF:
-        #   https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations
-        cd "./LuaSnip" || exit 3
-        if [ ! -e "./lua/luasnip-jsregexp.lua" ] || [ ! -e "./deps/luasnip-jsregexp.so" ]; then
-            make install_jsregexp
-        fi
-    )
-}
-
 __python() {
     install "arch" \
         python python-pip python-pipx python-poetry
@@ -146,11 +114,10 @@ libs() {
 }
 
 main() {
-    __nvim
     langs
     libs
 
-    unset -f __nvim __python langs libs
+    unset -f __python langs libs
 }
 main
 unset -f main
