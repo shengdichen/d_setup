@@ -3,19 +3,12 @@
 . "./util.sh"
 
 __base() {
-    clone_and_stow -- self d_zsh
-    local _xdg="d_xdg"
-    (
-        cd "$(dot_dir)" || exit 3
-        clone_and_stow --no-stow -- self "${_xdg}"
-        cd "${_xdg}" && "${SHELL}" setup.sh
-    )
-    clone_and_stow --sub -- self d_nvim
-
     install "arch" \
         base base-devel pacman-contrib \
         vi neovim
-    clone_and_stow -- self d_git
+
+    clone_and_stow --sub -- d_nvim
+    clone_and_stow -- d_zsh d_xdg d_git
 
     install "arch" \
         man-db man-pages \
@@ -84,25 +77,19 @@ __desktop() {
         ttf-fira-code terminus-font \
         noto-fonts noto-fonts-extra noto-fonts-cjk noto-fonts-emoji \
         font-manager
-    clone_and_stow -- self d_font
-
-    local _shevska="shevska"
-    clone_and_stow -- self "${_shevska}"
+    clone_and_stow -- d_font shevska
 
     install "arch" \
         alacritty foot \
         tmux vifm neovim vi fzf the_silver_searcher
-    clone_and_stow -- self d_foot
-    clone_and_stow -- self d_tmux
-    clone_and_stow -- self d_vifm
+    clone_and_stow -- d_foot d_tmux d_vifm
 
     install "arch" \
         wl-clipboard xorg-xwayland \
         sway swaylock swaybg xdg-desktop-portal-wlr \
         grim slurp wf-recorder capitaine-cursors light gammastep
-    clone_and_stow -- self d_sway
-    install "aur" \
-        wdisplays
+    install "aur" -- wdisplays
+    clone_and_stow -- d_sway
 }
 
 # 2. simplify /etc/fstab {{{

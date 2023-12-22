@@ -9,7 +9,7 @@ __install() {
     install "aurhelper" \
         "protonmail-bridge-core"
 
-    clone_and_stow -- self d_mail
+    clone_and_stow -- d_mail
 }
 
 __dot_dir() {

@@ -70,7 +70,7 @@ __js() {
 }
 
 langs() {
-    clone_and_stow -- self d_dev
+    clone_and_stow -- d_dev
     __python
     __java
     __js

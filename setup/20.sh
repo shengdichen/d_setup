@@ -6,21 +6,21 @@ __office() {
     install "arch" \
         zathura zathura-pdf-mupdf zathura-djvu zathura-ps \
         pdfarranger img2pdf
-    clone_and_stow -- self d_zathura
+    clone_and_stow -- d_zathura
 
     install "arch" \
         hunspell enchant \
         hunspell-en_us hunspell-en_gb hunspell-fr hunspell-de hunspell-it hunspell-ru hunspell-es_es \
         texlive texlive-lang biber libreoffice-fresh xournalpp
-    clone_and_stow -- self d_xournalpp
+    clone_and_stow -- d_xournalpp
 
     # obtain lyx (from cache or aur)
-    clone_and_stow -- self d_lyx
+    clone_and_stow -- d_lyx
 
     install "arch" \
         fcitx5-im fcitx5-rime fcitx5-mozc \
         rime-double-pinyin rime-cantonese rime-wugniu
-    clone_and_stow -- self d_ime
+    clone_and_stow -- d_ime
 }
 
 __media() {
@@ -30,9 +30,7 @@ __media() {
         imv yt-dlp ytfzf
     install "pipx" \
         -- tidal-dl
-    for d in "d_mpv" "d_mpd" "d_cmus" "d_ncmpc"; do
-        clone_and_stow -- self "${d}"
-    done
+    clone_and_stow -- d_mpv d_mpd d_cmus d_ncmpc
 
     local mpd_lib="${HOME}/.config/mpd/bin/lib/"
     # guarantee at least one (non-.gitignore) item under lib-directory
