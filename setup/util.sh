@@ -42,50 +42,72 @@ install() {
     esac
 }
 
+__report() {
+    printf "%s> %s" "${1}" "${2}"
+    case "${3}" in
+        "done")
+            printf ": skipping"
+            ;;
+        "install")
+            printf ": installing"
+            ;;
+        *)
+            printf "%s" "${3}"
+            ;;
+    esac
+    printf "\n"
+}
+
 __is_installed_arch() {
     pacman -Qi "${1}" >/dev/null 2>&1
 }
 
 __install_arch() {
-    echo "[pacman:(${*})]"
+    if [ "${1}" = "--" ]; then shift; fi
+    __report pacman "[${*}]"
 
     for p in "${@}"; do
         if ! __is_installed_arch "${p}"; then
-            echo "[pacman:${p}] Installing"
+            __report pacman "${1}" "install"
             "$(__sudo)" pacman -S --needed "${p}"
         fi
     done
 }
 
 __install_aur() {
-    __makepkg_filtered() {
-        # hide (only) the package-has-been-built error
-        # makepkg -src \
-        #     2> >(grep -v "ERROR: A package has already been built." 1>&2)
-        makepkg -src
+    __install_one() {
+        if __clone_smart --name "${1}" --url "$(__clone_url aur "${1}")"; then
+            (
+                cd "${1}" || exit 3
+                if
+                    if ! find . -maxdepth 1 -type f | grep --quiet "\.pkg\.tar\.zst$"; then
+                        makepkg -src
+                    fi
+                then
+                    __report AUR "${1}" ": select package: "
+                    __install_arch_cache "$(
+                        find . -maxdepth 1 -type f |
+                            grep "\.pkg\.tar\.zst$" |
+                            fzf --reverse --height=50%
+                    )"
+                fi
+            )
+        fi
     }
 
-    __f() {
-        clone_and_stow --cd "$(bin_dir)" --no-stow -- aur "${1}"
-
-        (
-            cd "$(bin_dir)/${1}/" || exit
-            if __makepkg_filtered "${1}"; then
-                echo "[AUR:${p}] Installing"
-                echo "select package to install"
-                __install_arch_cache "$(
-                    find . -maxdepth 1 -type f |
-                        grep "\.pkg\.tar\.zst$" |
-                        fzf --reverse --height=50%
-                )"
+    if [ "${1}" = "--" ]; then shift; fi
+    (
+        cd "$(bin_dir)" || exit 3
+        for p in "${@}"; do
+            if ! __is_installed_arch "${p}"; then
+                __install_one "${p}"
+            else
+                __report AUR "${1}" "done"
             fi
-        )
-    }
+        done
+    )
 
-    for p in "${@}"; do
-        __f "${p}"
-    done
-    unset -f __makepkg_filtered __f
+    unset -f __install_one
 }
 
 __install_aurhelper() {
@@ -94,21 +116,23 @@ __install_aurhelper() {
         __install_aur "${helper}"
     fi
 
+    if [ "${1}" = "--" ]; then shift; fi
     for p in "${@}"; do
         # REF:
         #   https://bbs.archlinux.org/viewtopic.php?id=76218
         if ! pacman -Qm "${p}" >/dev/null 2>&1; then
-            echo "[paru:${p}] Installing"
+            __report paru "${p}" "install"
             paru -S --needed "${p}"
         else
-            echo "[paru:${p}] Installed already, skipping"
+            __report paru "${p}" "done"
         fi
     done
 }
 
 __install_arch_cache() {
+    if [ "${1}" = "--" ]; then shift; fi
     for p in "${@}"; do
-        echo "Installing [ARCH-CACHE] ${p}"
+        __report AUR-cache "${p}" "install"
         "$(__sudo)" pacman -U --needed "${p}"
     done
 }
@@ -117,11 +141,11 @@ __install_npm() {
     if [ "${1}" = "--" ]; then shift; fi
 
     for p in "${@}"; do
-        if npm list --global "${p}" 1>/dev/null; then
-            echo "[npm:${p}] Installed already, skipping"
-        else
-            echo "[npm:${p}] Installing"
+        if ! npm list --global "${p}" 1>/dev/null; then
+            __report npm "${p}" "install"
             npm install --global "${p}"
+        else
+            __report npm "${p}" "done"
         fi
     done
 }
@@ -135,13 +159,59 @@ __install_pipx() {
     if [ "${1}" = "--" ]; then shift; fi
 
     for p in "${@}"; do
-        if pipx list --short | grep -q "^${p} "; then
-            echo "[pipx:${p}] Installed already, skipping"
-        else
-            echo "[pipx:${p}] Installing"
+        if ! pipx list --short | grep -q "^${p} "; then
+            __report pipx "${p}" "install"
             pipx install "${include_deps}" "${p}"
+        else
+            __report pipx "${p}" "done"
         fi
     done
+}
+
+__clone_smart() {
+    local _sub="" _root="" _name="" _url=""
+    while [ "${#}" -gt 0 ]; do
+        case "${1}" in
+            "--sub")
+                _sub="yes"
+                shift
+                ;;
+            "--root")
+                _root="${2}"
+                shift
+                shift
+                ;;
+            "--name")
+                _name="${2}"
+                shift
+                shift
+                ;;
+            "--url")
+                _url="${2}"
+                shift
+                shift
+                ;;
+            "--")
+                shift
+                break
+                ;;
+        esac
+    done
+
+    (
+        if [ "${_root}" ]; then
+            cd "${_root}" || exit 3
+        fi
+        if [ ! -d "${_name}" ]; then
+            if [ "${_sub}" ]; then
+                git clone --recursive "${_url}"
+            else
+                git clone "${_url}"
+            fi
+        else
+            __report clone "${_name}" "done"
+        fi
+    )
 }
 
 clone_and_stow() {
@@ -231,11 +301,11 @@ service_start() {
     if [ "${1}" = "--" ]; then shift; fi
 
     for sv; do
-        if systemctl is-active --quiet "${sv}"; then
-            echo "[systemd:${sv}] Active already, skipping"
-        else
-            echo "[systemd:${sv}] Starting"
+        if ! systemctl is-active --quiet "${sv}"; then
+            __report systemd-start "${sv}" ": starting"
             systemctl enable --now "${sv}"
+        else
+            __report systemd-start "${sv}" "done"
         fi
     done
 }
