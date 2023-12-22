@@ -45,11 +45,17 @@ install() {
 __report() {
     printf "%s> %s" "${1}" "${2}"
     case "${3}" in
-        "done")
+        "skip")
             printf ": skipping"
+            ;;
+        "done")
+            printf ": done!"
             ;;
         "install")
             printf ": installing"
+            ;;
+        "error")
+            printf ": error -> %s" "${4}"
             ;;
         *)
             printf "%s" "${3}"
@@ -102,7 +108,7 @@ __install_aur() {
             if ! __is_installed_arch "${p}"; then
                 __install_one "${p}"
             else
-                __report AUR "${1}" "done"
+                __report AUR "${1}" "skip"
             fi
         done
     )
@@ -124,7 +130,7 @@ __install_aurhelper() {
             __report paru "${p}" "install"
             paru -S --needed "${p}"
         else
-            __report paru "${p}" "done"
+            __report paru "${p}" "skip"
         fi
     done
 }
@@ -145,7 +151,7 @@ __install_npm() {
             __report npm "${p}" "install"
             npm install --global "${p}"
         else
-            __report npm "${p}" "done"
+            __report npm "${p}" "skip"
         fi
     done
 }
@@ -163,7 +169,7 @@ __install_pipx() {
             __report pipx "${p}" "install"
             pipx install "${include_deps}" "${p}"
         else
-            __report pipx "${p}" "done"
+            __report pipx "${p}" "skip"
         fi
     done
 }
@@ -191,9 +197,9 @@ __clone_smart() {
                 shift
                 shift
                 ;;
-            "--")
-                shift
-                break
+            *)
+                __report clone "${_name}" error "unintelligible option"
+                exit 3
                 ;;
         esac
     done
@@ -203,72 +209,60 @@ __clone_smart() {
             cd "${_root}" || exit 3
         fi
         if [ ! -d "${_name}" ]; then
-            if [ "${_sub}" ]; then
-                git clone --recursive "${_url}"
-            else
-                git clone "${_url}"
+            if ! (
+                if [ "${_sub}" ]; then
+                    git clone --recursive "${_url}"
+                else
+                    git clone "${_url}"
+                fi
+            ); then
+                __report clone "${_name}" error "bad network / url maybe?"
+                exit 3
             fi
-        else
-            __report clone "${_name}" "done"
         fi
     )
 }
 
 clone_and_stow() {
-    local _cd="" _sub=""
-    while [ "${#}" -gt 0 ]; do
-        case "${1}" in
-            "--cd")
-                _cd="${2}"
-                shift
-                shift
-                ;;
-            "--sub")
-                _sub="yes"
-                shift
-                ;;
-            "--")
-                shift
-                break
-                ;;
-        esac
-    done
-    local _repo="${2}" _link _setup_file="setup.sh"
-    _link="$(__clone_url "${@}")"
+    local _sub=""
+    if [ "${1}" = "--sub" ]; then
+        _sub="yes"
+        shift
+    fi
+    if [ "${1}" = "--" ]; then shift; fi
 
-    __clone() {
-        if [ "${_sub}" ]; then
-            git clone --recursive "${_link}"
-        else
-            git clone "${_link}"
+    local setup_file="setup.sh"
+
+    __do_one() {
+        local url
+        url="$(__clone_url self "${1}")"
+        if (
+            if [ "${_sub}" ]; then
+                __clone_smart --sub --name "${1}" --url "${url}"
+            else
+                __clone_smart --name "${1}" --url "${url}"
+            fi
+        ); then
+            if [ -f "${1}/${setup_file}" ]; then
+                (
+                    __report "dot-explicit" "${1}"
+                    cd "${1}" && "./${setup_file}"
+                )
+            else
+                __report "dot-default" "${1}"
+                _stow_nice -R "${1}"
+            fi
         fi
     }
 
     (
-        if [ ! "${_cd}" ]; then
-            cd "$(dot_dir)"
-        elif [ "${_cd}" != "no" ]; then
-            cd "${_cd}"
-        fi || exit 3
-
-        if [ ! -d "${_repo}" ]; then
-            # cater for failed cloning (bad permission, wrong address...)
-            if __clone; then
-                printf "%s.setup> " "${_repo}"
-                if [ -f "${_repo}/${_setup_file}" ]; then
-                    (
-                        printf "explicit\n"
-                        cd "${_repo}" && "./${_setup_file}"
-                    )
-                else
-                    printf "default\n"
-                    _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${_repo}"
-                fi
-                printf "%s.setup> done! " "${_repo}" && read -r _
-            fi
-        fi
+        cd "$(dot_dir)" || exit 3
+        for repo in "${@}"; do
+            __do_one "${repo}"
+        done
     )
-    unset -f __clone
+
+    unset -f __do_one
 }
 
 __clone_url() {
@@ -305,7 +299,7 @@ service_start() {
             __report systemd-start "${sv}" ": starting"
             systemctl enable --now "${sv}"
         else
-            __report systemd-start "${sv}" "done"
+            __report systemd-start "${sv}" "skip"
         fi
     done
 }
