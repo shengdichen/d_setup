@@ -12,10 +12,11 @@ __base() {
         man-pages-sv man-pages-it man-pages-pt_br man-pages-zh_tw
 
     install "arch" \
-        linux linux-headers linux-docs linux-firmware arch-install-scripts \
+        linux linux-headers linux-docs linux-firmware \
+        arch-install-scripts grub efibootmgr \
         lshw efibootmgr intel-ucode fwupd \
         s-tui smartmontools lsof \
-        openssh gnupg pass pass-otp zbar
+        archlinux-keyring openssh gnupg pass pass-otp zbar
 
     install "arch" \
         tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip \
@@ -26,13 +27,14 @@ __base() {
         libimobiledevice ifuse
 
     install "arch" \
-        networkmanager \
+        networkmanager dhclient \
         networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
         tor nyx \
         wget curl speedtest-cli rsync \
         traceroute mtr \
         openbsd-netcat nmap \
         whois
+    service_start -- NetworkManager
 
     install "arch" \
         bluez bluez-utils \
@@ -63,13 +65,18 @@ __graphics() {
 }
 
 __desktop() {
+    install "arch" \
+        git stow
+    clone_and_stow -- d_git
+
     clone_and_stow -- d_xdg
 
     install "arch" \
-        vi neovim \
+        zsh zsh-completions zsh-syntax-highlighting \
+        neovim \
         tmux vifm fzf the_silver_searcher
     clone_and_stow --sub -- d_nvim
-    clone_and_stow -- d_zsh d_git d_tmux d_vifm
+    clone_and_stow -- d_zsh d_tmux d_vifm
 
     install "arch" \
         adobe-source-code-pro-fonts \
