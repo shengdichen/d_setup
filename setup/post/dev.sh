@@ -1,6 +1,6 @@
 #!/usr/bin/env dash
 
-. "./util.sh"
+. "../util.sh"
 
 __libs() {
     install "arch" \

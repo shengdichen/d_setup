@@ -133,12 +133,12 @@ _post() {
 
     echo
     echo "Setup complete, run:"
-    echo "    \$ sh ~/dot/dot/setup.sh"
+    echo "    \$ sh ~/dot/setup/post/setup.sh"
     printf "when ready: " && read -r _
     clear
     (
-        cd "${HOME}/dot/setup" || exit 3
-        "${SHELL}" "00.sh"
+        cd "${HOME}/dot/setup/post" || exit 3
+        "./setup.sh"
     )
 }
 
