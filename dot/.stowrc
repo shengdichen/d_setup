@@ -1,5 +1,7 @@
 --target=~/
 
 --ignore=\.git.*
+--ignore=\.mypy_cache
+
 --ignore=setup.sh
 --ignore=no_stow
