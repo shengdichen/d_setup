@@ -7,7 +7,7 @@ __office() {
         install "arch" \
             zathura zathura-pdf-mupdf zathura-djvu zathura-ps \
             pdfarranger img2pdf
-        clone_and_stow -- d_zathura
+        dotfile -- d_zathura
 
         install "arch" \
             hunspell enchant \
@@ -16,12 +16,12 @@ __office() {
 
     __l1() {
         install "arch" -- xournalpp
-        clone_and_stow -- d_xournalpp
+        dotfile -- d_xournalpp
 
         install "arch" \
             texlive texlive-lang biber libreoffice-fresh
         install "aurhelper" -- lyx
-        clone_and_stow -- d_lyx
+        dotfile -- d_lyx
     }
 
     __l0
@@ -39,7 +39,7 @@ __media() {
         sox cmus mpd mpc ncmpc \
         imv yt-dlp ytfzf
     install "pipx" -- tidal-dl
-    clone_and_stow -- d_mpv d_mpd d_cmus d_ncmpc
+    dotfile -- d_mpv d_mpd d_cmus d_ncmpc
 
     local mpd_lib="${HOME}/.config/mpd/bin/lib/"
     # guarantee at least one (non-.gitignore) item under lib-directory
@@ -58,7 +58,7 @@ __browser() {
         install "arch" \
             qutebrowser python-adblock tor
         service_start -- tor
-        clone_and_stow -- d_qutebrowser
+        dotfile -- d_qutebrowser
 
         install "aurhelper" \
             ungoogled-chromium-bin
@@ -105,7 +105,7 @@ __social() {
             "neomutt" "notmuch" "fdm" "isync" "msmtp"
         install "aurhelper" \
             "protonmail-bridge-core"
-        clone_and_stow -- d_mail
+        dotfile -- d_mail
     }
 
     __l1() {

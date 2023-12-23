@@ -234,7 +234,7 @@ __clone_smart() {
     )
 }
 
-clone_and_stow() {
+dotfile() {
     local _sub=""
     if [ "${1}" = "--sub" ]; then
         _sub="yes"

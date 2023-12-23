@@ -105,7 +105,7 @@ __obesities() {
 }
 
 main() {
-    clone_and_stow -- d_dev
+    dotfile -- d_dev
     __libs
     __lang_python
     __lang_main

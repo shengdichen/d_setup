@@ -67,16 +67,16 @@ __graphics() {
 __desktop() {
     install "arch" \
         git stow
-    clone_and_stow -- d_git
+    dotfile -- d_git
 
-    clone_and_stow -- d_xdg
+    dotfile -- d_xdg
 
     install "arch" \
         zsh zsh-completions zsh-syntax-highlighting \
         neovim \
         tmux vifm fzf the_silver_searcher
-    clone_and_stow --sub -- d_nvim
-    clone_and_stow -- d_zsh d_tmux d_vifm
+    dotfile --sub -- d_nvim
+    dotfile -- d_zsh d_tmux d_vifm
 
     install "arch" \
         adobe-source-code-pro-fonts \
@@ -86,7 +86,7 @@ __desktop() {
         ttf-fira-code terminus-font \
         noto-fonts noto-fonts-extra noto-fonts-cjk noto-fonts-emoji \
         font-manager
-    clone_and_stow -- d_font shevska
+    dotfile -- d_font shevska
 
     install "arch" \
         sway swaylock swaybg xdg-desktop-portal-wlr \
@@ -94,12 +94,12 @@ __desktop() {
         wl-clipboard xorg-xwayland \
         grim slurp wf-recorder capitaine-cursors light gammastep
     install "aur" -- wdisplays
-    clone_and_stow -- d_sway d_foot
+    dotfile -- d_sway d_foot
 
     install "arch" \
         fcitx5-im fcitx5-rime fcitx5-mozc \
         rime-double-pinyin rime-cantonese rime-wugniu
-    clone_and_stow -- d_ime
+    dotfile -- d_ime
 }
 
 main() {
