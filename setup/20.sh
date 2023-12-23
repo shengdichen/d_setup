@@ -3,24 +3,34 @@
 . "./util.sh"
 
 __office() {
-    install "arch" \
-        zathura zathura-pdf-mupdf zathura-djvu zathura-ps \
-        pdfarranger img2pdf
-    clone_and_stow -- d_zathura
+    __l0() {
+        install "arch" \
+            zathura zathura-pdf-mupdf zathura-djvu zathura-ps \
+            pdfarranger img2pdf
+        clone_and_stow -- d_zathura
 
-    install "arch" \
-        hunspell enchant \
-        hunspell-en_us hunspell-en_gb hunspell-fr hunspell-de hunspell-it hunspell-ru hunspell-es_es \
-        texlive texlive-lang biber libreoffice-fresh xournalpp
-    clone_and_stow -- d_xournalpp
+        install "arch" \
+            hunspell enchant \
+            hunspell-en_us hunspell-en_gb hunspell-fr hunspell-de hunspell-it hunspell-ru hunspell-es_es
+    }
 
-    # obtain lyx (from cache or aur)
-    clone_and_stow -- d_lyx
+    __l1() {
+        install "arch" -- xournalpp
+        clone_and_stow -- d_xournalpp
 
-    install "arch" \
-        fcitx5-im fcitx5-rime fcitx5-mozc \
-        rime-double-pinyin rime-cantonese rime-wugniu
-    clone_and_stow -- d_ime
+        install "arch" \
+            texlive texlive-lang biber libreoffice-fresh
+        install "aurhelper" -- lyx
+        clone_and_stow -- d_lyx
+    }
+
+    __l0
+    if [ "${#}" -gt 0 ]; then
+        if [ "${1}" -gt 0 ]; then
+            __l1
+        fi
+    fi
+    unset -f __l0 __l1
 }
 
 __media() {
@@ -28,8 +38,7 @@ __media() {
         pulsemixer mpv \
         sox cmus mpd mpc ncmpc \
         imv yt-dlp ytfzf
-    install "pipx" \
-        -- tidal-dl
+    install "pipx" -- tidal-dl
     clone_and_stow -- d_mpv d_mpd d_cmus d_ncmpc
 
     local mpd_lib="${HOME}/.config/mpd/bin/lib/"
@@ -42,34 +51,85 @@ __media() {
         done
         mpc --host=admin@localhost volume 37
     fi
+}
 
-    install "arch" \
-        firefox-developer-edition w3m \
-        qutebrowser python-adblock \
-        transmission-cli deluge-gtk
-    install "aurhelper" \
-        ungoogled-chromium-bin
+__browser() {
+    __l0() {
+        install "arch" \
+            qutebrowser python-adblock tor
+        service_start -- tor
+        clone_and_stow -- d_qutebrowser
+
+        install "aurhelper" \
+            ungoogled-chromium-bin
+    }
+
+    __l1() {
+        install "arch" \
+            firefox-developer-edition w3m \
+            transmission-cli deluge-gtk
+    }
+
+    __l0
+    if [ "${#}" -gt 0 ]; then
+        if [ "${1}" -gt 0 ]; then
+            __l1
+        fi
+    fi
+    unset -f __l0 __l1
 }
 
 __game() {
-    install "arch" \
-        steam
+    __l2() {
+        install "arch" \
+            steam
 
-    install "arch" \
-        wine-staging wine-gecko wine-mono \
-        lutris
+        install "arch" \
+            wine-staging wine-gecko wine-mono \
+            lutris
+    }
+
+    if [ "${#}" -gt 0 ]; then
+        if [ "${1}" -gt 0 ]; then
+            if [ "${1}" -gt 1 ]; then
+                __l2
+            fi
+        fi
+    fi
+    unset -f __l2
 }
 
 __social() {
-    install "arch" \
-        "neomutt" "notmuch" "fdm" "isync" "msmtp"
-    install "aurhelper" \
-        "protonmail-bridge-core"
-    clone_and_stow -- d_mail
+    __l0() {
+        install "arch" \
+            "neomutt" "notmuch" "fdm" "isync" "msmtp"
+        install "aurhelper" \
+            "protonmail-bridge-core"
+        clone_and_stow -- d_mail
+    }
 
-    install "arch" \
-        signal-desktop
+    __l1() {
+        install "arch" -- signal-desktop
+        install "aurhelper" -- teams-for-linux
+    }
 
-    install "aurhelper" \
-        teams-for-linux
+    __l0
+    if [ "${#}" -gt 0 ]; then
+        if [ "${1}" -gt 0 ]; then
+            __l1
+        fi
+    fi
+    unset -f __l0 __l1
 }
+
+main() {
+    __office "${@}"
+    __media "${@}"
+    __browser "${@}"
+    __game "${@}"
+    __social "${@}"
+
+    unset -f __office __media __browser __game __social
+}
+main "${@}"
+unset -f main

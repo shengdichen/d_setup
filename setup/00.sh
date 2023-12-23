@@ -97,9 +97,9 @@ __desktop() {
     clone_and_stow -- d_sway d_foot
 
     install "arch" \
-        qutebrowser tor
-    service_start -- tor
-    clone_and_stow -- d_qutebrowser
+        fcitx5-im fcitx5-rime fcitx5-mozc \
+        rime-double-pinyin rime-cantonese rime-wugniu
+    clone_and_stow -- d_ime
 }
 
 main() {
