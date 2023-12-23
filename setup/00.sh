@@ -95,20 +95,6 @@ __desktop() {
     clone_and_stow -- d_qutebrowser
 }
 
-# 2. simplify /etc/fstab {{{
-# a. rename root-parition
-# # sudo e2label /dev/sda<ROOT> "ROOT"
-# NOTE:
-#   1. the label will NOT showup until remounting partition, in the case of a root partition: until reboot
-#   2. verify with |$ blkid|
-
-# b. swapfile
-
-# c. edit /etc/fstab
-#       LABEL=ROOT / ext4 rw,relatime 0 1
-#       /SWAP none swap defaults 0 0
-# }}}
-
 main() {
     __base
     __graphics
