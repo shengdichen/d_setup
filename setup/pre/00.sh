@@ -151,7 +151,7 @@ bulk_work() {
     pacman -Syy
     pacman -S archlinux-keyring
     pacstrap -K /mnt \
-        base base-devel vi neovim less \
+        base base-devel dash vi neovim less \
         linux-zen linux-lts linux-firmware bash-completion
 
     __separator
