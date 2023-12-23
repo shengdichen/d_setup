@@ -170,7 +170,7 @@ __install_pipx() {
 
     local include_deps=""
     if [ "${1}" = "--optional" ]; then
-        include_deps="--include-deps"
+        include_deps="yes"
         shift
     fi
     if [ "${1}" = "--" ]; then shift; fi
@@ -178,7 +178,11 @@ __install_pipx() {
     for p in "${@}"; do
         if ! pipx list --short | grep -q "^${p} "; then
             __report pipx "${p}" "install"
-            pipx install "${include_deps}" "${p}"
+            if [ "${include_deps}" ]; then
+                pipx install "--include-deps" "${p}"
+            else
+                pipx install "${p}"
+            fi
         else
             __report pipx "${p}" "skip"
         fi
