@@ -69,12 +69,22 @@ __is_installed_arch() {
 }
 
 __install_arch() {
+    local _report="yes"
+    if [ "${1}" = "--no-report" ]; then
+        _report=""
+        shift
+    fi
+
     if [ "${1}" = "--" ]; then shift; fi
-    __report pacman "[${*}]"
+    if [ "${_report}" ]; then
+        __report pacman "[${*}]"
+    fi
 
     for p in "${@}"; do
         if ! __is_installed_arch "${p}"; then
-            __report pacman "${1}" "install"
+            if [ "${_report}" ]; then
+                __report pacman "${p}" "install"
+            fi
             "$(__sudo)" pacman -S --needed "${p}"
         fi
     done
@@ -116,11 +126,16 @@ __install_aur() {
     unset -f __install_one
 }
 
+__install_arch_cache() {
+    if [ "${1}" = "--" ]; then shift; fi
+    for p in "${@}"; do
+        __report AUR-cache "${p}" "install"
+        "$(__sudo)" pacman -U --needed "${p}"
+    done
+}
+
 __install_aurhelper() {
-    local helper="paru-bin"
-    if ! __is_installed_arch "${helper}"; then
-        __install_aur "${helper}"
-    fi
+    __install_aur -- "paru-bin"
 
     if [ "${1}" = "--" ]; then shift; fi
     for p in "${@}"; do
@@ -135,15 +150,9 @@ __install_aurhelper() {
     done
 }
 
-__install_arch_cache() {
-    if [ "${1}" = "--" ]; then shift; fi
-    for p in "${@}"; do
-        __report AUR-cache "${p}" "install"
-        "$(__sudo)" pacman -U --needed "${p}"
-    done
-}
-
 __install_npm() {
+    __install_arch --no-report -- "npm"
+
     if [ "${1}" = "--" ]; then shift; fi
 
     for p in "${@}"; do
@@ -157,6 +166,8 @@ __install_npm() {
 }
 
 __install_pipx() {
+    __install_arch --no-report -- "python-pipx"
+
     local include_deps=""
     if [ "${1}" = "--optional" ]; then
         include_deps="--include-deps"
