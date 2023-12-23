@@ -62,6 +62,12 @@ __game() {
 
 __social() {
     install "arch" \
+        "neomutt" "notmuch" "fdm" "isync" "msmtp"
+    install "aurhelper" \
+        "protonmail-bridge-core"
+    clone_and_stow -- d_mail
+
+    install "arch" \
         signal-desktop
 
     install "aurhelper" \
