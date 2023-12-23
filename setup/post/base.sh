@@ -69,6 +69,8 @@ __desktop() {
         git stow
     dotfile -- d_git
 
+    install "arch" \
+        xdg-user-dirs
     dotfile -- d_xdg
 
     install "arch" \
