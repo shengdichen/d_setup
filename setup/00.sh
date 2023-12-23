@@ -88,6 +88,11 @@ __desktop() {
         grim slurp wf-recorder capitaine-cursors light gammastep
     install "aur" -- wdisplays
     clone_and_stow -- d_sway d_foot
+
+    install "arch" \
+        qutebrowser tor
+    service_start -- tor
+    clone_and_stow -- d_qutebrowser
 }
 
 # 2. simplify /etc/fstab {{{

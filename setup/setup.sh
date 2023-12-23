@@ -4,7 +4,6 @@ __base() {
     "${SHELL}" "./00.sh"
     "${SHELL}" "./10-dev.sh"
     "${SHELL}" "./10-mail.sh"
-    "${SHELL}" "./10-qutebrowser.sh"
 }
 
 __extra() {
