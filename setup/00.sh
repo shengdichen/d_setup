@@ -4,11 +4,7 @@
 
 __base() {
     install "arch" \
-        base base-devel pacman-contrib \
-        vi neovim
-
-    clone_and_stow --sub -- d_nvim
-    clone_and_stow -- d_zsh d_xdg d_git
+        base base-devel pacman-contrib vi
 
     install "arch" \
         man-db man-pages \
@@ -16,18 +12,13 @@ __base() {
         man-pages-sv man-pages-it man-pages-pt_br man-pages-zh_tw
 
     install "arch" \
-        linux linux-headers linux-docs \
-        linux-firmware
-
-    install "arch" \
-        lshw efibootmgr intel-ucode fwupd arch-install-scripts
-
-    install "arch" \
-        openssh gnupg pass pass-otp zbar \
-        tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip
-
-    install "arch" \
+        linux linux-headers linux-docs linux-firmware arch-install-scripts \
+        lshw efibootmgr intel-ucode fwupd \
         s-tui smartmontools lsof \
+        openssh gnupg pass pass-otp zbar
+
+    install "arch" \
+        tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip \
         fuse3 fuse2 \
         exfatprogs nfs-utils dosfstools sshfs \
         android-file-transfer android-tools \
@@ -38,7 +29,10 @@ __base() {
         networkmanager \
         networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
         tor nyx \
-        wget curl speedtest-cli rsync
+        wget curl speedtest-cli rsync \
+        traceroute mtr \
+        openbsd-netcat nmap \
+        whois
 
     install "arch" \
         bluez bluez-utils \
@@ -69,6 +63,14 @@ __graphics() {
 }
 
 __desktop() {
+    clone_and_stow -- d_xdg
+
+    install "arch" \
+        vi neovim \
+        tmux vifm fzf the_silver_searcher
+    clone_and_stow --sub -- d_nvim
+    clone_and_stow -- d_zsh d_git d_tmux d_vifm
+
     install "arch" \
         adobe-source-code-pro-fonts \
         adobe-source-han-sans-otc-fonts \
@@ -80,16 +82,12 @@ __desktop() {
     clone_and_stow -- d_font shevska
 
     install "arch" \
-        alacritty foot \
-        tmux vifm neovim vi fzf the_silver_searcher
-    clone_and_stow -- d_foot d_tmux d_vifm
-
-    install "arch" \
-        wl-clipboard xorg-xwayland \
         sway swaylock swaybg xdg-desktop-portal-wlr \
+        alacritty foot \
+        wl-clipboard xorg-xwayland \
         grim slurp wf-recorder capitaine-cursors light gammastep
     install "aur" -- wdisplays
-    clone_and_stow -- d_sway
+    clone_and_stow -- d_sway d_foot
 }
 
 # 2. simplify /etc/fstab {{{

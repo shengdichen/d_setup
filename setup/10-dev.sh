@@ -29,7 +29,7 @@ obesities() {
     install "aur" android-studio
 }
 
-__python() {
+__lang_python() {
     install "arch" \
         python python-pip python-pipx python-poetry
 
@@ -51,41 +51,37 @@ __python() {
     install "aurhelper" python-lsp-ruff
 }
 
-__java() {
+__lang_main() {
     install "arch" \
-        jdk-openjdk openjdk-doc openjdk-src \
-        jdk17-openjdk openjdk17-doc openjdk17-src \
-        jdk11-openjdk openjdk11-doc openjdk11-src
-}
+        lua luajit luarocks lua-language-server
 
-__js() {
+    install "arch" \
+        clang lld \
+        rust
+
+    install "arch" \
+        dash checkbashisms \
+        bash-language-server shellcheck shfmt
+    install "aurhelper" beautysh
+
     install "arch" \
         nodejs npm typescript \
         typescript-language-server eslint_d
-
     install "npm" \
         prettier-standard standard ts-standard \
         @fsouza/prettierd \
         vscode-langservers-extracted
 }
 
-langs() {
-    clone_and_stow -- d_dev
-    __python
-    __java
-    __js
-
+__lang_misc() {
     install "arch" \
-        dash checkbashisms \
-        lua luajit luarocks lua-language-server \
-        clang lld \
-        rust \
         ghc cabal-install stack haskell-language-server \
         ruby
 
     install "arch" \
-        bash-language-server shellcheck shfmt
-    install "aurhelper" beautysh
+        jdk-openjdk openjdk-doc openjdk-src \
+        jdk17-openjdk openjdk17-doc openjdk17-src \
+        jdk11-openjdk openjdk11-doc openjdk11-src
 
     install "npm" \
         vim-language-server
@@ -106,18 +102,16 @@ libs() {
 
     install "arch" \
         gtk4 gtk3
-
-    install "arch" \
-        traceroute mtr \
-        openbsd-netcat nmap \
-        whois
 }
 
 main() {
-    langs
+    clone_and_stow -- d_dev
+    __lang_python
+    __lang_main
+    __lang_misc
     libs
 
-    unset -f __python langs libs
+    unset -f __lang_python __lang_main __lang_misc langs libs
 }
 main
 unset -f main
