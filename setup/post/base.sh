@@ -1,18 +1,10 @@
-source "./util.sh"
+#!/usr/bin/env dash
 
-function __base() {
-    clone_and_stow -- self d_zsh
-    local _xdg="d_xdg"
-    (
-        cd "$(dot_dir)" || exit 3
-        clone_and_stow --no-stow -- self "${_xdg}"
-        cd "${_xdg}" && "${SHELL}" setup.sh
-    )
+. "../util.sh"
 
+__base() {
     install "arch" \
-        base base-devel pacman-contrib \
-        vi neovim
-    clone_and_stow -- self d_git
+        base base-devel pacman-contrib vi
 
     install "arch" \
         man-db man-pages \
@@ -20,18 +12,14 @@ function __base() {
         man-pages-sv man-pages-it man-pages-pt_br man-pages-zh_tw
 
     install "arch" \
-        linux linux-headers linux-docs \
-        linux-firmware
-
-    install "arch" \
-        lshw efibootmgr intel-ucode fwupd arch-install-scripts
-
-    install "arch" \
-        openssh gnupg pass pass-otp zbar \
-        tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip
-
-    install "arch" \
+        linux linux-headers linux-docs linux-firmware \
+        arch-install-scripts grub efibootmgr \
+        lshw efibootmgr intel-ucode fwupd \
         s-tui smartmontools lsof \
+        archlinux-keyring openssh gnupg pass pass-otp zbar
+
+    install "arch" \
+        tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip \
         fuse3 fuse2 \
         exfatprogs nfs-utils dosfstools sshfs \
         android-file-transfer android-tools \
@@ -39,10 +27,14 @@ function __base() {
         libimobiledevice ifuse
 
     install "arch" \
-        networkmanager \
+        networkmanager dhclient \
         networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
         tor nyx \
-        wget curl speedtest-cli rsync
+        wget curl speedtest-cli rsync \
+        traceroute mtr \
+        openbsd-netcat nmap \
+        whois
+    service_start -- NetworkManager
 
     install "arch" \
         bluez bluez-utils \
@@ -52,7 +44,7 @@ function __base() {
     service_start -- bluetooth
 }
 
-function __graphics() {
+__graphics() {
     install "arch" \
         vulkan-icd-loader lib32-vulkan-icd-loader vulkan-headers vulkan-tools
 
@@ -72,7 +64,22 @@ function __graphics() {
         nvtop
 }
 
-function __desktop() {
+__desktop() {
+    install "arch" \
+        git stow
+    dotfile -- d_git
+
+    install "arch" \
+        xdg-user-dirs
+    dotfile -- d_xdg
+
+    install "arch" \
+        zsh zsh-completions zsh-syntax-highlighting \
+        neovim \
+        tmux vifm fzf the_silver_searcher
+    dotfile --sub -- d_nvim
+    dotfile -- d_zsh d_tmux d_vifm
+
     install "arch" \
         adobe-source-code-pro-fonts \
         adobe-source-han-sans-otc-fonts \
@@ -81,46 +88,23 @@ function __desktop() {
         ttf-fira-code terminus-font \
         noto-fonts noto-fonts-extra noto-fonts-cjk noto-fonts-emoji \
         font-manager
-    clone_and_stow -- self d_font
-
-    local _shevska="shevska"
-    (
-        cd "$(dot_dir)" || exit 3
-        clone_and_stow --no-stow -- self "${_shevska}"
-        cd "${_shevska}" && "${SHELL}" setup.sh
-    )
+    dotfile -- d_font shevska
 
     install "arch" \
-        alacritty foot \
-        tmux vifm neovim vi fzf the_silver_searcher
-    clone_and_stow -- self d_foot
-    clone_and_stow -- self d_tmux
-    clone_and_stow -- self d_vifm
-
-    install "arch" \
-        wl-clipboard xorg-xwayland \
         sway swaylock swaybg xdg-desktop-portal-wlr \
+        alacritty foot \
+        wl-clipboard xorg-xwayland \
         grim slurp wf-recorder capitaine-cursors light gammastep
-    clone_and_stow -- self d_sway
-    install "aur" \
-        wdisplays
+    install "aur" -- wdisplays
+    dotfile -- d_sway d_foot
+
+    install "arch" \
+        fcitx5-im fcitx5-rime fcitx5-mozc \
+        rime-double-pinyin rime-cantonese rime-wugniu
+    dotfile -- d_ime
 }
 
-# 2. simplify /etc/fstab {{{
-# a. rename root-parition
-# # sudo e2label /dev/sda<ROOT> "ROOT"
-# NOTE:
-#   1. the label will NOT showup until remounting partition, in the case of a root partition: until reboot
-#   2. verify with |$ blkid|
-
-# b. swapfile
-
-# c. edit /etc/fstab
-#       LABEL=ROOT / ext4 rw,relatime 0 1
-#       /SWAP none swap defaults 0 0
-# }}}
-
-function main() {
+main() {
     __base
     __graphics
     __desktop

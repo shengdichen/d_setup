@@ -1,3 +1,5 @@
+#!/usr/bin/env dash
+
 SCRIPT_NAME="$(basename "${0}")"
 
 MOUNT_ROOT="${HOME}/mnt"
@@ -6,13 +8,14 @@ DOT_ROOT="${HOME}/dot/dot"
 DOT_PRV="d_prv"
 
 _pre() {
-    if [ "${EUID}" -eq 0 ]; then
+    if [ "$(id -u)" -eq 0 ]; then
         echo "Must be non-root, (create and) switch to user"
         exit 3
     fi
 
     sudo pacman -Syu
     sudo pacman -S --needed \
+        fzf \
         openssh git stow \
         sshfs fuse2 unzip
 
@@ -41,8 +44,16 @@ raw_ssh() {
     if [ ! -f "${zip_name}" ]; then
         local mount_tmp="${MOUNT_ROOT}/mount_tmp"
         mkdir -p "${mount_tmp}"
-        if sudo mount /dev/sdb1 "${mount_tmp}"; then
-            cp -f "${mount_tmp}/x/Dox/sys/${zip_name}" "${HOME}"
+
+        local disk
+        echo "select source-disk"
+        disk="$(lsblk -o PATH,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
+
+        if sudo mount "${disk}" "${mount_tmp}"; then
+            if ! cp -f "${mount_tmp}/x/Dox/sys/${zip_name}" "${HOME}"; then
+                echo "[ssh-conf] not found on [${disk}], exiting"
+                exit 3
+            fi
         else
             echo
             echo "[ssh-conf] neither local nor on usb. Exiting"
@@ -66,7 +77,7 @@ raw_ssh() {
         rmdir "${mount_tmp}"
         echo "Safely unmounted, remove storage now!"
         echo -n "Hit [Enter] when ready:"
-        read -r
+        read -r _
     else
         echo
         echo "Unmount failed, you might be fine ignoring this though"
@@ -122,12 +133,12 @@ _post() {
 
     echo
     echo "Setup complete, run:"
-    echo "    \$ sh ~/dot/dot/setup.sh"
-    printf "when ready: "
+    echo "    \$ sh ~/dot/setup/post/setup.sh"
+    printf "when ready: " && read -r _
     clear
     (
-        cd "${HOME}/dot/setup" || exit 3
-        "${SHELL}" "00.sh"
+        cd "${HOME}/dot/setup/post" || exit 3
+        "./setup.sh"
     )
 }
 

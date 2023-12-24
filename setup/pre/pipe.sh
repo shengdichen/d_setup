@@ -1,6 +1,8 @@
+#!/usr/bin/env dash
+
 SCRIPT_DIR=$(dirname "$(realpath "${0}")")
 
-function _pacman_conf() {
+_pacman_conf() {
     # REF:
     #   https://wiki.archlinux.org/title/Unofficial_user_repositories#archzfs
     local _archzfs_key="DDF7DB817396A49B2A2723F7403BD972F75D9D76"
@@ -21,7 +23,7 @@ function _pacman_conf() {
     pacman -Fyy
 }
 
-function _base() {
+_base() {
     bash "${SCRIPT_DIR}/chroot.sh"
 
     umount -R /mnt

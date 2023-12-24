@@ -1,7 +1,9 @@
+#!/usr/bin/env dash
+
 make_media() {
     local iso="archlinux-x86_64.iso"
     if [ ! -f ${iso} ]; then
-        curl -LO "https://geo.mirror.pkgbuild.com/iso/2023.12.01/${iso}"
+        curl -LO "https://geo.mirror.pkgbuild.com/iso/latest/${iso}"
     fi
 
     while true; do

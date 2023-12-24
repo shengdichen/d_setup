@@ -1,7 +1,10 @@
+#!/usr/bin/env dash
+
 SCRIPT_NAME="$(basename "${0}")"
+EFI_MOUNT="/boot/efi"
 
 __check_root() {
-    if ((EUID != 0)); then
+    if [ "$(id -u)" -ne 0 ]; then
         echo "Must be executed as root, exiting"
         exit 3
     fi
@@ -16,7 +19,7 @@ __start() {
 __continue() {
     printf "\n"
     printf "Continue: "
-    read -r
+    read -r _
     clear
 }
 
@@ -109,7 +112,7 @@ partitioning_vbox() {
     # MUST mount /mnt before sub-mountpoints (e.g., /mnt/efi)
     local mnt_base="/mnt"
     mount "${disk}${part_delimiter}2" "${mnt_base}"
-    mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/boot/${efi_part}"
+    mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/${EFI_MOUNT}"
 
     __separator
     lsblk
@@ -148,7 +151,7 @@ bulk_work() {
     pacman -Syy
     pacman -S archlinux-keyring
     pacstrap -K /mnt \
-        base base-devel vi neovim less \
+        base base-devel dash vi neovim less \
         linux-zen linux-lts linux-firmware bash-completion
 
     __separator
@@ -191,7 +194,7 @@ transition_to_post() {
         echo "in chroot."
         echo
         printf "Ready when you are: "
-        read -r
+        read -r _
         arch-chroot /mnt
     else
         arch-chroot /mnt sh "${SCRIPT_NAME}" post
@@ -201,7 +204,7 @@ transition_to_post() {
 # post {{{
 base() {
     __start "chroot.base"
-    source /usr/share/bash-completion/bash_completion
+    . /usr/share/bash-completion/bash_completion
 
     local pack_keyring="archlinux-keyring"
     if ! pacman -S "${pack_keyring}"; then
@@ -302,14 +305,15 @@ boot() {
         pacman -S grub efibootmgr
     fi
 
-    local efi_dir="/efi" grub_dir="/boot/grub"
+    local grub_dir="/boot/grub"
     if [ ! -d "${grub_dir}" ]; then
+        clear
         mkinitcpio -P
         clear
 
         grub-install \
             --target=x86_64-efi \
-            --efi-directory="${efi_dir}/" \
+            --efi-directory="${EFI_MOUNT}" \
             --bootloader-id=MAIN
 
         grub-mkconfig -o "${grub_dir}/grub.cfg"
@@ -330,7 +334,7 @@ post_chroot() {
     __separator ""
     __confirm "boot"
     printf "All done here in chroot: "
-    read -r
+    read -r _
 }
 # }}}
 
@@ -339,13 +343,13 @@ cleanup() {
     mv -f 01.sh "/mnt/."
     echo
     printf "01-stage> ready when you are: "
-    read -r && clear
+    read -r _ && clear
     if ! arch-chroot /mnt sh 01.sh; then
         echo "Installation complete; run"
         echo "    # sh 01.sh"
         echo "after rebooting."
         printf "Ready when you are: "
-        read -r
+        read -r _
     fi
     rm "${SCRIPT_NAME}"
     umount -R /mnt

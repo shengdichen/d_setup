@@ -1,38 +1,40 @@
-function dot_dir() {
+#!/usr/bin/env dash
+
+dot_dir() {
     echo "${HOME}/dot/dot"
 }
 
-function bin_dir() {
+bin_dir() {
     echo "${HOME}/dot/bin"
 }
 
-function __sudo() {
+__sudo() {
     local s=""
-    if ((EUID != 0)); then
-        s=sudo
+    if [ "$(id -u)" -ne 0 ]; then
+        s="sudo"
     fi
     echo "${s}"
 }
 
-function install() {
+install() {
     case "${1}" in
         "aur")
-            __install_aur "${@:2}"
+            shift && __install_aur "${@}"
             ;;
         "aurhelper")
-            __install_aurhelper "${@:2}"
+            shift && __install_aurhelper "${@}"
             ;;
         "arch")
-            __install_arch "${@:2}"
+            shift && __install_arch "${@}"
             ;;
         "arch-cache")
-            __install_arch_cache "${@:2}"
+            shift && __install_arch_cache "${@}"
             ;;
         "npm")
-            __install_npm "${@:2}"
+            shift && __install_npm "${@}"
             ;;
         "pipx")
-            __install_pipx "${@:2}"
+            shift && __install_pipx "${@}"
             ;;
         *)
             echo "Wrong mode: install()"
@@ -40,169 +42,245 @@ function install() {
     esac
 }
 
+__report() {
+    printf "%s> %s" "${1}" "${2}"
+    case "${3}" in
+        "skip")
+            printf ": skipping"
+            ;;
+        "done")
+            printf ": done!"
+            ;;
+        "install")
+            printf ": installing"
+            ;;
+        "error")
+            printf ": error -> %s" "${4}"
+            ;;
+        *)
+            printf "%s" "${3}"
+            ;;
+    esac
+    printf "\n"
+}
+
 __is_installed_arch() {
     pacman -Qi "${1}" >/dev/null 2>&1
 }
 
-function __install_arch() {
-    echo "[pacman:(${*})]"
+__install_arch() {
+    local _report="yes"
+    if [ "${1}" = "--no-report" ]; then
+        _report=""
+        shift
+    fi
+
+    if [ "${1}" = "--" ]; then shift; fi
+    if [ "${_report}" ]; then
+        __report pacman "[${*}]"
+    fi
 
     for p in "${@}"; do
         if ! __is_installed_arch "${p}"; then
-            echo "[pacman:${p}] Installing"
+            if [ "${_report}" ]; then
+                __report pacman "${p}" "install"
+            fi
             "$(__sudo)" pacman -S --needed "${p}"
         fi
     done
 }
 
-function __install_aur() {
-    function __makepkg_filtered() {
-        # hide (only) the package-has-been-built error
-        makepkg -src \
-            2> >(grep -v "ERROR: A package has already been built." 1>&2)
-    }
-
-    function __f() {
-        clone_and_stow --cd "$(bin_dir)" --no-stow -- aur "${1}"
-
-        (
-            cd "$(bin_dir)/${1}/" || exit
-            if __makepkg_filtered "${1}"; then
-                echo "[AUR:${p}] Installing"
-                echo "select package to install"
-                __install_arch_cache "$(
-                    find . -maxdepth 1 -type f |
-                        grep "\.pkg\.tar\.zst$" |
-                        fzf --reverse --height=50%
-                )"
-            fi
-        )
-    }
-
-    for p in "${@}"; do
-        __f "${p}"
-    done
-    unset -f __makepkg_filtered __f
-}
-
-function __install_aurhelper() {
-    local helper="paru-bin"
-    if ! __is_installed_arch "${helper}"; then
-        __install_aur "${helper}"
-    fi
-
-    for p in "${@}"; do
-        # REF:
-        #   https://bbs.archlinux.org/viewtopic.php?id=76218
-        if ! pacman -Qm "${p}" >/dev/null 2>&1; then
-            echo "[paru:${p}] Installing"
-            paru -S --needed "${p}"
-        else
-            echo "[paru:${p}] Installed already, skipping"
+__install_aur() {
+    __install_one() {
+        if __clone_smart --name "${1}" --url "$(__clone_url aur "${1}")"; then
+            (
+                cd "${1}" || exit 3
+                if
+                    if ! find . -maxdepth 1 -type f | grep --quiet "\.pkg\.tar\.zst$"; then
+                        makepkg -src
+                    fi
+                then
+                    __report AUR "${1}" ": select package: "
+                    __install_arch_cache "$(
+                        find . -maxdepth 1 -type f |
+                            grep "\.pkg\.tar\.zst$" |
+                            fzf --reverse --height=50%
+                    )"
+                fi
+            )
         fi
-    done
+    }
+
+    if [ "${1}" = "--" ]; then shift; fi
+    (
+        cd "$(bin_dir)" || exit 3
+        for p in "${@}"; do
+            if ! __is_installed_arch "${p}"; then
+                __install_one "${p}"
+            else
+                __report AUR "${1}" "skip"
+            fi
+        done
+    )
+
+    unset -f __install_one
 }
 
-function __install_arch_cache() {
+__install_arch_cache() {
+    if [ "${1}" = "--" ]; then shift; fi
     for p in "${@}"; do
-        echo "Installing [ARCH-CACHE] ${p}"
+        __report AUR-cache "${p}" "install"
         "$(__sudo)" pacman -U --needed "${p}"
     done
 }
 
-function __install_npm() {
+__install_aurhelper() {
+    __install_aur -- "paru-bin"
+
+    if [ "${1}" = "--" ]; then shift; fi
     for p in "${@}"; do
-        if npm list --global "${p}" 1>/dev/null; then
-            echo "[npm:${p}] Installed already, skipping"
+        # REF:
+        #   https://bbs.archlinux.org/viewtopic.php?id=76218
+        if ! pacman -Qm "${p}" >/dev/null 2>&1; then
+            __report paru "${p}" "install"
+            paru -S --needed "${p}"
         else
-            echo "[npm:${p}] Installing"
-            npm install --global "${p}"
+            __report paru "${p}" "skip"
         fi
     done
 }
 
-function __install_pipx() {
-    local _optional=false _packs
-    while ((${#} > 0)); do
-        case "${1}" in
-            "--optional")
-                _optional=true
-                shift
-                ;;
-            "--")
-                _packs=("${@:2}")
-                break
-                ;;
-        esac
-    done
+__install_npm() {
+    __install_arch --no-report -- "npm"
 
-    for p in "${_packs[@]}"; do
-        if pipx list --short | grep -q "^${p} "; then
-            echo "[pipx:${p}] Installed already, skipping"
+    if [ "${1}" = "--" ]; then shift; fi
+
+    for p in "${@}"; do
+        if ! npm list --global "${p}" 1>/dev/null; then
+            __report npm "${p}" "install"
+            npm install --global "${p}"
         else
-            echo "[pipx:${p}] Installing"
-            if "${_optional}"; then
-                pipx install --include-deps "${p}"
+            __report npm "${p}" "skip"
+        fi
+    done
+}
+
+__install_pipx() {
+    __install_arch --no-report -- "python-pipx"
+
+    local include_deps=""
+    if [ "${1}" = "--optional" ]; then
+        include_deps="yes"
+        shift
+    fi
+    if [ "${1}" = "--" ]; then shift; fi
+
+    for p in "${@}"; do
+        if ! pipx list --short | grep -q "^${p} "; then
+            __report pipx "${p}" "install"
+            if [ "${include_deps}" ]; then
+                pipx install "--include-deps" "${p}"
             else
                 pipx install "${p}"
             fi
+        else
+            __report pipx "${p}" "skip"
         fi
     done
 }
 
-function clone_and_stow() {
-    local _cd _repo _link _sub=false _stow=true
-    while ((${#} > 0)); do
+__clone_smart() {
+    local _sub="" _root="" _name="" _url=""
+    while [ "${#}" -gt 0 ]; do
         case "${1}" in
-            "--cd")
-                _cd="${2}"
-                shift
-                shift
-                ;;
             "--sub")
-                _sub=true
+                _sub="yes"
                 shift
                 ;;
-            "--no-stow")
-                _stow=false
+            "--root")
+                _root="${2}"
+                shift
                 shift
                 ;;
-            "--")
-                _repo="${3}"
-                _link="$(__clone_url "${@:2}")"
-                break
+            "--name")
+                _name="${2}"
+                shift
+                shift
+                ;;
+            "--url")
+                _url="${2}"
+                shift
+                shift
+                ;;
+            *)
+                __report clone "${_name}" error "unintelligible option"
+                exit 3
                 ;;
         esac
     done
 
-    function __clone() {
-        if "${1}"; then
-            git clone --recursive "${@:2}"
-        else
-            git clone "${@:2}"
-        fi
-    }
     (
-        if [[ -z "${_cd}" ]]; then
-            cd "$(dot_dir)"
-        elif [[ "${_cd}" != "no" ]]; then
-            cd "${_cd}"
-        fi || exit 3
-
-        if [[ ! -d "${_repo}" ]]; then
-            # cater for failed cloning (bad permission, wrong address...)
-            if __clone "${_sub}" "${_link}"; then
-                if "${_stow}"; then
-                    _stow_nice -R --target="${HOME}" --ignore="\.git.*" "${_repo}"
-                    echo "Stowing completed"
+        if [ "${_root}" ]; then
+            cd "${_root}" || exit 3
+        fi
+        if [ ! -d "${_name}" ]; then
+            if ! (
+                if [ "${_sub}" ]; then
+                    git clone --recursive "${_url}"
+                else
+                    git clone "${_url}"
                 fi
+            ); then
+                __report clone "${_name}" error "bad network / url maybe?"
+                exit 3
             fi
         fi
     )
-    unset -f __clone
 }
 
-function __clone_url() {
+dotfile() {
+    local _sub=""
+    if [ "${1}" = "--sub" ]; then
+        _sub="yes"
+        shift
+    fi
+    if [ "${1}" = "--" ]; then shift; fi
+
+    local setup_file="setup.sh"
+
+    __do_one() {
+        local url
+        url="$(__clone_url self "${1}")"
+        if (
+            if [ "${_sub}" ]; then
+                __clone_smart --sub --name "${1}" --url "${url}"
+            else
+                __clone_smart --name "${1}" --url "${url}"
+            fi
+        ); then
+            if [ -f "${1}/${setup_file}" ]; then
+                (
+                    __report "dot-explicit" "${1}"
+                    cd "${1}" && "./${setup_file}"
+                )
+            else
+                __report "dot-default" "${1}"
+                _stow_nice -R "${1}"
+            fi
+        fi
+    }
+
+    (
+        cd "$(dot_dir)" || exit 3
+        for repo in "${@}"; do
+            __do_one "${repo}"
+        done
+    )
+
+    unset -f __do_one
+}
+
+__clone_url() {
     local _link
     case "${1}" in
         "self")
@@ -219,31 +297,24 @@ function __clone_url() {
     echo "${_link}"
 }
 
-function _stow_nice() {
+_stow_nice() {
     # REF:
     #   https://github.com/aspiers/stow/issues/65
 
-    stow "$@" \
-        2> >(grep -v 'BUG in find_stowed_path? Absolute/relative mismatch' 1>&2)
+    # stow "$@" \
+    #     2> >(grep -v 'BUG in find_stowed_path? Absolute/relative mismatch' 1>&2)
+    stow "${@}"
 }
 
-function service_start() {
-    local _services
-    while ((${#} > 0)); do
-        case "${1}" in
-            "--")
-                _services=("${@:2}")
-                break
-                ;;
-        esac
-    done
+service_start() {
+    if [ "${1}" = "--" ]; then shift; fi
 
-    for s in "${_services[@]}"; do
-        if systemctl is-active --quiet "${s}"; then
-            echo "[systemd:${s}] Active already, skipping"
+    for sv; do
+        if ! systemctl is-active --quiet "${sv}"; then
+            __report systemd-start "${sv}" ": starting"
+            systemctl enable --now "${sv}"
         else
-            echo "[systemd:${s}] Starting"
-            systemctl enable --now "${s}"
+            __report systemd-start "${sv}" "skip"
         fi
     done
 }

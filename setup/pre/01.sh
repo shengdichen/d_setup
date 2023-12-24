@@ -1,7 +1,9 @@
+#!/usr/bin/env dash
+
 SCRIPT_NAME="$(basename "${0}")"
 
 __check_root() {
-    if ((EUID != 0)); then
+    if [ "$(id -u)" -ne 0 ]; then
         echo "Must be executed as root, exiting"
         exit 3
     fi
@@ -9,18 +11,18 @@ __check_root() {
 __check_root
 
 pacman_zfs() {
-    printf "[pacman.zfs] START " && read -r
+    printf "[pacman.zfs] START " && read -r _
     # REF:
     #   https://wiki.archlinux.org/title/Unofficial_user_repositories#archzfs
     local _archzfs_key="DDF7DB817396A49B2A2723F7403BD972F75D9D76"
     pacman-key --recv-keys "${_archzfs_key}"
     pacman-key --finger "${_archzfs_key}"
     pacman-key --lsign-key "${_archzfs_key}"
-    printf "[pacman.zfs] DONE " && read -r && clear
+    printf "[pacman.zfs] DONE " && read -r _ && clear
 }
 
 pacman_blackarch() {
-    printf "[pacman.blackarch] START " && read -r
+    printf "[pacman.blackarch] START " && read -r _
     # REF:
     #   https://www.blackarch.org/downloads.html#install-repo
     local _blackarch="strap.sh"
@@ -28,7 +30,7 @@ pacman_blackarch() {
     chmod +x "${_blackarch}"
     ./"${_blackarch}"
     rm "${_blackarch}"
-    printf "[pacman.blackarch] DONE " && read -r && clear
+    printf "[pacman.blackarch] DONE " && read -r _ && clear
 }
 
 pacman_conf_takeover() {
@@ -59,17 +61,17 @@ pacman_setup() {
             pacman -S "${pack_keyring}"
         fi
     fi
-    printf "[pacman.prework] DONE" && read -r
+    printf "[pacman.prework] DONE " && read -r _
     clear
 
     pacman_blackarch
     pacman_zfs
     pacman_conf_takeover
 
-    printf "[pacman.reload] START: " && read -r
+    printf "[pacman.reload] START: " && read -r _
     pacman -Syu
     pacman -Fyy
-    printf "[pacman.reload] DONE " && read -r
+    printf "[pacman.reload] DONE " && read -r _
     clear
 }
 
@@ -88,19 +90,19 @@ birth() {
             if passwd "${_me}"; then break; fi
             echo
         done
-        printf "%s is born: " ${_me}
+        printf "%s is born " ${_me}
     else
-        printf "%s is already alive: " ${_me}
+        printf "%s is already alive " ${_me}
     fi
-    read -r && clear
+    read -r _ && clear
 
     # previous version := ...(ALL:ALL)...
     # newer version := ...(ALL)...
     if ! grep "^%wheel ALL=(.*ALL) ALL$" /etc/sudoers; then
-        printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL|: " && read -r
+        printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL|: " && read -r _
         EDITOR=nvim visudo
         clear
-        printf "[visudo] DONE " && read -r && clear
+        printf "[visudo] DONE " && read -r _ && clear
     fi
 
     rm "/home/${_home}/.bash"*
@@ -119,7 +121,7 @@ cleanup() {
     echo "    \$ sh 02.sh"
     echo
     printf "Ready: "
-    read -r
+    read -r _
 }
 
 pacman_setup
