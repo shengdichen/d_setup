@@ -88,14 +88,10 @@ clone_setup() {
     local setup_link="shengdichen/d_setup.git"
     (
         cd || exit 3
-        # clone from https since we do NOT have ssh yet
-        if ! git clone "https://github.com/${setup_link}" dot; then
+        if ! git clone "git@github.com:${setup_link}" dot; then
             echo " Cloning d_setup failed: bad internet?"
             exit 3
         fi
-
-        # for later: when we are done here, we will be able to ssh
-        cd dot && git remote set-url origin "git@github.com:${setup_link}"
     )
 }
 
