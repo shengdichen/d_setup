@@ -84,7 +84,7 @@ raw_ssh() {
     fi
 }
 
-clone_setup() {
+get_d_setup() {
     local setup_link="shengdichen/d_setup.git"
     (
         cd || exit 3
@@ -95,7 +95,7 @@ clone_setup() {
     )
 }
 
-prv() {
+get_prv() {
     # source of prv
     mkdir -p "${MOUNT_ROOT}/${MOUNT_MATRIX}"
     (
@@ -140,7 +140,7 @@ _post() {
 
 _pre
 raw_ssh
-clone_setup
-prv
+get_d_setup
+get_prv
 _post
-unset -f _pre raw_ssh clone_setup prv _post
+unset -f _pre raw_ssh get_d_setup get_prv _post
