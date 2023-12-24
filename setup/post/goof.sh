@@ -60,8 +60,7 @@ __browser() {
         service_start -- tor
         dotfile -- d_qutebrowser
 
-        install "aurhelper" \
-            ungoogled-chromium-bin
+        install "arch" -- chromium
     }
 
     __l1() {
@@ -70,13 +69,21 @@ __browser() {
             transmission-cli deluge-gtk
     }
 
+    __l2() {
+        install "aurhelper" \
+            ungoogled-chromium-bin
+    }
+
     __l0
     if [ "${#}" -gt 0 ]; then
         if [ "${1}" -gt 0 ]; then
             __l1
+            if [ "${1}" -gt 1 ]; then
+                __l2
+            fi
         fi
     fi
-    unset -f __l0 __l1
+    unset -f __l0 __l1 __l2
 }
 
 __game() {
