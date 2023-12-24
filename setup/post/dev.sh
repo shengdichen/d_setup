@@ -102,6 +102,8 @@ __obesities() {
         pycharm-community-edition \
         intellij-idea-community-edition
     install "aur" android-studio
+
+    install "arch" -- jupyterlab
 }
 
 main() {
