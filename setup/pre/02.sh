@@ -98,9 +98,18 @@ get_d_setup() {
 get_prv() {
     # source of prv
     mkdir -p "${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    local ssh_profile_source="ssh_matrix_ext"
     (
         cd "${MOUNT_ROOT}" || exit 3
-        sshfs "ssh_matrix_ext:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
+        while true; do
+            sshfs "${ssh_profile_source}:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
+            if mount | grep "${ssh_profile_source}"; then
+                break
+            else
+                echo "prv.sshfs-mount> failed to mount profile [${ssh_profile_source}], retrying"
+                sleep 3
+            fi
+        done
     )
 
     local branch="main"
