@@ -165,6 +165,8 @@ bulk_work() {
     local fstab="/mnt/etc/fstab"
     genfstab -U /mnt >"${fstab}"
     __separator
+    lsblk
+    echo
     cat "${fstab}"
     __confirm "fstab"
 }
@@ -332,9 +334,8 @@ post_chroot() {
 
     rm "${SCRIPT_NAME}"
     __separator ""
-    __confirm "boot"
-    printf "All done here in chroot: "
-    read -r _
+    echo "All done here in chroot."
+    __confirm "chroot"
 }
 # }}}
 
