@@ -112,15 +112,15 @@ get_prv() {
         done
     )
 
-    local branch="main"
-    mkdir -p "${DOT_ROOT}/${DOT_PRV}"
     (
-        cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
+        cd "${DOT_ROOT}" || exit 3
         # specify |-b| to prevent warning for missing default brach name
-        git init -b "${branch}"
-        git remote add origin "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}"
-        git fetch
-        git merge origin/"${branch}"
+        if ! git clone -b main "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}" "${DOT_PRV}"; then
+            echo "clone> prv: failed, exiting"
+            exit 3
+        else
+            printf "prv.clone> done " && read -r _ && clear
+        fi
     )
 
     # get ready for stowing(-override)
