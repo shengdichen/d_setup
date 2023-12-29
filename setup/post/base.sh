@@ -74,10 +74,12 @@ __desktop() {
     dotfile -- d_xdg
 
     install "arch" \
-        zsh zsh-completions zsh-syntax-highlighting \
-        neovim \
-        tmux vifm fzf the_silver_searcher
+        neovim tree-sitter-cli python-pynvim
     dotfile --sub -- d_nvim
+
+    install "arch" \
+        zsh zsh-completions zsh-syntax-highlighting \
+        tmux vifm fzf the_silver_searcher
     dotfile -- d_zsh d_tmux d_vifm
 
     install "arch" \
