@@ -1,6 +1,7 @@
 #!/usr/bin/env dash
 
 SCRIPT_NAME="$(basename "${0}")"
+MNT="/mnt"
 EFI_MOUNT="/boot/efi"
 
 __check_root() {
@@ -9,7 +10,6 @@ __check_root() {
         exit 3
     fi
 }
-__check_root
 
 __start() {
     printf "%s> START" "${1}"
@@ -52,21 +52,11 @@ __confirm() {
 }
 
 __is_installed() {
-    pacman -Qs "${1}" >/dev/null
+    pacman -Qi "${1}" >/dev/null
 }
 
-# pre {{{
-partitioning() {
-    __start "partitioning"
-
-    if ! mount | grep " on /mnt" >/dev/null; then
-        echo "parition and mount to /mnt first, exiting"
-        exit 3
-    fi
-
-    __separator
-    lsblk
-    __confirm "partitioning"
+__run_in_chroot() {
+    arch-chroot "${MNT}" sh "${@}"
 }
 
 partitioning_vbox() {
@@ -117,6 +107,19 @@ partitioning_vbox() {
     __separator
     lsblk
     __continue
+}
+
+partitioning() {
+    __start "partitioning"
+
+    if ! mount | grep " on /mnt" >/dev/null; then
+        echo "parition and mount to /mnt first, exiting"
+        exit 3
+    fi
+
+    __separator
+    lsblk
+    __confirm "partitioning"
 }
 
 check_network() {
@@ -171,19 +174,11 @@ bulk_work() {
     __confirm "fstab"
 }
 
-pre_chroot() {
-    partitioning
-    check_network
-    sync_time
-    bulk_work
-}
-# }}}
-
 transition_to_post() {
     clear
     __start "in-chroot"
 
-    cp -f "${SCRIPT_NAME}" /mnt/.
+    cp -f "${SCRIPT_NAME}" "${MNT}/."
 
     printf "Ready to chroot: automatic setup (default); [m]anual: "
     local input
@@ -203,7 +198,6 @@ transition_to_post() {
     fi
 }
 
-# post {{{
 base() {
     __start "chroot.base"
     . /usr/share/bash-completion/bash_completion
@@ -362,7 +356,11 @@ case "${1}" in
         partitioning_vbox
         ;;
     "pre")
-        pre_chroot
+        __check_root
+        partitioning
+        check_network
+        sync_time
+        bulk_work
         ;;
     "transition")
         transition_to_post
@@ -379,5 +377,3 @@ case "${1}" in
         cleanup
         ;;
 esac
-
-# vim: foldmethod=marker
