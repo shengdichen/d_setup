@@ -1,9 +1,12 @@
-source "../../util.sh"
+#!/usr/bin/env dash
 
-function __install() {
+. "../../util.sh"
+
+__install() {
     install "pipx" undervolt
 
     service_start -- throttled
 }
 
 __install
+unset -f __install

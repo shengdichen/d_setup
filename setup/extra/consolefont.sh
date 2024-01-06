@@ -1,6 +1,8 @@
-source "../util.sh"
+#!/usr/bin/env dash
 
-function __write() {
+. "../util.sh"
+
+__write() {
     cat <<STOP >/etc/vconsole.conf
 KEYMAP=us
 FONT=ter-v${1:-24}b
