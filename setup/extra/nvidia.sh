@@ -1,8 +1,11 @@
-source "../util.sh"
+#!/usr/bin/env dash
 
-function __base() {
+. "../util.sh"
+
+__base() {
     install "arch" \
         nvidia-dkms opencl-nvidia cuda
 }
 
 __base
+unset -f __base

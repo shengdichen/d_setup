@@ -1,4 +1,6 @@
-source "../util.sh"
+#!/usr/bin/env dash
+
+. "../util.sh"
 
 libvirt() {
     # REF:

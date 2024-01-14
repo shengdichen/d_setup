@@ -1,4 +1,6 @@
-source "../util.sh"
+#!/usr/bin/env dash
+
+. "../util.sh"
 
 __explicit() {
     install "aur" \
@@ -6,7 +8,6 @@ __explicit() {
 }
 
 __monopoly() {
-
     install "aurhelper" \
         mkinitcpio-firmware
 }
