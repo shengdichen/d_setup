@@ -116,6 +116,9 @@ __social() {
     }
 
     __l1() {
+        install "aurhelper" \
+            mkinitcpio-firmware
+
         install "arch" -- signal-desktop
         install "aurhelper" -- teams-for-linux
     }
