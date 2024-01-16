@@ -94,7 +94,7 @@ __desktop() {
 
     install "arch" \
         sway swaylock swaybg xdg-desktop-portal-wlr \
-        alacritty foot \
+        foot wezterm alacritty \
         wl-clipboard xorg-xwayland \
         grim slurp wf-recorder capitaine-cursors light gammastep
     install "aur" -- wdisplays
