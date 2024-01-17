@@ -96,7 +96,7 @@ __desktop() {
         sway swaylock swaybg xdg-desktop-portal-wlr \
         foot wezterm alacritty \
         wl-clipboard xorg-xwayland \
-        grim slurp wf-recorder capitaine-cursors light gammastep
+        grim slurp wf-recorder capitaine-cursors brightnessctl gammastep
     install "aur" -- wdisplays
     dotfile -- d_sway d_foot
 
