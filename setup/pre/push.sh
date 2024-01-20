@@ -34,7 +34,7 @@ push_to_xyz() {
     done
 
     echo "Done! Obtain with:"
-    echo "\$ curl -LO shengdichen.xyz/install/0[1|2|3].sh"
+    echo "\$ curl -LO shengdichen.xyz/install/0[0|1|2].sh"
 }
 
 case "${1}" in
