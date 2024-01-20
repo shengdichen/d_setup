@@ -74,7 +74,7 @@ __desktop() {
 
     install arch -- \
         neovim tree-sitter-cli python-pynvim
-    dotfile --sub -- d_nvim
+    dotfile -- d_nvim
 
     install arch -- \
         zsh zsh-completions zsh-syntax-highlighting \
