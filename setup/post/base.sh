@@ -3,22 +3,22 @@
 . "../util.sh"
 
 __base() {
-    install "arch" \
+    install arch -- \
         base base-devel pacman-contrib vi
 
-    install "arch" \
+    install arch -- \
         man-db man-pages \
         man-pages-fr man-pages-de man-pages-ru man-pages-es \
         man-pages-sv man-pages-it man-pages-pt_br man-pages-zh_tw
 
-    install "arch" \
+    install arch -- \
         linux linux-headers linux-docs linux-firmware \
         arch-install-scripts grub efibootmgr \
         lshw efibootmgr intel-ucode fwupd \
         s-tui smartmontools lsof \
         archlinux-keyring openssh gnupg pass pass-otp zbar
 
-    install "arch" \
+    install arch -- \
         tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip \
         fuse3 fuse2 \
         exfatprogs nfs-utils dosfstools sshfs \
@@ -26,7 +26,7 @@ __base() {
         pcmanfm-gtk3 gvfs gvfs-mtp gvfs-afc gvfs-gphoto2 \
         libimobiledevice ifuse
 
-    install "arch" \
+    install arch -- \
         networkmanager dhclient \
         networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
         tor nyx \
@@ -36,7 +36,7 @@ __base() {
         whois
     service_start -- NetworkManager
 
-    install "arch" \
+    install arch -- \
         bluez bluez-utils \
         wireplumber \
         pipewire pipewire-docs pipewire-alsa pipewire-pulse pipewire-jack \
@@ -45,44 +45,44 @@ __base() {
 }
 
 __graphics() {
-    install "arch" \
+    install arch -- \
         vulkan-icd-loader lib32-vulkan-icd-loader vulkan-headers vulkan-tools
 
-    install "arch" \
+    install arch -- \
         mesa lib32-mesa \
         vulkan-intel lib32-vulkan-intel \
         intel-media-driver libva-intel-driver \
         intel-gpu-tools
 
-    install "arch" \
+    install arch -- \
         mesa lib32-mesa \
         vulkan-radeon lib32-vulkan-radeon amdvlk lib32-amdvlk \
         libva-mesa-driver lib32-libva-mesa-driver mesa-vdpau lib32-mesa-vdpau \
         radeontop
 
-    install "arch" \
+    install arch -- \
         nvtop
 }
 
 __desktop() {
-    install "arch" \
-        git stow
+    install arch -- stow
+
+    install arch -- git
     dotfile -- d_git
 
-    install "arch" \
-        xdg-user-dirs
+    install arch -- xdg-user-dirs
     dotfile -- d_xdg
 
-    install "arch" \
+    install arch -- \
         neovim tree-sitter-cli python-pynvim
-    dotfile --sub -- d_nvim
+    dotfile -- d_nvim
 
-    install "arch" \
+    install arch -- \
         zsh zsh-completions zsh-syntax-highlighting \
         tmux vifm fzf the_silver_searcher
     dotfile -- d_zsh d_tmux d_vifm
 
-    install "arch" \
+    install arch -- \
         adobe-source-code-pro-fonts \
         adobe-source-han-sans-otc-fonts \
         adobe-source-han-serif-otc-fonts \
@@ -92,15 +92,15 @@ __desktop() {
         font-manager
     dotfile -- d_font shevska
 
-    install "arch" \
+    install arch -- \
         sway swaylock swaybg xdg-desktop-portal-wlr \
-        alacritty foot \
-        wl-clipboard xorg-xwayland \
-        grim slurp wf-recorder capitaine-cursors light gammastep
-    install "aur" -- wdisplays
+        foot wezterm alacritty \
+        wl-clipboard wev xorg-xwayland \
+        grim slurp wf-recorder capitaine-cursors brightnessctl gammastep
+    install aur -- wdisplays
     dotfile -- d_sway d_foot
 
-    install "arch" \
+    install arch -- \
         fcitx5-im fcitx5-rime fcitx5-mozc \
         rime-double-pinyin rime-cantonese rime-wugniu
     dotfile -- d_ime

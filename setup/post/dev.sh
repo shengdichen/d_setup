@@ -3,78 +3,74 @@
 . "../util.sh"
 
 __libs() {
-    install "arch" \
+    install arch -- \
         qt6-base qt6-wayland qt6-tools qt6-doc \
         qt5-base qt5-wayland qt5-tools qt5-doc
 
-    install "arch" \
+    install arch -- \
         gtk4 gtk3
 }
 
 __lang_python() {
-    install "arch" \
+    install arch -- \
         python python-pip python-pipx python-poetry
 
-    install "arch" \
+    install arch -- \
         python-lsp-server ruff-lsp \
         python-black python-aiohttp python-lsp-black \
         python-mccabe flake8 python-pylint python-pyflakes
 
-    install "arch" python-rope
-    install "aurhelper" python-pylsp-rope
+    install arch -- python-rope
+    install aurhelper -- python-pylsp-rope
 
-    install "arch" python-isort
-    install "aurhelper" python-lsp-isort
+    install arch -- python-isort
+    install aurhelper -- python-lsp-isort
 
-    install "arch" mypy
-    install "aurhelper" python-lsp-mypy
+    install arch -- mypy
+    install aurhelper -- python-lsp-mypy
 
-    install "arch" python-ruff ruff-lsp
-    install "aurhelper" python-lsp-ruff
+    install arch -- python-ruff ruff-lsp
+    install aurhelper -- python-lsp-ruff
 }
 
 __lang_main() {
-    install "arch" \
+    install arch -- \
         lua luajit luarocks lua-language-server
 
-    install "arch" \
+    install arch -- \
         dash checkbashisms \
         bash-language-server shellcheck shfmt
-    install "aurhelper" beautysh
+    install aurhelper -- beautysh
 
-    install "arch" \
+    install arch -- \
         nodejs npm typescript \
         typescript-language-server eslint_d
-    install "npm" \
+    install npm -- \
         prettier-standard standard ts-standard \
         @fsouza/prettierd \
         vscode-langservers-extracted
 
-    install "npm" alex write-good textlint
-    install "aurhelper" proselint languagetool-rust
+    install npm -- alex write-good textlint
+    install aurhelper -- proselint languagetool-rust
 }
 
 __lang_misc() {
-    install "arch" \
+    install arch -- \
         ghc cabal-install stack haskell-language-server \
+        clang lld \
+        rust \
         ruby
 
-    install "arch" \
-        clang lld \
-        rust
-
-    install "arch" \
+    install arch -- \
         jdk-openjdk openjdk-doc openjdk-src \
         jdk17-openjdk openjdk17-doc openjdk17-src \
         jdk11-openjdk openjdk11-doc openjdk11-src
 
-    install "npm" \
-        vim-language-server
+    install npm -- vim-language-server
 
-    install "arch" \
+    install arch -- \
         sqlite sqlite-doc sqlite-analyzer sqlitebrowser
-    install "npm" \
-        sql-language-server
+    install npm -- sql-language-server
 }
 
 __obesities() {
@@ -96,14 +92,14 @@ __obesities() {
     #       Run->Run/Debug->Run: Alt-Shift-Enter
     # 4. restart pycharm
 
-    install "aur" vscodium-insiders-bin
+    install aur -- vscodium-insiders-bin
 
-    install "arch" \
+    install arch -- \
         pycharm-community-edition \
         intellij-idea-community-edition
-    install "aur" android-studio
+    install aur -- android-studio
 
-    install "arch" -- jupyterlab
+    install arch -- jupyterlab
 }
 
 main() {

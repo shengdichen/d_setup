@@ -4,23 +4,23 @@
 
 __office() {
     __l0() {
-        install "arch" \
+        install arch -- \
             zathura zathura-pdf-mupdf zathura-djvu zathura-ps \
             pdfarranger img2pdf
         dotfile -- d_zathura
 
-        install "arch" \
+        install arch -- \
             hunspell enchant \
             hunspell-en_us hunspell-en_gb hunspell-fr hunspell-de hunspell-it hunspell-ru hunspell-es_es
     }
 
     __l1() {
-        install "arch" -- xournalpp
+        install arch -- xournalpp
         dotfile -- d_xournalpp
 
-        install "arch" \
+        install arch -- \
             texlive texlive-lang biber libreoffice-fresh
-        install "aurhelper" -- lyx
+        install aurhelper -- lyx
         dotfile -- d_lyx
     }
 
@@ -34,11 +34,11 @@ __office() {
 }
 
 __media() {
-    install "arch" \
+    install arch -- \
         pulsemixer mpv \
         sox cmus mpd mpc ncmpc \
         imv yt-dlp ytfzf
-    install "pipx" -- tidal-dl
+    install pipx -- tidal-dl
     dotfile -- d_mpv d_mpd d_cmus d_ncmpc
 
     local mpd_lib="${HOME}/.config/mpd/bin/lib/"
@@ -55,23 +55,22 @@ __media() {
 
 __browser() {
     __l0() {
-        install "arch" \
+        install arch -- \
             qutebrowser python-adblock tor
         service_start -- tor
         dotfile -- d_qutebrowser
 
-        install "arch" -- chromium
+        install arch -- chromium
     }
 
     __l1() {
-        install "arch" \
+        install arch -- \
             firefox-developer-edition w3m \
             transmission-cli deluge-gtk
     }
 
     __l2() {
-        install "aurhelper" \
-            ungoogled-chromium-bin
+        install aurhelper -- ungoogled-chromium-bin
     }
 
     __l0
@@ -88,10 +87,9 @@ __browser() {
 
 __game() {
     __l2() {
-        install "arch" \
-            steam
+        install arch -- steam
 
-        install "arch" \
+        install arch -- \
             wine-staging wine-gecko wine-mono \
             lutris
     }
@@ -108,16 +106,18 @@ __game() {
 
 __social() {
     __l0() {
-        install "arch" \
-            "neomutt" "notmuch" "fdm" "isync" "msmtp"
-        install "aurhelper" \
-            "protonmail-bridge-core"
+        install arch -- \
+            neomutt notmuch fdm isync msmtp
+        install aurhelper -- \
+            protonmail-bridge-core
         dotfile -- d_mail
     }
 
     __l1() {
-        install "arch" -- signal-desktop
-        install "aurhelper" -- teams-for-linux
+        install aurhelper -- mkinitcpio-firmware
+
+        install arch -- signal-desktop
+        install aurhelper -- teams-for-linux
     }
 
     __l0
