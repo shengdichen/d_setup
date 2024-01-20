@@ -65,8 +65,9 @@ __graphics() {
 }
 
 __desktop() {
-    install arch -- \
-        git stow
+    install arch -- stow
+
+    install arch -- git
     dotfile -- d_git
 
     install arch -- xdg-user-dirs
