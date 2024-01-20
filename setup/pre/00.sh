@@ -198,6 +198,16 @@ bulk_work() {
     __confirm "fstab"
 }
 
+pre_chroot() {
+    __check_root
+    pacman_update
+
+    partitioning
+    check_network
+    sync_time
+    bulk_work
+}
+
 transition_to_post() {
     clear
     __start "in-chroot"
@@ -358,7 +368,6 @@ post_chroot() {
     echo "All done here in chroot."
     __confirm "chroot"
 }
-# }}}
 
 cleanup() {
     curl -L -O "shengdichen.xyz/install/01.sh"
@@ -386,11 +395,7 @@ case "${1}" in
         partitioning_vbox
         ;;
     "pre")
-        __check_root
-        partitioning
-        check_network
-        sync_time
-        bulk_work
+        pre_chroot
         ;;
     "transition")
         transition_to_post
