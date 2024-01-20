@@ -59,12 +59,38 @@ __run_in_chroot() {
     arch-chroot "${MNT}" sh "${@}"
 }
 
+pacman_update() {
+    pacman -Syy
+
+    while true; do
+        # use base and keyring as test packages
+        if ! pacman -S base archlinux-keyring; then
+            __separator
+            printf "the current default (pacman-)mirror is likely offline or outdated, "
+            printf "select another per reordering: "
+            read -r _
+            vim /etc/pacman.d/mirrorlist
+
+            killall gpg-agent
+            rm -rf /etc/pacman.d/gnupg/
+
+            pacman -Syy
+            pacman -S base archlinux-keyring
+
+            pacman-key --init
+            pacman-key --populate
+        else
+            break
+        fi
+    done
+
+}
+
 partitioning_vbox() {
     if ! efibootmgr; then
         echo "Not in EFI mode, exiting"
         exit 3
     fi
-    pacman -Syy
     pacman -S --needed fzf
     __continue
 
@@ -151,8 +177,6 @@ sync_time() {
 
 bulk_work() {
     __start "pacstrap"
-    pacman -Syy
-    pacman -S archlinux-keyring
     pacstrap -K /mnt \
         base base-devel dash vi neovim less \
         linux-zen linux-lts linux-firmware bash-completion
@@ -321,6 +345,9 @@ boot() {
 }
 
 post_chroot() {
+    __check_root
+    pacman_update
+
     base
     localization
     network
@@ -352,6 +379,9 @@ cleanup() {
 }
 
 case "${1}" in
+    "update")
+        pacman_update
+        ;;
     "vbox")
         partitioning_vbox
         ;;
