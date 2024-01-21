@@ -46,7 +46,8 @@ __confirm() {
             clear
             return
         else
-            echo "Huh, ${input}?"
+            printf "Huh, [%s]?" "${input}"
+            printf "\n"
         fi
     done
 }
@@ -55,38 +56,41 @@ __is_installed() {
     pacman -Qi "${1}" >/dev/null 2>&1
 }
 
-__install() {
-    if ! pacman -S --noconfirm "${@}" >/dev/null; then
-        echo "pacman> [${*}] failed; bad internet? exiting"
-        exit 3
-    fi
-}
-
-__run_in_chroot() {
-    arch-chroot "${MNT}" sh "${@}"
-}
-
-pacman_update() {
-    if ! pacman -Syy >/dev/null; then
-        printf "pacman-update failed, bad internet? exiting"
-        exit 3
-    fi
+__update() {
+    __start "pacman-update"
 
     while true; do
-        # use base and keyring as test packages
+        if ! pacman -Syy >/dev/null; then
+            printf "pacman-update failed, retrying"
+            sleep 1
+        else
+            break
+        fi
+    done
+
+    while true; do
+        # packages to test mirror availability
         if ! pacman -S --noconfirm base archlinux-keyring >/dev/null; then
             __separator
             printf "the current default (pacman-)mirror is likely offline or outdated, "
             printf "select another per reordering: "
-            read -r _
-            vi /etc/pacman.d/mirrorlist
+            __continue
+
+            local _mirrorlist="/etc/pacman.d/mirrorlist"
+            if command -v nvim; then
+                nvim "${_mirrorlist}"
+            elif command -v vim; then
+                vim "${_mirrorlist}"
+            else
+                vi "${_mirrorlist}"
+            fi
 
             killall gpg-agent
             rm -rf /etc/pacman.d/gnupg/
 
             # we do want to see outputs now
             pacman -Syy
-            pacman -S --noconfirm base archlinux-keyring
+            __install base archlinux-keyring
 
             pacman-key --init
             pacman-key --populate
@@ -95,7 +99,35 @@ pacman_update() {
         fi
     done
 
-    __continue
+    __separator
+    __confirm "pacman-update"
+}
+
+__install() {
+    if [ "${1}" = "--" ]; then shift; fi
+    __start "pacman-[${*}]"
+
+    __f() {
+        if ! __is_installed "${1}"; then
+            while true; do
+                if ! pacman -S --noconfirm "${1}" >/dev/null; then
+                    printf "pacman-install> [%s] failed" "${1}"
+                    printf "\n"
+                    __update
+                else
+                    break
+                fi
+            done
+        fi
+    }
+
+    for _package in "${@}"; do
+        __f "${_package}"
+    done
+}
+
+__run_in_chroot() {
+    arch-chroot "${MNT}" sh "${@}"
 }
 
 partitioning_standard() {
@@ -103,14 +135,7 @@ partitioning_standard() {
         echo "Not in EFI mode, exiting"
         exit 3
     fi
-    while true; do
-        if ! pacman -S --noconfirm fzf >/dev/null; then
-            pacman_update
-            clear
-        else
-            break
-        fi
-    done
+    __install fzf
     clear
 
     __start "partitioning - standard"
@@ -162,8 +187,9 @@ partitioning_check() {
     if ! mount | grep " on /mnt" >/dev/null; then
         printf "parition and mount to /mnt first "
         printf "(try running this script with |part| as argument for standard partitioning)"
-        printf "\n"
+        printf "\n\n"
         printf "exiting"
+        printf "\n"
         exit 3
     fi
 }
@@ -203,6 +229,7 @@ bulk_work() {
         echo "Installation failed, bad internet maybe?"
         exit 3
     fi
+    __separator
     __confirm "pacstrap"
 
     __start "fstab"
@@ -217,7 +244,6 @@ bulk_work() {
 
 pre_chroot() {
     __check_root
-    pacman_update
 
     partitioning_check
     check_network
@@ -226,7 +252,6 @@ pre_chroot() {
 }
 
 transition_to_post() {
-    clear
     __start "to-chroot"
 
     cp -f "${SCRIPT_NAME}" "${MNT}/."
@@ -319,14 +344,12 @@ STOP
 
     clear
 
-    if ! __is_installed networkmanager; then
-        __install networkmanager dhclient
-        cat <<STOP >/etc/NetworkManager/conf.d/dhcp-client.conf
+    __install networkmanager dhclient
+    cat <<STOP >/etc/NetworkManager/conf.d/dhcp-client.conf
 [main]
 dhcp=dhclient
 STOP
-        systemctl enable NetworkManager.service
-    fi
+    systemctl enable NetworkManager.service
 
     __separator
     __confirm "network"
@@ -335,9 +358,7 @@ STOP
 boot() {
     __start "boot"
 
-    if ! __is_installed grub; then
-        pacman -S grub efibootmgr
-    fi
+    __install grub efibootmgr
 
     local grub_dir="/boot/grub"
     if [ ! -d "${grub_dir}" ]; then
@@ -401,10 +422,11 @@ pacman_extra() {
         if [ ! -f "/etc/${conf_back}" ]; then
             mv "/etc/${conf}" "/etc/${conf_back}"
         fi
-        cp "./${conf}" "/etc/."
+        cp -f "./${conf}" "/etc/."
         rm "./${conf}"
 
         pacman -Syu
+        printf "\n\n"
         pacman -Fyy
 
         __separator
@@ -416,59 +438,68 @@ pacman_extra() {
     __conf_takeover
 }
 
-birth() {
-    local _me="shc" _rank="god" _home="main"
+multiuser() {
+    __visudo() {
+        __start "visudo"
+        # previous version := ...(ALL:ALL)...
+        # newer version := ...(ALL)...
+        if ! grep "^%wheel ALL=(.*ALL) ALL$" /etc/sudoers; then
+            printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL|: " && read -r _
+            EDITOR=nvim visudo
+        fi
+        __separator
+        __confirm "visudo"
+    }
 
-    __start "birth-${_me}"
-    __install zsh zsh-completions zsh-syntax-highlighting
-    if ! id "${_me}" >/dev/null 2>&1; then
-        useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
-        groupmod -n "${_rank}" "${_me}"
+    __birth() {
+        local _me="shc" _rank="god" _home="main"
 
-        while true; do
-            printf "[%s] " ${_me}
-            if passwd "${_me}"; then break; fi
-            echo
-        done
-        printf "%s is born " ${_me}
-    else
-        printf "%s is already alive " ${_me}
-    fi
-    __separator
-    __confirm "birth-${_me}"
+        __start "birth-${_me}"
+        __install zsh zsh-completions zsh-syntax-highlighting
+        if ! id "${_me}" >/dev/null 2>&1; then
+            useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
+            groupmod -n "${_rank}" "${_me}"
 
-    __start "visudo"
-    # previous version := ...(ALL:ALL)...
-    # newer version := ...(ALL)...
-    if ! grep "^%wheel ALL=(.*ALL) ALL$" /etc/sudoers; then
-        printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL|: " && read -r _
-        EDITOR=nvim visudo
-        clear
-        printf "[visudo] DONE " && read -r _ && clear
-    fi
+            while true; do
+                printf "[%s] " ${_me}
+                if passwd "${_me}"; then break; fi
+                echo
+            done
+            printf "%s is born " ${_me}
+        else
+            printf "%s is already alive " ${_me}
+        fi
 
-    rm "/home/${_home}/.bash"*
+        rm "/home/${_home}/.bash"*
 
-    curl -L -O "shengdichen.xyz/install/02.sh"
-    chown "${_me}:${_rank}" 02.sh
-    mv -f 02.sh "/home/${_home}/."
+        local _script="02.sh"
+        curl -L -O "shengdichen.xyz/install/${_script}"
+        chown "${_me}:${_rank}" "${_script}"
+        mv -f "${_script}" "/home/${_home}/."
 
-    __separator
-    printf "personal-setup for [%s] ready, run after (re)log-in" "${_me}"
-    printf "\n"
-    __confirm "visudo"
+        __separator
+        printf "personal setup-script for [%s] ready, run after (re)log-in" "${_me}"
+        printf "\n"
+        __confirm "birth-${_me}"
+    }
+
+    __visudo
+    __birth
 }
 
 post_chroot() {
     __check_root
-    pacman_update
 
     base
     localization
     network
     boot
     pacman_extra
-    birth
+    multiuser
+
+    __separator
+    rm "${SCRIPT_NAME}"
+    __confirm "post-chroot"
 }
 
 cleanup() {
@@ -480,13 +511,13 @@ cleanup() {
     __confirm "cleanup"
 
     rm "${SCRIPT_NAME}"
-    umount -R /mnt
+    umount -R "${MNT}"
     reboot
 }
 
 case "${1}" in
     "update")
-        pacman_update
+        __update
         ;;
     "part")
         partitioning_standard
