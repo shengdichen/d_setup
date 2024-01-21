@@ -358,6 +358,107 @@ boot() {
     __confirm "boot"
 }
 
+pacman_extra() {
+    __blackarch() {
+        __start "blackarch"
+
+        # REF:
+        #   https://www.blackarch.org/downloads.html#install-repo
+        local _blackarch="strap.sh"
+        curl -O "https://blackarch.org/${_blackarch}"
+        chmod +x "${_blackarch}"
+        ./"${_blackarch}"
+        rm "${_blackarch}"
+
+        __separator
+        __confirm "blackarch"
+    }
+
+    __zfs() {
+        __start "zfs"
+
+        # REF:
+        #   https://wiki.archlinux.org/title/Unofficial_user_repositories#archzfs
+        local _archzfs_key="DDF7DB817396A49B2A2723F7403BD972F75D9D76"
+        pacman-key --recv-keys "${_archzfs_key}"
+        pacman-key --finger "${_archzfs_key}"
+        pacman-key --lsign-key "${_archzfs_key}"
+
+        __separator
+        __confirm "zfs"
+    }
+
+    __conf_takeover() {
+        __start "pacman-extra"
+
+        local conf="pacman.conf"
+        local conf_back="${conf}.pacnew"
+
+        if [ ! -f "./${conf}" ]; then
+            curl -L -O "shengdichen.xyz/install/${conf}"
+        fi
+
+        if [ ! -f "/etc/${conf_back}" ]; then
+            mv "/etc/${conf}" "/etc/${conf_back}"
+        fi
+        cp "./${conf}" "/etc/."
+        rm "./${conf}"
+
+        pacman -Syu
+        pacman -Fyy
+
+        __separator
+        __confirm "pacman-extra"
+    }
+
+    __blackarch
+    __zfs
+    __conf_takeover
+}
+
+birth() {
+    local _me="shc" _rank="god" _home="main"
+
+    __start "birth-${_me}"
+    __install zsh zsh-completions zsh-syntax-highlighting
+    if ! id "${_me}" >/dev/null 2>&1; then
+        useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
+        groupmod -n "${_rank}" "${_me}"
+
+        while true; do
+            printf "[%s] " ${_me}
+            if passwd "${_me}"; then break; fi
+            echo
+        done
+        printf "%s is born " ${_me}
+    else
+        printf "%s is already alive " ${_me}
+    fi
+    __separator
+    __confirm "birth-${_me}"
+
+    __start "visudo"
+    # previous version := ...(ALL:ALL)...
+    # newer version := ...(ALL)...
+    if ! grep "^%wheel ALL=(.*ALL) ALL$" /etc/sudoers; then
+        printf "[visudo] uncomment |%%wheel ALL=(ALL) ALL|: " && read -r _
+        EDITOR=nvim visudo
+        clear
+        printf "[visudo] DONE " && read -r _ && clear
+    fi
+
+    rm "/home/${_home}/.bash"*
+
+    curl -L -O "shengdichen.xyz/install/02.sh"
+    chown "${_me}:${_rank}" 02.sh
+    mv -f 02.sh "/home/${_home}/."
+
+    __separator
+    printf "personal-setup for [%s] ready, run after (re)log-in" "${_me}"
+    printf "\n"
+    __confirm "visudo"
+}
+
 post_chroot() {
     __check_root
     pacman_update
@@ -366,26 +467,18 @@ post_chroot() {
     localization
     network
     boot
-
-    rm "${SCRIPT_NAME}"
-    __separator ""
-    echo "All done here in chroot."
-    __confirm "chroot"
+    pacman_extra
+    birth
 }
 
 cleanup() {
-    curl -L -O "shengdichen.xyz/install/01.sh"
-    mv -f 01.sh "/mnt/."
-    echo
-    printf "01-stage> ready when you are: "
-    read -r _ && clear
-    if ! arch-chroot /mnt sh 01.sh; then
-        echo "Installation complete; run"
-        echo "    # sh 01.sh"
-        echo "after rebooting."
-        printf "Ready when you are: "
-        read -r _
-    fi
+    __start "cleanup"
+
+    __separator ""
+    printf "Installation complete; will now reboot"
+    printf "\n"
+    __confirm "cleanup"
+
     rm "${SCRIPT_NAME}"
     umount -R /mnt
     reboot
