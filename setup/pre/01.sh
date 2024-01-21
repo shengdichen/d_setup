@@ -35,8 +35,14 @@ pacman_blackarch() {
 
 pacman_conf_takeover() {
     local conf="pacman.conf"
+    local conf_back="${conf}.pacnew"
+
     if [ ! -f "./${conf}" ]; then
         curl -L -O "shengdichen.xyz/install/${conf}"
+    fi
+
+    if [ ! -f "/etc/${conf_back}" ]; then
+        mv "/etc/${conf}" "/etc/${conf_back}"
     fi
     cp "./${conf}" "/etc/."
     rm "./${conf}"
