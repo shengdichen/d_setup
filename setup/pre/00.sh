@@ -55,6 +55,13 @@ __is_installed() {
     pacman -Qi "${1}" >/dev/null 2>&1
 }
 
+__install() {
+    if ! pacman -S --noconfirm "${@}" >/dev/null; then
+        echo "pacman> [${*}] failed; bad internet? exiting"
+        exit 3
+    fi
+}
+
 __run_in_chroot() {
     arch-chroot "${MNT}" sh "${@}"
 }
@@ -72,7 +79,7 @@ pacman_update() {
             printf "the current default (pacman-)mirror is likely offline or outdated, "
             printf "select another per reordering: "
             read -r _
-            vim /etc/pacman.d/mirrorlist
+            vi /etc/pacman.d/mirrorlist
 
             killall gpg-agent
             rm -rf /etc/pacman.d/gnupg/
@@ -244,16 +251,6 @@ base() {
     __start "chroot.base"
     . /usr/share/bash-completion/bash_completion
 
-    local pack_keyring="archlinux-keyring"
-    if ! pacman -S "${pack_keyring}"; then
-        rm -rf /etc/pacman.d/gnupg
-        pacman-key --init
-        pacman-key --populate
-        pacman -S "${pack_keyring}"
-    fi
-
-    clear
-
     # re-password only if needed
     if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
         while true; do
@@ -323,7 +320,7 @@ STOP
     clear
 
     if ! __is_installed networkmanager; then
-        pacman -S networkmanager dhclient
+        __install networkmanager dhclient
         cat <<STOP >/etc/NetworkManager/conf.d/dhcp-client.conf
 [main]
 dhcp=dhclient
@@ -331,7 +328,7 @@ STOP
         systemctl enable NetworkManager.service
     fi
 
-    __separator ""
+    __separator
     __confirm "network"
 }
 
@@ -352,7 +349,7 @@ boot() {
             --target=x86_64-efi \
             --efi-directory="${EFI_MOUNT}" \
             --bootloader-id=MAIN
-
+        printf "\n\n"
         grub-mkconfig -o "${grub_dir}/grub.cfg"
     fi
 
