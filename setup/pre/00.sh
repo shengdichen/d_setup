@@ -6,14 +6,15 @@ EFI_MOUNT="/boot/efi"
 
 __check_root() {
     if [ "$(id -u)" -ne 0 ]; then
-        echo "Must be executed as root, exiting"
+        printf "Must be executed as root, exiting\n"
+        printf "\n"
         exit 3
     fi
 }
 
 __start() {
-    printf "%s> START" "${1}"
-    printf "\n\n"
+    printf "%s> START\n" "${1}"
+    printf "\n"
 }
 
 __continue() {
@@ -29,7 +30,7 @@ __separator() {
         msg=" ${1} "
     fi
     printf "\n"
-    echo "----------${msg}----------"
+    printf -- "----------%s----------\n" "${msg}"
     printf "\n"
 }
 
@@ -40,13 +41,14 @@ __confirm() {
         local input=""
         read -r input
         if [ "${input}" = "q" ] || [ "${input}" = "Q" ]; then
-            printf "Exiting"
+            printf "Exiting\n"
+            printf "\n"
             exit 3
         elif [ "${input}" = "c" ] || [ "${input}" = "C" ] || [ -z "${input}" ]; then
             clear
             return
         else
-            printf "Huh, [%s]?" "${input}"
+            printf "Huh, [%s]?\n" "${input}"
             printf "\n"
         fi
     done
@@ -61,7 +63,7 @@ __update() {
 
     while true; do
         if ! pacman -Syy >/dev/null; then
-            printf "pacman-update failed, retrying"
+            printf "pacman-update failed, retrying\n"
             sleep 1
         else
             break
@@ -72,8 +74,8 @@ __update() {
         # packages to test mirror availability
         if ! pacman -S --noconfirm base archlinux-keyring >/dev/null; then
             __separator
-            printf "the current default (pacman-)mirror is likely offline or outdated, "
-            printf "select another per reordering: "
+            printf "the current default (pacman-)mirror is likely offline or outdated "
+            printf "(select another per reordering)\n"
             __continue
 
             local _mirrorlist="/etc/pacman.d/mirrorlist"
@@ -111,8 +113,7 @@ __install() {
         if ! __is_installed "${1}"; then
             while true; do
                 if ! pacman -S --noconfirm "${1}" >/dev/null; then
-                    printf "pacman-install> [%s] failed" "${1}"
-                    printf "\n"
+                    printf "pacman-install> [%s] failed\n" "${1}"
                     __update
                 else
                     break
@@ -127,12 +128,16 @@ __install() {
 }
 
 __run_in_chroot() {
-    arch-chroot "${MNT}" sh "${@}"
+    if [ "${#}" -gt 0 ]; then
+        arch-chroot "${MNT}" sh "${@}"
+    else
+        arch-chroot "${MNT}" sh "${@}"
+    fi
 }
 
 partitioning_standard() {
     if ! efibootmgr >/dev/null; then
-        echo "Not in EFI mode, exiting"
+        printf "Not in EFI mode, exiting\n"
         exit 3
     fi
     __install fzf
@@ -143,8 +148,8 @@ partitioning_standard() {
     local disk
     local input
     while true; do
-        printf "select (full) disk for partitioning"
-        printf "\n\n"
+        printf "select (full) disk for partitioning\n"
+        printf "\n"
         disk="$(lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
         printf "[%s] for partitioning: [c]onfirm; [r]etry (default) " "${disk}"
         read -r input
@@ -186,9 +191,9 @@ partitioning_standard() {
 partitioning_check() {
     if ! mount | grep " on /mnt" >/dev/null; then
         printf "parition and mount to /mnt first "
-        printf "(try running this script with |part| as argument for standard partitioning)"
-        printf "\n\n"
-        printf "exiting"
+        printf "(try running this script with |part| as argument for standard partitioning)\n"
+        printf "\n"
+        printf "exiting\n"
         printf "\n"
         exit 3
     fi
@@ -226,7 +231,8 @@ bulk_work() {
     if ! pacstrap -K /mnt \
         base base-devel dash vi neovim less \
         linux-zen linux-lts linux-firmware bash-completion; then
-        echo "Installation failed, bad internet maybe?"
+        printf "Installation failed, bad internet maybe?\n"
+        printf "\n"
         exit 3
     fi
     __separator
@@ -252,24 +258,24 @@ pre_chroot() {
 }
 
 transition_to_post() {
-    __start "to-chroot"
-
     cp -f "${SCRIPT_NAME}" "${MNT}/."
 
-    printf "Ready to chroot: automatic setup (default); [m]anual: "
-    local input
-    read -r input
-    echo
+    case "${1}" in
+        "-m" | "--manual")
+            __start "to-chroot"
 
-    if [ "${input}" = "m" ]; then
-        echo "Run"
-        echo "    # sh ${SCRIPT_NAME} post"
-        echo "in now-to-be chroot."
-        __confirm "to-chroot"
-        arch-chroot /mnt
-    else
-        arch-chroot /mnt sh "${SCRIPT_NAME}" post
-    fi
+            printf "Run\n"
+            printf "    # sh %s post\n" "${SCRIPT_NAME}"
+            printf "in now-to-be chroot.\n"
+            printf "\n"
+            __separator
+            __confirm "to-chroot"
+            __run_in_chroot
+            ;;
+        *)
+            __run_in_chroot "${SCRIPT_NAME}" post
+            ;;
+    esac
 }
 
 base() {
@@ -334,15 +340,13 @@ network() {
         local _hname
         printf "Hostname: "
         read -r _hname
-        echo "${_hname}" >"${hostname_file}"
+        printf "%s\n" "${_hname}" >"${hostname_file}"
     fi
 
     cat <<STOP >/etc/hosts
 127.0.0.1 localhost
 ::1 localhost
 STOP
-
-    clear
 
     __install networkmanager dhclient
     cat <<STOP >/etc/NetworkManager/conf.d/dhcp-client.conf
@@ -362,7 +366,6 @@ boot() {
 
     local grub_dir="/boot/grub"
     if [ ! -d "${grub_dir}" ]; then
-        clear
         mkinitcpio -P
         clear
 
@@ -425,7 +428,9 @@ pacman_extra() {
         cp -f "./${conf}" "/etc/."
         rm "./${conf}"
 
-        pacman -Syu
+        clear
+
+        pacman -Syyu --noconfirm
         printf "\n\n"
         pacman -Fyy
 
@@ -506,8 +511,7 @@ cleanup() {
     __start "cleanup"
 
     __separator ""
-    printf "Installation complete; will now reboot"
-    printf "\n"
+    printf "Installation complete; will now reboot\n"
     __confirm "cleanup"
 
     rm "${SCRIPT_NAME}"
@@ -526,17 +530,20 @@ case "${1}" in
         pre_chroot
         ;;
     "transition")
-        transition_to_post
+        shift
+        transition_to_post "${1}"
         ;;
     "post")
         post_chroot
         ;;
-    "cleanup")
-        cleanup
-        ;;
-    *)
+    "pipe")
         pre_chroot
         transition_to_post
         cleanup
+        ;;
+    *)
+        printf "huh? what is [%s]? (try 'pipe' for full install)\n" "${1}"
+        printf "\n"
+        exit 3
         ;;
 esac
