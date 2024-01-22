@@ -33,8 +33,10 @@ push_to_xyz() {
             "${profile}:${script_root}/."
     done
 
+    echo
     echo "Done! Obtain with:"
-    echo "\$ curl -LO shengdichen.xyz/install/0[1|2|3].sh"
+    echo "\$ curl -LO shengdichen.xyz/install/0[0|1|2].sh"
+    echo
 }
 
 case "${1}" in

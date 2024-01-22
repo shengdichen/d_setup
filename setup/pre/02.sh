@@ -32,9 +32,13 @@ _pre() {
         )
     fi
     rm -rf "${HOME}/dot"
+
+    clear
 }
 
 raw_ssh() {
+    printf "ssh-raw> start\n\n"
+
     if [ -d "${HOME}/.ssh" ]; then
         echo "Found existing ssh-config, skipping"
         return
@@ -73,49 +77,66 @@ raw_ssh() {
         fi
     )
 
+    echo
     if sudo umount "${mount_tmp}"; then
         rmdir "${mount_tmp}"
-        echo "Safely unmounted, remove storage now!"
-        echo -n "Hit [Enter] when ready:"
-        read -r _
+        printf "Safely unmounted, remove storage now: "
     else
-        echo
-        echo "Unmount failed, you might be fine ignoring this though"
+        printf "Unmount failed, you might be fine ignoring this though "
     fi
+
+    printf "\n\n"
+    printf "ssh-raw> done " && read -r _ && clear
 }
 
-clone_setup() {
+get_d_setup() {
+    printf "d_setup> start\n\n"
+
     local setup_link="shengdichen/d_setup.git"
     (
         cd || exit 3
-        # clone from https since we do NOT have ssh yet
-        if ! git clone "https://github.com/${setup_link}" dot; then
-            echo " Cloning d_setup failed: bad internet?"
+        if ! git clone "git@github.com:${setup_link}" dot; then
+            printf "\n\n"
+            printf "d_setup> clone: failed (bad internet?) "
             exit 3
+        else
+            printf "\n\n"
+            printf "d_setup> done " && read -r _ && clear
         fi
-
-        # for later: when we are done here, we will be able to ssh
-        cd dot && git remote set-url origin "git@github.com:${setup_link}"
     )
 }
 
-prv() {
+get_prv() {
+    printf "prv> start\n\n"
+
     # source of prv
     mkdir -p "${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    local ssh_profile_source="ssh_matrix_ext"
     (
         cd "${MOUNT_ROOT}" || exit 3
-        sshfs "ssh_matrix_ext:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
+        while true; do
+            sshfs "${ssh_profile_source}:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
+            if mount | grep "${ssh_profile_source}"; then
+                break
+            else
+                echo "prv.sshfs-mount> failed to mount profile [${ssh_profile_source}], retrying"
+                sleep 3
+            fi
+        done
+        printf "\n\n"
+        printf "prv> mount-source: done " && read -r _ && clear
     )
 
-    local branch="main"
-    mkdir -p "${DOT_ROOT}/${DOT_PRV}"
     (
-        cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
+        cd "${DOT_ROOT}" || exit 3
         # specify |-b| to prevent warning for missing default brach name
-        git init -b "${branch}"
-        git remote add origin "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}"
-        git fetch
-        git merge origin/"${branch}"
+        if ! git clone -b main "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}" "${DOT_PRV}"; then
+            echo "clone> prv: failed, exiting"
+            exit 3
+        else
+            printf "\n\n"
+            printf "prv> clone: done " && read -r _ && clear
+        fi
     )
 
     # get ready for stowing(-override)
@@ -124,27 +145,39 @@ prv() {
     rmdir "${MOUNT_ROOT}/${MOUNT_MATRIX}"
 
     (
-        cd "${DOT_ROOT}/${DOT_PRV}" && ${SHELL} setup.sh
+        cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
+        if ! ./"setup.sh"; then
+            echo "prv.setup> failed, exiting"
+            exit 3
+        else
+            printf "\n\n"
+            printf "prv> setup: done " && read -r _ && clear
+        fi
     )
 }
 
 _post() {
     rm "${SCRIPT_NAME}"
 
-    echo
-    echo "Setup complete, run:"
-    echo "    \$ sh ~/dot/setup/post/setup.sh"
-    printf "when ready: " && read -r _
-    clear
-    (
-        cd "${HOME}/dot/setup/post" || exit 3
-        "./setup.sh"
-    )
+    printf "pre-02> done: " && read -r _ && clear
+
+    local _input
+    printf "post-setup? [C]onfirm, [q]uit " && read -r _input
+    if [ "${_input}" = "q" ]; then
+        echo "manually run"
+        echo "    \$ sh ~/dot/setup/post/setup.sh"
+        echo "when ready, exiting"
+    else
+        (
+            cd "${HOME}/dot/setup/post" || exit 3
+            "./setup.sh"
+        )
+    fi
 }
 
 _pre
 raw_ssh
-clone_setup
-prv
+get_d_setup
+get_prv
 _post
-unset -f _pre raw_ssh clone_setup prv _post
+unset -f _pre raw_ssh get_d_setup get_prv _post

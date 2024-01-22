@@ -1,6 +1,7 @@
 #!/usr/bin/env dash
 
 SCRIPT_NAME="$(basename "${0}")"
+MNT="/mnt"
 EFI_MOUNT="/boot/efi"
 
 __check_root() {
@@ -9,11 +10,10 @@ __check_root() {
         exit 3
     fi
 }
-__check_root
 
 __start() {
     printf "%s> START" "${1}"
-    printf "\n"
+    printf "\n\n"
 }
 
 __continue() {
@@ -28,9 +28,9 @@ __separator() {
     if [ -n "${1}" ]; then
         msg=" ${1} "
     fi
-    echo
+    printf "\n"
     echo "----------${msg}----------"
-    echo
+    printf "\n"
 }
 
 __confirm() {
@@ -52,44 +52,76 @@ __confirm() {
 }
 
 __is_installed() {
-    pacman -Qs "${1}" >/dev/null
+    pacman -Qi "${1}" >/dev/null 2>&1
 }
 
-# pre {{{
-partitioning() {
-    __start "partitioning"
+__run_in_chroot() {
+    arch-chroot "${MNT}" sh "${@}"
+}
 
-    if ! mount | grep " on /mnt" >/dev/null; then
-        echo "parition and mount to /mnt first, exiting"
+pacman_update() {
+    if ! pacman -Syy >/dev/null; then
+        printf "pacman-update failed, bad internet? exiting"
         exit 3
     fi
 
-    __separator
-    lsblk
-    __confirm "partitioning"
+    while true; do
+        # use base and keyring as test packages
+        if ! pacman -S --noconfirm base archlinux-keyring >/dev/null; then
+            __separator
+            printf "the current default (pacman-)mirror is likely offline or outdated, "
+            printf "select another per reordering: "
+            read -r _
+            vim /etc/pacman.d/mirrorlist
+
+            killall gpg-agent
+            rm -rf /etc/pacman.d/gnupg/
+
+            # we do want to see outputs now
+            pacman -Syy
+            pacman -S --noconfirm base archlinux-keyring
+
+            pacman-key --init
+            pacman-key --populate
+        else
+            break
+        fi
+    done
+
+    __continue
 }
 
-partitioning_vbox() {
-    if ! efibootmgr; then
+partitioning_standard() {
+    if ! efibootmgr >/dev/null; then
         echo "Not in EFI mode, exiting"
         exit 3
     fi
-    pacman -Syy
-    pacman -S --needed fzf
-    __continue
+    while true; do
+        if ! pacman -S --noconfirm fzf >/dev/null; then
+            pacman_update
+            clear
+        else
+            break
+        fi
+    done
+    clear
+
+    __start "partitioning - standard"
 
     local disk
+    local input
     while true; do
-        echo "select (full) disk for partitioning"
-        disk="$(lsblk -o PATH,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
-        local input
-        printf "[%s] for partitioning: retry (default); [c]onfirm " "${disk}"
+        printf "select (full) disk for partitioning"
+        printf "\n\n"
+        disk="$(lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
+        printf "[%s] for partitioning: [c]onfirm; [r]etry (default) " "${disk}"
         read -r input
-        if [ "${input}" = "c" ]; then
+        if [ "${input}" = "c" ] || [ "${input}" = "C" ]; then
             break
         fi
         clear
     done
+    printf "\n\n"
 
     local part_delimiter=""
     case "${disk}" in
@@ -115,12 +147,22 @@ partitioning_vbox() {
     mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/${EFI_MOUNT}"
 
     __separator
-    lsblk
+    lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS
     __continue
 }
 
+partitioning_check() {
+    if ! mount | grep " on /mnt" >/dev/null; then
+        printf "parition and mount to /mnt first "
+        printf "(try running this script with |part| as argument for standard partitioning)"
+        printf "\n"
+        printf "exiting"
+        exit 3
+    fi
+}
+
 check_network() {
-    __start "networking"
+    __start "network"
 
     __separator
     ping -c 3 shengdichen.xyz
@@ -148,14 +190,9 @@ sync_time() {
 
 bulk_work() {
     __start "pacstrap"
-    pacman -Syy
-    pacman -S archlinux-keyring
-    pacstrap -K /mnt \
+    if ! pacstrap -K /mnt \
         base base-devel dash vi neovim less \
-        linux-zen linux-lts linux-firmware bash-completion
-
-    __separator
-    if ! arch-chroot /mnt pacman -Q | grep linux-zen >/dev/null; then
+        linux-zen linux-lts linux-firmware bash-completion; then
         echo "Installation failed, bad internet maybe?"
         exit 3
     fi
@@ -165,23 +202,27 @@ bulk_work() {
     local fstab="/mnt/etc/fstab"
     genfstab -U /mnt >"${fstab}"
     __separator
+    lsblk -o PATH,LABEL,UUID,FSTYPE,SIZE,MOUNTPOINT
+    __separator
     cat "${fstab}"
     __confirm "fstab"
 }
 
 pre_chroot() {
-    partitioning
+    __check_root
+    pacman_update
+
+    partitioning_check
     check_network
     sync_time
     bulk_work
 }
-# }}}
 
 transition_to_post() {
     clear
-    __start "in-chroot"
+    __start "to-chroot"
 
-    cp -f "${SCRIPT_NAME}" /mnt/.
+    cp -f "${SCRIPT_NAME}" "${MNT}/."
 
     printf "Ready to chroot: automatic setup (default); [m]anual: "
     local input
@@ -191,17 +232,14 @@ transition_to_post() {
     if [ "${input}" = "m" ]; then
         echo "Run"
         echo "    # sh ${SCRIPT_NAME} post"
-        echo "in chroot."
-        echo
-        printf "Ready when you are: "
-        read -r _
+        echo "in now-to-be chroot."
+        __confirm "to-chroot"
         arch-chroot /mnt
     else
         arch-chroot /mnt sh "${SCRIPT_NAME}" post
     fi
 }
 
-# post {{{
 base() {
     __start "chroot.base"
     . /usr/share/bash-completion/bash_completion
@@ -230,7 +268,6 @@ base() {
 
     __separator
     __confirm "chroot.base"
-
 }
 
 localization() {
@@ -325,6 +362,9 @@ boot() {
 }
 
 post_chroot() {
+    __check_root
+    pacman_update
+
     base
     localization
     network
@@ -332,11 +372,9 @@ post_chroot() {
 
     rm "${SCRIPT_NAME}"
     __separator ""
-    __confirm "boot"
-    printf "All done here in chroot: "
-    read -r _
+    echo "All done here in chroot."
+    __confirm "chroot"
 }
-# }}}
 
 cleanup() {
     curl -L -O "shengdichen.xyz/install/01.sh"
@@ -357,8 +395,11 @@ cleanup() {
 }
 
 case "${1}" in
-    "vbox")
-        partitioning_vbox
+    "update")
+        pacman_update
+        ;;
+    "part")
+        partitioning_standard
         ;;
     "pre")
         pre_chroot
@@ -378,5 +419,3 @@ case "${1}" in
         cleanup
         ;;
 esac
-
-# vim: foldmethod=marker
