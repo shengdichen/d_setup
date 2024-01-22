@@ -12,6 +12,10 @@ __check_root() {
     fi
 }
 
+__download() {
+    curl -L -O "shengdichen.xyz/install/${1}"
+}
+
 __start() {
     printf "%s> START\n" "${1}"
     printf "\n"
@@ -418,9 +422,7 @@ pacman_extra() {
         local conf="pacman.conf"
         local conf_back="${conf}.pacnew"
 
-        if [ ! -f "./${conf}" ]; then
-            curl -L -O "shengdichen.xyz/install/${conf}"
-        fi
+        __download "${conf}"
 
         if [ ! -f "/etc/${conf_back}" ]; then
             mv "/etc/${conf}" "/etc/${conf_back}"
@@ -478,7 +480,7 @@ multiuser() {
         rm "/home/${_home}/.bash"*
 
         local _script="02.sh"
-        curl -L -O "shengdichen.xyz/install/${_script}"
+        __download "${_script}"
         chown "${_me}:${_rank}" "${_script}"
         mv -f "${_script}" "/home/${_home}/."
 
