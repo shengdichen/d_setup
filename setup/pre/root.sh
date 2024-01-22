@@ -483,7 +483,7 @@ multiuser() {
 
         rm "/home/${_home}/.bash"*
 
-        local _script="02.sh"
+        local _script="user.sh"
         __download "${_script}"
         chown "${_me}:${_rank}" "${_script}"
         mv -f "${_script}" "/home/${_home}/."

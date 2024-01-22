@@ -27,7 +27,7 @@ push_to_xyz() {
         script_root="domains/shengdichen.xyz/public_html/install"
 
     ssh "${profile}" mkdir -p ${script_root}
-    for f in "00.sh" "02.sh" "pacman.conf" "pacman.conf.pacnew"; do
+    for f in "root.sh" "user.sh" "pacman.conf"; do
         scp \
             "./${f}" \
             "${profile}:${script_root}/."
@@ -35,7 +35,7 @@ push_to_xyz() {
 
     echo
     echo "Done! Obtain with:"
-    echo "\$ curl -LO shengdichen.xyz/install/0[0|1|2].sh"
+    echo "\$ curl -LO shengdichen.xyz/install/<root|user>.sh"
     echo
 }
 
