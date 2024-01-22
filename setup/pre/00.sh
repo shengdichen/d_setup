@@ -131,6 +131,10 @@ __install() {
     done
 }
 
+__lsblk() {
+    lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS
+}
+
 __run_in_chroot() {
     if [ "${#}" -gt 0 ]; then
         arch-chroot "${MNT}" sh "${@}"
@@ -154,7 +158,7 @@ partitioning_standard() {
     while true; do
         printf "select (full) disk for partitioning\n"
         printf "\n"
-        disk="$(lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
+        disk="$(__lsblk | fzf --reverse --height=30% | awk '{ print $1 }')"
         printf "[%s] for partitioning: [c]onfirm; [r]etry (default) " "${disk}"
         read -r input
         if [ "${input}" = "c" ] || [ "${input}" = "C" ]; then
@@ -188,7 +192,7 @@ partitioning_standard() {
     mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/${EFI_MOUNT}"
 
     __separator
-    lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS
+    __lsblk
     __continue
 }
 
@@ -246,7 +250,7 @@ bulk_work() {
     local fstab="/mnt/etc/fstab"
     genfstab -U /mnt >"${fstab}"
     __separator
-    lsblk -o PATH,LABEL,UUID,FSTYPE,SIZE,MOUNTPOINT
+    __lsblk
     __separator
     cat "${fstab}"
     __confirm "fstab"
