@@ -25,6 +25,23 @@ __done() {
     clear
 }
 
+__yes_or_no() {
+    local _input
+    while true; do
+        printf "%s: [y]es; [n]o? " "${1}"
+        read -r _input
+
+        case "${_input}" in
+            "y" | "yes")
+                return 0
+                ;;
+            "n" | "no")
+                return 1
+                ;;
+        esac
+    done
+}
+
 _pre() {
     if [ "$(id -u)" -eq 0 ]; then
         __error "Must be non-root, (create and) switch to user"
@@ -39,7 +56,9 @@ _pre() {
     fi
 
     if [ -d "${HOME}/.ssh" ]; then
-        rm -r "${HOME}/.ssh"
+        if __yes_or_no "remove ~/.ssh"; then
+            rm -r "${HOME}/.ssh"
+        fi
     fi
     if [ -d "${DOT_ROOT}/${DOT_PRV}" ]; then
         (cd "${DOT_ROOT}" && stow -D "${DOT_PRV}")
@@ -71,29 +90,28 @@ raw_ssh() {
     __start "ssh-raw"
 
     __copy_zip() {
-        mkdir -p "${1}"
-        local _ssh_zip_path="${1}/x/Dox/sys/${_ssh_zip}"
+        mkdir -p "${_mountpt}"
+        local _ssh_zip_path="${_mountpt}/x/Dox/sys/${_ssh_zip}"
 
         local _disk=""
         printf "select source-disk\n\n"
         _disk="$(lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
 
-        if ! sudo mount "${_disk}" "${1}"; then
+        if ! sudo mount "${_disk}" "${_mountpt}"; then
             __error "mount> [${_disk}] failed"
         fi
         if [ ! -f "${_ssh_zip_path}" ]; then
-            __unmount "${1}"
+            __unmount "${_mountpt}"
             __error "[${_ssh_zip}] not found on [${_disk}]"
-        fi
-        if ! cp -f "${1}/x/Dox/sys/${_ssh_zip}" "${HOME}"; then
-            __unmount "${1}"
+        elif ! cp -f "${_mountpt}/x/Dox/sys/${_ssh_zip}" "${HOME}"; then
+            __unmount "${_mountpt}"
             __error "[${_ssh_zip}] copying failed, bad permission?"
         fi
     }
 
     __decrypt() {
         local _ssh_dir="./.ssh"
-        if ! (
+        (
             cd || exit 3
             if unzip "${_ssh_zip}" >/dev/null; then
                 rm "${_ssh_zip}" &&
@@ -104,11 +122,9 @@ raw_ssh() {
                 #   1. deliberately not remove ssh-zip for reuse
                 #   2. ssh-dir is created by unzip even if unpacking failed
                 rm -r "${_ssh_dir}" && __unmount "${_mountpt}"
-                false
+                __error "ssh-decrypt: wrong password?"
             fi
-        ); then
-            __error "ssh-decrypt: wrong password?"
-        fi
+        )
     }
 
     if [ -f "${_ssh_zip}" ]; then
@@ -116,26 +132,22 @@ raw_ssh() {
         printf "\n"
         __decrypt
     else
-        __copy_zip "${_mountpt}"
+        __copy_zip
         __decrypt
     fi
-    __done "ssh-raw"
 }
 
 get_d_setup() {
     __start "d_setup"
 
     local _link="shengdichen/d_setup.git"
-    if ! (
+    (
         cd || exit 3
-        if ! git clone "git@github.com:${_link}" dot; then
-            false
+        if ! (git clone "git@github.com:${_link}" dot >/dev/null); then
+            __error "clone: ${_link} (bad internet?)"
         fi
-    ); then
-        __error "clone: ${_link} (bad internet?)"
-    else
         __done "d_setup"
-    fi
+    )
 }
 
 get_prv() {
