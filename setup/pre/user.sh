@@ -71,7 +71,7 @@ __unmount() {
         if ! sudo umount "${1}"; then
             lsblk
             printf "\n"
-            printf "umount-[%s]> failed; retrying: " "${1}"
+            printf "umount-[%s]> failed; retry: " "${1}"
             read -r _
             printf "\n"
         fi
@@ -111,13 +111,16 @@ raw_ssh() {
 
     __decrypt() {
         local _ssh_dir="./.ssh"
+        # clear out residuals, if any, from previous attempt(s)
+        [ -d "${_ssh_dir}" ] && rm -r "${_ssh_dir}"
         (
             cd || exit 3
-            if unzip "${_ssh_zip}" >/dev/null; then
+            if unzip "${_ssh_zip}"; then
                 rm "${_ssh_zip}" &&
                     cd "${_ssh_dir}" && ${SHELL} "setup.sh" &&
                     __unmount "${_mountpt}"
             else
+                echo "case 2"
                 # NOTE:
                 #   1. deliberately not remove ssh-zip for reuse
                 #   2. ssh-dir is created by unzip even if unpacking failed
@@ -130,10 +133,14 @@ raw_ssh() {
     if [ -f "${_ssh_zip}" ]; then
         printf "found existing [%s], using it\n" "${_ssh_zip}"
         printf "\n"
-        __decrypt
     else
         __copy_zip
-        __decrypt
+    fi
+    if __decrypt; then
+        __done "ssh-raw"
+    else
+        echo "error decyrpt"
+        false
     fi
 }
 
@@ -151,53 +158,57 @@ get_d_setup() {
 }
 
 get_prv() {
-    printf "prv> start\n\n"
+    __start "d-prv"
 
-    # source of prv
-    mkdir -p "${MOUNT_ROOT}/${MOUNT_MATRIX}"
-    local ssh_profile_source="ssh_matrix_ext"
-    (
-        cd "${MOUNT_ROOT}" || exit 3
-        while true; do
-            sshfs "${ssh_profile_source}:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"
-            if mount | grep "${ssh_profile_source}"; then
-                break
-            else
-                echo "prv.sshfs-mount> failed to mount profile [${ssh_profile_source}], retrying"
-                sleep 3
-            fi
-        done
-        printf "\n\n"
-        printf "prv> mount-source: done " && read -r _ && clear
-    )
+    local _mountpt="${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    mkdir -p "${_mountpt}"
 
-    (
-        cd "${DOT_ROOT}" || exit 3
-        # specify |-b| to prevent warning for missing default brach name
-        if ! git clone -b main "file://${MOUNT_ROOT}/${MOUNT_MATRIX}/home/main/dot/dot/${DOT_PRV}" "${DOT_PRV}"; then
-            echo "clone> prv: failed, exiting"
-            exit 3
-        else
-            printf "\n\n"
-            printf "prv> clone: done " && read -r _ && clear
-        fi
-    )
+    __mount() {
+        # source of prv
+        local _ssh_profile="ssh_matrix_ext"
+        (
+            cd "${MOUNT_ROOT}" || exit 3
+            while ! mount | grep "${_ssh_profile}" >/dev/null 2>&1; do
+                if ! sshfs "${_ssh_profile}:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"; then
+                    printf "d-prv> mount [%s] failed, retrying" "${_ssh_profile}"
+                    sleep 3
+                fi
+            done
+        )
+    }
 
-    # get ready for stowing(-override)
-    rm -r "${HOME}/.ssh"
-    fusermount -u "${MOUNT_ROOT}/${MOUNT_MATRIX}"
-    rmdir "${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    __clone() {
+        local _repo="file://${_mountpt}/home/main/dot/dot/${DOT_PRV}"
+        (
+            cd "${DOT_ROOT}" || exit 3
+            # specify |-b| to prevent warning for missing default brach name
+            git clone -b main "${_repo}" "${DOT_PRV}"
+        )
+    }
 
-    (
-        cd "${DOT_ROOT}/${DOT_PRV}" || exit 3
-        if ! ./"setup.sh"; then
-            echo "prv.setup> failed, exiting"
-            exit 3
-        else
-            printf "\n\n"
-            printf "prv> setup: done " && read -r _ && clear
-        fi
-    )
+    __setup() {
+        # get ready for stowing(-override)
+        rm -r "${HOME}/.ssh"
+
+        (
+            cd "${DOT_ROOT}/${DOT_PRV}" && ./"setup.sh"
+        )
+    }
+
+    if ! __mount; then
+        rmdir "${_mountpt}"
+        __error "d-prv> mount"
+    fi
+
+    fusermount -u "${_mountpt}" && rmdir "${_mountpt}"
+    if ! __clone; then
+        __error "d-prv> clone"
+    fi
+    if ! __setup; then
+        __error "d-prv> clone"
+    fi
+    __done "d-prv"
+    unset -f __mount __clone __setup
 }
 
 _post() {
