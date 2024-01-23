@@ -3,7 +3,6 @@
 SCRIPT_NAME="$(basename "${0}")"
 
 MOUNT_ROOT="${HOME}/mnt"
-MOUNT_MATRIX="m"
 DOT_ROOT="${HOME}/dot/dot"
 DOT_PRV="d_prv"
 
@@ -42,30 +41,6 @@ __yes_or_no() {
     done
 }
 
-_pre() {
-    if [ "$(id -u)" -eq 0 ]; then
-        __error "Must be non-root, (create and) switch to user"
-    fi
-
-    if ! (sudo pacman -Syy &&
-        sudo pacman -S --needed \
-            fzf \
-            openssh git stow \
-            sshfs fuse2 unzip >/dev/null); then
-        __error "pacman-install failed; bad internet?"
-    fi
-
-    if [ -d "${HOME}/.ssh" ]; then
-        if __yes_or_no "remove ~/.ssh"; then
-            rm -r "${HOME}/.ssh"
-        fi
-    fi
-    if [ -d "${DOT_ROOT}/${DOT_PRV}" ]; then
-        (cd "${DOT_ROOT}" && stow -D "${DOT_PRV}")
-    fi
-    rm -rf "${HOME}/dot"
-}
-
 __unmount() {
     while mount | grep "on ${1}" >/dev/null 2>&1; do
         if ! sudo umount "${1}"; then
@@ -79,15 +54,32 @@ __unmount() {
     [ -d "${1}" ] && rm -r "${1}"
 }
 
-raw_ssh() {
-    if [ -d "${HOME}/.ssh" ]; then
-        printf "Found existing ssh-config, skipping\n"
-        return
+_pre() {
+    if [ "$(id -u)" -eq 0 ]; then
+        __error "Must be non-root, (create and) switch to user"
     fi
 
-    local _ssh_zip=".ssh.zip"
-    local _mountpt="${MOUNT_ROOT}/mount_tmp"
+    if ! (sudo pacman -Syy &&
+        sudo pacman -S --needed \
+            fzf \
+            openssh git stow \
+            sshfs fuse2 unzip >/dev/null); then
+        __error "pacman-install failed; bad internet?"
+    fi
+}
+
+raw_ssh() {
     __start "ssh-raw"
+
+    local _ssh_zip=".ssh.zip"
+    if [ -d "${HOME}/.ssh" ]; then
+        printf "found existing ssh-raw, skipping\n"
+        [ -f "${_ssh_zip}" ] && rm -r "${_ssh_zip}"
+        __done "ssh-raw"
+        return 0
+    fi
+
+    local _mountpt="${MOUNT_ROOT}/mount_tmp"
 
     __copy_zip() {
         mkdir -p "${_mountpt}"
@@ -136,21 +128,27 @@ raw_ssh() {
     else
         __copy_zip
     fi
-    if __decrypt; then
-        __done "ssh-raw"
-    else
-        echo "error decyrpt"
-        false
+
+    if ! __decrypt; then
+        __error "ssh-raw"
     fi
+    __done "ssh-raw"
+    unset -f __copy_zip __decrypt
 }
 
 get_d_setup() {
     __start "d_setup"
 
-    local _link="shengdichen/d_setup.git"
+    local _link="shengdichen/d_setup.git" _clone_path="dot"
     (
         cd || exit 3
-        if ! (git clone "git@github.com:${_link}" dot >/dev/null); then
+        if [ -d "${_clone_path}" ]; then
+            printf "found existing d_setup, skipping\n"
+            __done "d_setup"
+            return 0
+        fi
+
+        if ! (git clone "git@github.com:${_link}" "${_clone_path}" >/dev/null); then
             __error "clone: ${_link} (bad internet?)"
         fi
         __done "d_setup"
@@ -158,9 +156,16 @@ get_d_setup() {
 }
 
 get_prv() {
-    __start "d-prv"
+    __start "d_prv"
 
-    local _mountpt="${MOUNT_ROOT}/${MOUNT_MATRIX}"
+    if [ -d "${DOT_ROOT}/${DOT_PRV}" ]; then
+        printf "found existing d_prv, skipping\n"
+        __done "d_prv"
+        return 0
+    fi
+
+    local _matrix="m"
+    local _mountpt="${MOUNT_ROOT}/${_matrix}"
     mkdir -p "${_mountpt}"
 
     __mount() {
@@ -169,8 +174,10 @@ get_prv() {
         (
             cd "${MOUNT_ROOT}" || exit 3
             while ! mount | grep "${_ssh_profile}" >/dev/null 2>&1; do
-                if ! sshfs "${_ssh_profile}:/" "${MOUNT_MATRIX}" -o "reconnect,idmap=user"; then
-                    printf "d-prv> mount [%s] failed, retrying" "${_ssh_profile}"
+                if ! sshfs "${_ssh_profile}:/" "${_matrix}" -o "reconnect,idmap=user"; then
+                    printf "\n"
+                    printf "d_prv> mount [%s] failed, retrying\n" "${_ssh_profile}"
+                    printf "\n"
                     sleep 3
                 fi
             done
@@ -197,36 +204,34 @@ get_prv() {
 
     if ! __mount; then
         rmdir "${_mountpt}"
-        __error "d-prv> mount"
+        __error "d_prv> mount"
     fi
-
-    fusermount -u "${_mountpt}" && rmdir "${_mountpt}"
     if ! __clone; then
-        __error "d-prv> clone"
+        fusermount -u "${_mountpt}" && rmdir "${_mountpt}"
+        __error "d_prv> clone"
     fi
     if ! __setup; then
-        __error "d-prv> clone"
+        fusermount -u "${_mountpt}" && rmdir "${_mountpt}"
+        __error "d_prv> setup"
     fi
-    __done "d-prv"
+    fusermount -u "${_mountpt}" && rmdir "${_mountpt}"
+    __done "d_prv"
     unset -f __mount __clone __setup
 }
 
 _post() {
     rm "${SCRIPT_NAME}"
 
-    printf "pre-02> done: " && read -r _ && clear
-
-    local _input
-    printf "post-setup? [C]onfirm, [q]uit " && read -r _input
-    if [ "${_input}" = "q" ]; then
-        echo "manually run"
-        echo "    \$ sh ~/dot/setup/post/setup.sh"
-        echo "when ready, exiting"
-    else
+    if __yes_or_no "all done here, auto d_setup now"; then
         (
-            cd "${HOME}/dot/setup/post" || exit 3
-            "./setup.sh"
+            cd "${HOME}/dot/setup/post" && "./setup.sh"
         )
+    else
+        printf "\n"
+        printf "manually run\n"
+        printf "    \$ sh ~/dot/setup/post/setup.sh\n"
+        printf "when ready.\n"
+        printf "\n"
     fi
 }
 
@@ -238,13 +243,12 @@ case "${1}" in
         if _pre; then
             clear
             if raw_ssh && get_d_setup && get_prv; then
-                clear
                 _post
             fi
         fi
         ;;
     *)
-        printf "try --clean or --full\n"
+        __error "huh? what is [${1}]? (try --clean or --full)"
         ;;
 esac
 unset -f _pre raw_ssh get_d_setup get_prv _post
