@@ -8,16 +8,19 @@ DOT_ROOT="${HOME}/dot/dot"
 DOT_PRV="d_prv"
 
 __start() {
-    printf "%s> START " "${1}"
+    printf "%s> START \n" "${1}"
+    printf "\n"
+
 }
 
 __error() {
-    printf "%s [exiting]\n" "${1}"
     printf "\n"
+    printf "%s [exiting]\n" "${1}"
     exit 3
 }
 
 __done() {
+    printf "\n"
     printf "%s> DONE " "${1}" && read -r _
     clear
 }
@@ -44,63 +47,78 @@ _pre() {
     rm -rf "${HOME}/dot"
 }
 
-raw_ssh() {
-    printf "ssh-raw> start\n\n"
+__unmount() {
+    while mount | grep "on ${1}" >/dev/null 2>&1; do
+        if ! sudo umount "${1}"; then
+            lsblk
+            printf "\n"
+            printf "umount-[%s]> failed; retrying: " "${1}"
+            read -r _
+            printf "\n"
+        fi
+    done
+    [ -d "${1}" ] && rm -r "${1}"
+}
 
+raw_ssh() {
     if [ -d "${HOME}/.ssh" ]; then
         printf "Found existing ssh-config, skipping\n"
         return
     fi
 
-    local mount_tmp="" disk=""
-    local ssh_zip=".ssh.zip"
-    if [ -f "${ssh_zip}" ]; then
-        printf "found existing [%s], using it" "${ssh_zip}"
-    else
-        mount_tmp="${MOUNT_ROOT}/mount_tmp"
-        mkdir -p "${mount_tmp}"
+    local _ssh_zip=".ssh.zip"
+    local _mountpt="${MOUNT_ROOT}/mount_tmp"
+    __start "ssh-raw"
 
-        printf "select source-disk\n"
-        disk="$(lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
+    __copy_zip() {
+        mkdir -p "${1}"
+        local _ssh_zip_path="${1}/x/Dox/sys/${_ssh_zip}"
 
-        if ! sudo mount "${disk}" "${mount_tmp}"; then
-            __error "mount> [${disk}] failed"
-        else
-            if ! cp -f "${mount_tmp}/x/Dox/sys/${ssh_zip}" "${HOME}"; then
-                __error "[ssh-conf] not found on [${disk}]"
+        local _disk=""
+        printf "select source-disk\n\n"
+        _disk="$(lsblk -o PATH,LABEL,FSTYPE,SIZE,MOUNTPOINTS | fzf --reverse --height=30% | awk '{ print $1 }')"
+
+        if ! sudo mount "${_disk}" "${1}"; then
+            __error "mount> [${_disk}] failed"
+        fi
+        if [ ! -f "${_ssh_zip_path}" ]; then
+            __unmount "${1}"
+            __error "[${_ssh_zip}] not found on [${_disk}]"
+        fi
+        if ! cp -f "${1}/x/Dox/sys/${_ssh_zip}" "${HOME}"; then
+            __unmount "${1}"
+            __error "[${_ssh_zip}] copying failed, bad permission?"
+        fi
+    }
+
+    __decrypt() {
+        local _ssh_dir="./.ssh"
+        if ! (
+            cd || exit 3
+            if unzip "${_ssh_zip}" >/dev/null; then
+                rm "${_ssh_zip}" &&
+                    cd "${_ssh_dir}" && ${SHELL} "setup.sh" &&
+                    __unmount "${_mountpt}"
+            else
+                # NOTE:
+                #   1. deliberately not remove ssh-zip for reuse
+                #   2. ssh-dir is created by unzip even if unpacking failed
+                rm -r "${_ssh_dir}" && __unmount "${_mountpt}"
+                false
             fi
+        ); then
+            __error "ssh-decrypt: wrong password?"
         fi
+    }
+
+    if [ -f "${_ssh_zip}" ]; then
+        printf "found existing [%s], using it\n" "${_ssh_zip}"
+        printf "\n"
+        __decrypt
+    else
+        __copy_zip "${_mountpt}"
+        __decrypt
     fi
-
-    printf "\n\n"
-
-    if ! (
-        cd || exit 3
-        if unzip "${ssh_zip}"; then
-            rm "${ssh_zip}"
-            cd "./.ssh" && ${SHELL} "setup.sh"
-        else
-            false
-        fi
-    ); then
-        __error "wrong password for ssh"
-    fi
-
-    printf "\n\n"
-
-    if [ "${mount_tmp}" ]; then
-        if sudo umount "${mount_tmp}"; then
-            rmdir "${mount_tmp}"
-            printf "umount-[%s]> success; remove storage now: " "${disk}"
-        else
-            lsblk
-            printf "\n\n"
-            printf "umount-[%s]> failed, you might be fine ignoring this though: " "${disk}"
-        fi
-        read -r _
-    fi
-
-    printf "\n\n"
     __done "ssh-raw"
 }
 
