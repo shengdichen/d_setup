@@ -40,6 +40,10 @@ install() {
             echo "Wrong mode: install()"
             ;;
     esac
+    if [ "${?}" -ne 0 ]; then
+        printf "\n"
+        exit 3
+    fi
 }
 
 __report() {
