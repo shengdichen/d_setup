@@ -21,16 +21,16 @@ __lang_python() {
         python-mccabe flake8 python-pylint python-pyflakes
 
     __install arch "${@}" -- python-rope
-    __install aurhelper -- python-pylsp-rope
+    __install aurhelper "${@}" -- python-pylsp-rope
 
     __install arch "${@}" -- python-isort
-    __install aurhelper -- python-lsp-isort
+    __install aurhelper "${@}" -- python-lsp-isort
 
     __install arch "${@}" -- mypy
-    __install aurhelper -- python-lsp-mypy
+    __install aurhelper "${@}" -- python-lsp-mypy
 
     __install arch "${@}" -- python-ruff ruff-lsp
-    __install aurhelper -- python-lsp-ruff
+    __install aurhelper "${@}" -- python-lsp-ruff
 }
 
 __lang_main() {
@@ -40,7 +40,7 @@ __lang_main() {
     __install arch "${@}" -- \
         dash checkbashisms \
         bash-language-server shellcheck shfmt
-    __install aurhelper -- beautysh
+    __install aurhelper "${@}" -- beautysh
 
     __install arch "${@}" -- \
         nodejs npm typescript \
@@ -51,7 +51,7 @@ __lang_main() {
         vscode-langservers-extracted
 
     __install npm -- alex write-good textlint
-    __install aurhelper -- proselint languagetool-rust
+    __install aurhelper "${@}" -- proselint languagetool-rust
 }
 
 __lang_misc() {

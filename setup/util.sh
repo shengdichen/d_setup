@@ -156,13 +156,23 @@ __install_arch_cache() {
 __install_aurhelper() {
     __install_aur -- "paru-bin"
 
+    local _confirm="yes"
+    if [ "${1}" = "--no-confirm" ]; then
+        _confirm=""
+        shift
+    fi
     if [ "${1}" = "--" ]; then shift; fi
+
     for p in "${@}"; do
         # REF:
         #   https://bbs.archlinux.org/viewtopic.php?id=76218
         if ! pacman -Qm "${p}" >/dev/null 2>&1; then
             __report paru "${p}" "install"
-            paru -S --needed "${p}"
+            if [ "${_confirm}" ]; then
+                paru -S --needed "${p}"
+            else
+                paru -S --needed --skipreview --noconfirm "${p}"
+            fi
         else
             __report paru "${p}" "skip"
         fi

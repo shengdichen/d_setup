@@ -20,7 +20,7 @@ __office() {
 
         __install arch "${@}" -- \
             texlive texlive-lang biber libreoffice-fresh
-        __install aurhelper -- lyx
+        __install aurhelper "${@}" -- lyx
         dotfile -- d_lyx
     }
 
@@ -72,7 +72,7 @@ __browser() {
     }
 
     __l2() {
-        __install aurhelper -- ungoogled-chromium-bin
+        __install aurhelper "${@}" -- ungoogled-chromium-bin
     }
 
     local _level="${1}"
@@ -110,16 +110,16 @@ __social() {
     __l0() {
         __install arch "${@}" -- \
             neomutt notmuch fdm isync msmtp
-        __install aurhelper -- \
+        __install aurhelper "${@}" -- \
             protonmail-bridge-core
         dotfile -- d_mail
     }
 
     __l1() {
-        __install aurhelper -- mkinitcpio-firmware
+        __install aurhelper "${@}" -- mkinitcpio-firmware
 
         __install arch "${@}" -- signal-desktop
-        __install aurhelper -- teams-for-linux
+        __install aurhelper "${@}" -- teams-for-linux
     }
 
     case "${1}" in
