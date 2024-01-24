@@ -187,9 +187,8 @@ partitioning_standard() {
     e2label "${disk}${part_delimiter}2" "ROOT"
 
     # MUST mount /mnt before sub-mountpoints (e.g., /mnt/efi)
-    local mnt_base="/mnt"
-    mount "${disk}${part_delimiter}2" "${mnt_base}"
-    mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/${EFI_MOUNT}"
+    mount "${disk}${part_delimiter}2" "${MNT}"
+    mount --mkdir "${disk}${part_delimiter}1" "${MNT}/${EFI_MOUNT}"
 
     __separator
     __lsblk
@@ -197,8 +196,8 @@ partitioning_standard() {
 }
 
 partitioning_check() {
-    if ! mount | grep " on /mnt" >/dev/null; then
-        printf "parition and mount to /mnt first "
+    if ! mount | grep " on ${MNT}" >/dev/null; then
+        printf "parition and mount to %s first " "${MNT}"
         printf "(try running this script with |part| as argument for standard partitioning)\n"
         printf "\n"
         printf "exiting\n"
@@ -236,7 +235,7 @@ sync_time() {
 
 bulk_work() {
     __start "pacstrap"
-    if ! pacstrap -K /mnt \
+    if ! pacstrap -K "${MNT}" \
         base base-devel dash vi neovim less \
         linux-zen linux-lts linux-firmware bash-completion; then
         printf "Installation failed, bad internet maybe?\n"
@@ -247,8 +246,8 @@ bulk_work() {
     __confirm "pacstrap"
 
     __start "fstab"
-    local fstab="/mnt/etc/fstab"
-    genfstab -U /mnt >"${fstab}"
+    local fstab="${MNT}/etc/fstab"
+    genfstab -U "${MNT}" >"${fstab}"
     __separator
     __lsblk
     __separator
