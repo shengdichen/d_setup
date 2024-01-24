@@ -2,8 +2,8 @@
 
 . "../../util.sh"
 
-__install() {
-    install "arch" throttled
+__base() {
+    __install arch -- throttled
 
     service_start -- throttled
 }
@@ -20,11 +20,11 @@ __monitor() {
 }
 
 __main() {
-    __install
+    __base
     __set_conf
     __monitor
 
-    unset -f __install __set_conf __monitor
+    unset -f __base __set_conf __monitor
 }
 __main
 unset -f __main

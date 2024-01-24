@@ -4,41 +4,43 @@
 
 __office() {
     __l0() {
-        install arch -- \
+        __install arch "${@}" -- \
             zathura zathura-pdf-mupdf zathura-djvu zathura-ps \
             pdfarranger img2pdf
         dotfile -- d_zathura
 
-        install arch -- \
+        __install arch "${@}" -- \
             hunspell enchant \
             hunspell-en_us hunspell-en_gb hunspell-fr hunspell-de hunspell-it hunspell-ru hunspell-es_es
     }
 
     __l1() {
-        install arch -- xournalpp
+        __install arch "${@}" -- xournalpp
         dotfile -- d_xournalpp
 
-        install arch -- \
+        __install arch "${@}" -- \
             texlive texlive-lang biber libreoffice-fresh
-        install aurhelper -- lyx
+        __install aurhelper -- lyx
         dotfile -- d_lyx
     }
 
-    __l0
-    if [ "${#}" -gt 0 ]; then
-        if [ "${1}" -gt 0 ]; then
-            __l1
+    local _level="${1}"
+    shift
+    if [ "${_level}" -ge 0 ]; then
+        __l0 "${@}"
+        if [ "${_level}" -ge 1 ]; then
+            __l1 "${@}"
         fi
     fi
     unset -f __l0 __l1
 }
 
 __media() {
-    install arch -- \
+    __install arch "${@}" -- \
         pulsemixer mpv \
         sox cmus mpd mpc ncmpc \
         imv yt-dlp ytfzf
-    install pipx -- tidal-dl
+    __install pipx -- tidal-dl
     dotfile -- d_mpv d_mpd d_cmus d_ncmpc
 
     local mpd_lib="${HOME}/.config/mpd/bin/lib/"
@@ -55,30 +57,32 @@ __media() {
 
 __browser() {
     __l0() {
-        install arch -- \
+        __install arch "${@}" -- \
             qutebrowser python-adblock tor
         service_start -- tor
         dotfile -- d_qutebrowser
 
-        install arch -- chromium
+        __install arch "${@}" -- chromium
     }
 
     __l1() {
-        install arch -- \
+        __install arch "${@}" -- \
             firefox-developer-edition w3m \
             transmission-cli deluge-gtk
     }
 
     __l2() {
-        install aurhelper -- ungoogled-chromium-bin
+        __install aurhelper -- ungoogled-chromium-bin
     }
 
-    __l0
-    if [ "${#}" -gt 0 ]; then
-        if [ "${1}" -gt 0 ]; then
-            __l1
-            if [ "${1}" -gt 1 ]; then
-                __l2
+    local _level="${1}"
+    shift
+    if [ "${_level}" -ge 0 ]; then
+        __l0 "${@}"
+        if [ "${_level}" -ge 1 ]; then
+            __l1 "${@}"
+            if [ "${_level}" -ge 2 ]; then
+                __l2 "${@}"
             fi
         fi
     fi
@@ -87,54 +91,66 @@ __browser() {
 
 __game() {
     __l2() {
-        install arch -- steam
+        __install arch "${@}" -- steam
 
-        install arch -- \
+        __install arch "${@}" -- \
             wine-staging wine-gecko wine-mono \
             lutris
     }
 
-    if [ "${#}" -gt 0 ]; then
-        if [ "${1}" -gt 0 ]; then
-            if [ "${1}" -gt 1 ]; then
-                __l2
-            fi
-        fi
+    local _level="${1}"
+    shift
+    if [ "${_level}" -ge 2 ]; then
+        __l2 "${@}"
     fi
     unset -f __l2
 }
 
 __social() {
     __l0() {
-        install arch -- \
+        __install arch "${@}" -- \
             neomutt notmuch fdm isync msmtp
-        install aurhelper -- \
+        __install aurhelper -- \
             protonmail-bridge-core
         dotfile -- d_mail
     }
 
     __l1() {
-        install aurhelper -- mkinitcpio-firmware
+        __install aurhelper -- mkinitcpio-firmware
 
-        install arch -- signal-desktop
-        install aurhelper -- teams-for-linux
+        __install arch "${@}" -- signal-desktop
+        __install aurhelper -- teams-for-linux
     }
 
-    __l0
-    if [ "${#}" -gt 0 ]; then
-        if [ "${1}" -gt 0 ]; then
-            __l1
-        fi
-    fi
+    case "${1}" in
+        "0")
+            shift
+            __l0 "${@}"
+            ;;
+        "1")
+            shift
+            __l0 "${@}"
+            __l1 "${@}"
+            ;;
+    esac
     unset -f __l0 __l1
 }
 
 main() {
-    __office "${@}"
+    local _level="0"
+    case "${1}" in
+        "0" | "1" | "2")
+            _level="${1}"
+            shift
+            ;;
+    esac
+
+    unset -f __l0 __l1
+    __office "${_level}" "${@}"
     __media "${@}"
-    __browser "${@}"
-    __game "${@}"
-    __social "${@}"
+    __browser "${_level}" "${@}"
+    __game "${_level}" "${@}"
+    __social "${_level}" "${@}"
 
     unset -f __office __media __browser __game __social
 }

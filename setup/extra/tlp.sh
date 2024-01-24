@@ -2,8 +2,8 @@
 
 . "../util.sh"
 
-__install() {
-    install "arch" \
+__base() {
+    __install arch -- \
         ethtool tlp acpi
 
     service_start -- tlp
@@ -47,6 +47,6 @@ set_threshold() {
     done
 }
 
-__install
+__base
 printf "\n"
 set_threshold "${@}"

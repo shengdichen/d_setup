@@ -16,7 +16,7 @@ __sudo() {
     echo "${s}"
 }
 
-install() {
+__install() {
     case "${1}" in
         "aur")
             shift && __install_aur "${@}"
@@ -73,11 +73,22 @@ __is_installed_arch() {
 }
 
 __install_arch() {
-    local _report="yes"
-    if [ "${1}" = "--no-report" ]; then
-        _report=""
-        shift
-    fi
+    local _report="yes" _confirm="yes"
+    while [ "${#}" -gt 0 ]; do
+        case "${1}" in
+            "--no-report")
+                _report=""
+                shift
+                ;;
+            "--no-confirm")
+                _confirm=""
+                shift
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
 
     if [ "${1}" = "--" ]; then shift; fi
     if [ "${_report}" ]; then
@@ -89,7 +100,11 @@ __install_arch() {
             if [ "${_report}" ]; then
                 __report pacman "${p}" "install"
             fi
-            "$(__sudo)" pacman -S --needed "${p}"
+            if [ "${_confirm}" ]; then
+                "$(__sudo)" pacman -S --needed "${p}"
+            else
+                "$(__sudo)" pacman -S --needed --noconfirm "${p}"
+            fi
         fi
     done
 }
