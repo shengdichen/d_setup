@@ -224,7 +224,7 @@ _post() {
 
     if __yes_or_no "all done here, auto d_setup now"; then
         (
-            cd "${HOME}/dot/setup/post" && "./setup.sh"
+            cd "${HOME}/dot/setup/post" && ./setup.sh --no-confirm
         )
     else
         printf "\n"
