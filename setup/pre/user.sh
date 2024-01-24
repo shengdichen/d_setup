@@ -220,7 +220,10 @@ get_prv() {
 }
 
 _post() {
-    rm "${SCRIPT_NAME}"
+    # remove self only during |pre|-phase
+    if [ "${PWD}" = "${HOME}" ]; then
+        rm "${SCRIPT_NAME}"
+    fi
 
     if __yes_or_no "all done here, auto d_setup now"; then
         (
