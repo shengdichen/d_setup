@@ -169,9 +169,9 @@ __install_aurhelper() {
         if ! pacman -Qm "${p}" >/dev/null 2>&1; then
             __report paru "${p}" "install"
             if [ "${_confirm}" ]; then
-                paru -S --needed "${p}"
+                paru -S --needed --removemake "${p}"
             else
-                paru -S --needed --skipreview --noconfirm "${p}"
+                paru -S --needed --removemake --skipreview --noconfirm "${p}"
             fi
         else
             __report paru "${p}" "skip"
