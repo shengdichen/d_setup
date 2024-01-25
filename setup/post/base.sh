@@ -107,6 +107,13 @@ __desktop() {
 }
 
 main() {
+    # consume (sink) this: everything non-negotiable in this script
+    case "${1}" in
+        "0" | "1" | "2")
+            shift
+            ;;
+    esac
+
     __base "${@}"
     __graphics "${@}"
     __desktop "${@}"
