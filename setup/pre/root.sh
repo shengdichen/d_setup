@@ -286,6 +286,7 @@ transition_to_post() {
             printf "    # sh %s post\n" "${SCRIPT_NAME}"
             printf "in now-to-be chroot.\n"
             printf "\n"
+
             __separator
             __confirm "to-chroot"
             __run_in_chroot
@@ -311,8 +312,8 @@ base() {
 localization() {
     __start "localization"
 
-    if ! locale -a | grep "sv_SE.utf8" >/dev/null; then
-        cat <<STOP >/etc/locale.gen
+    if ! locale -a | grep "^sv_SE.utf8$" >/dev/null; then
+        cat <<STOP >>/etc/locale.gen
 en_US.UTF-8 UTF-8
 
 fr_CH.UTF-8 UTF-8
@@ -374,7 +375,7 @@ boot() {
 
     __install grub efibootmgr
 
-    local grub_dir="/boot/grub"
+    local grub_dir="/boot/grub" bootloader_name="MAIN"
     if [ ! -d "${grub_dir}" ]; then
         mkinitcpio -P
         clear
@@ -382,7 +383,7 @@ boot() {
         grub-install \
             --target=x86_64-efi \
             --efi-directory="${EFI_MOUNT}" \
-            --bootloader-id=MAIN
+            --bootloader-id="${bootloader_name}"
         printf "\n\n"
         grub-mkconfig -o "${grub_dir}/grub.cfg"
     fi
