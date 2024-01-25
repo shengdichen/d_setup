@@ -139,7 +139,7 @@ __run_in_chroot() {
     if [ "${#}" -gt 0 ]; then
         arch-chroot "${MNT}" sh "${@}"
     else
-        arch-chroot "${MNT}" sh "${@}"
+        arch-chroot "${MNT}"
     fi
 }
 
