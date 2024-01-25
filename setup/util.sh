@@ -342,3 +342,20 @@ service_start() {
         fi
     done
 }
+
+__yes_or_no() {
+    local _input
+    while true; do
+        printf "%s: [y]es; [n]o? " "${1}"
+        read -r _input
+
+        case "${_input}" in
+            "y" | "yes")
+                return 0
+                ;;
+            "n" | "no")
+                return 1
+                ;;
+        esac
+    done
+}

@@ -4,7 +4,10 @@
 
 setup() {
     "$(__sudo)" cp "./sshd_config" "/etc/ssh/."
-    systemctl enable --now sshd
+
+    if __yes_or_no "service-sshd"; then
+        service_start -- sshd
+    fi
 }
 setup
 unset -f setup
