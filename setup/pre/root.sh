@@ -143,6 +143,17 @@ __run_in_chroot() {
     fi
 }
 
+__passwd() {
+    # re-password only if needed
+    if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
+        while true; do
+            printf "[%s]-passwd> " "${1}"
+            if passwd "${1}"; then break; fi
+            echo
+        done
+    fi
+}
+
 partitioning_standard() {
     if ! efibootmgr >/dev/null; then
         printf "Not in EFI mode, exiting\n"
@@ -289,15 +300,7 @@ base() {
     __start "chroot.base"
     . /usr/share/bash-completion/bash_completion
 
-    # re-password only if needed
-    if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
-        while true; do
-            printf "[root] "
-            if passwd; then break; fi
-            echo
-        done
-    fi
-
+    __passwd "root"
     ln -sf /usr/share/zoneinfo/Europe/Vaduz /etc/localtime
     hwclock --systohc
 
@@ -477,11 +480,7 @@ multiuser() {
             useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
             groupmod -n "${_rank}" "${_me}"
 
-            while true; do
-                printf "[%s] " ${_me}
-                if passwd "${_me}"; then break; fi
-                echo
-            done
+            __passwd "${_me}"
             printf "%s is born " ${_me}
         else
             printf "%s is already alive " ${_me}
