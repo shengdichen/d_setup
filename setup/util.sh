@@ -3,6 +3,10 @@
 DOT_DIR="${HOME}/dot/dot"
 BIN_DIR="${HOME}/dot/bin"
 
+__is_root() {
+    [ "$(id -u)" -eq 0 ]
+}
+
 __sudo() {
     local s=""
     if [ "$(id -u)" -ne 0 ]; then
