@@ -13,7 +13,7 @@ __base() {
 
     __install arch "${@}" -- \
         linux linux-headers linux-docs linux-firmware \
-        arch-install-scripts grub efibootmgr \
+        arch-install-scripts sysfsutils grub efibootmgr \
         lshw efibootmgr intel-ucode fwupd \
         s-tui smartmontools lsof \
         archlinux-keyring openssh gnupg pass pass-otp zbar
