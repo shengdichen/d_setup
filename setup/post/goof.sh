@@ -56,6 +56,11 @@ __media() {
         fi
     }
 
+    __l1() {
+        __install arch "${@}" -- \
+            kdenlive handbrake
+    }
+
     local _level="${1}"
     shift
     if [ "${_level}" -ge 0 ]; then
