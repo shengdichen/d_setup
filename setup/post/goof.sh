@@ -68,7 +68,7 @@ __browser() {
     __l1() {
         __install arch "${@}" -- \
             firefox-developer-edition w3m \
-            transmission-cli deluge-gtk
+            mktorrent transmission-cli deluge-gtk
     }
 
     __l2() {
