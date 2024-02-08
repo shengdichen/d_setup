@@ -36,23 +36,35 @@ __office() {
 }
 
 __media() {
-    __install arch "${@}" -- \
-        pulsemixer mpv \
-        sox cmus mpd mpc ncmpc \
-        imv yt-dlp ytfzf
-    __install pipx -- tidal-dl
-    dotfile -- d_mpv d_mpd d_cmus d_ncmpc
+    __l0() {
+        __install arch "${@}" -- \
+            pulsemixer mpv \
+            sox cmus mpd mpc ncmpc \
+            imv yt-dlp ytfzf
+        __install pipx -- tidal-dl
+        dotfile -- d_mpv d_mpd d_cmus d_ncmpc
 
-    local mpd_lib="${HOME}/.config/mpd/bin/lib/"
-    # guarantee at least one (non-.gitignore) item under lib-directory
-    if [ "$(find "${mpd_lib}" -maxdepth 1 | wc -l)" -le 2 ]; then
-        ln -s "${HOME}/xdg/MDA/Aud/a" "${mpd_lib}"
-        if ! pgrep mpd >/dev/null 2>&1; then mpd; fi
-        for cmd in "update" "repeat" "single"; do
-            mpc --host=admin@localhost "${cmd}"
-        done
-        mpc --host=admin@localhost volume 37
+        local mpd_lib="${HOME}/.config/mpd/bin/lib/"
+        # guarantee at least one (non-.gitignore) item under lib-directory
+        if [ "$(find "${mpd_lib}" -maxdepth 1 | wc -l)" -le 2 ]; then
+            ln -s "${HOME}/xdg/MDA/Aud/a" "${mpd_lib}"
+            if ! pgrep mpd >/dev/null 2>&1; then mpd; fi
+            for cmd in "update" "repeat" "single"; do
+                mpc --host=admin@localhost "${cmd}"
+            done
+            mpc --host=admin@localhost volume 37
+        fi
+    }
+
+    local _level="${1}"
+    shift
+    if [ "${_level}" -ge 0 ]; then
+        __l0 "${@}"
+        if [ "${_level}" -ge 1 ]; then
+            __l1 "${@}"
+        fi
     fi
+    unset -f __l0 __l1
 }
 
 __browser() {
@@ -147,7 +159,7 @@ main() {
 
     unset -f __l0 __l1
     __office "${_level}" "${@}"
-    __media "${@}"
+    __media "${_level}" "${@}"
     __browser "${_level}" "${@}"
     __game "${_level}" "${@}"
     __social "${_level}" "${@}"
