@@ -139,7 +139,18 @@ __run_in_chroot() {
     if [ "${#}" -gt 0 ]; then
         arch-chroot "${MNT}" sh "${@}"
     else
-        arch-chroot "${MNT}" sh "${@}"
+        arch-chroot "${MNT}"
+    fi
+}
+
+__passwd() {
+    # re-password only if needed
+    if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
+        while true; do
+            printf "[%s]-passwd> " "${1}"
+            if passwd "${1}"; then break; fi
+            echo
+        done
     fi
 }
 
@@ -187,9 +198,8 @@ partitioning_standard() {
     e2label "${disk}${part_delimiter}2" "ROOT"
 
     # MUST mount /mnt before sub-mountpoints (e.g., /mnt/efi)
-    local mnt_base="/mnt"
-    mount "${disk}${part_delimiter}2" "${mnt_base}"
-    mount --mkdir "${disk}${part_delimiter}1" "${mnt_base}/${EFI_MOUNT}"
+    mount "${disk}${part_delimiter}2" "${MNT}"
+    mount --mkdir "${disk}${part_delimiter}1" "${MNT}/${EFI_MOUNT}"
 
     __separator
     __lsblk
@@ -197,8 +207,8 @@ partitioning_standard() {
 }
 
 partitioning_check() {
-    if ! mount | grep " on /mnt" >/dev/null; then
-        printf "parition and mount to /mnt first "
+    if ! mount | grep " on ${MNT}" >/dev/null; then
+        printf "parition and mount to %s first " "${MNT}"
         printf "(try running this script with |part| as argument for standard partitioning)\n"
         printf "\n"
         printf "exiting\n"
@@ -236,7 +246,7 @@ sync_time() {
 
 bulk_work() {
     __start "pacstrap"
-    if ! pacstrap -K /mnt \
+    if ! pacstrap -K "${MNT}" \
         base base-devel dash vi neovim less \
         linux-zen linux-lts linux-firmware bash-completion; then
         printf "Installation failed, bad internet maybe?\n"
@@ -247,8 +257,8 @@ bulk_work() {
     __confirm "pacstrap"
 
     __start "fstab"
-    local fstab="/mnt/etc/fstab"
-    genfstab -U /mnt >"${fstab}"
+    local fstab="${MNT}/etc/fstab"
+    genfstab -U "${MNT}" >"${fstab}"
     __separator
     __lsblk
     __separator
@@ -276,6 +286,7 @@ transition_to_post() {
             printf "    # sh %s post\n" "${SCRIPT_NAME}"
             printf "in now-to-be chroot.\n"
             printf "\n"
+
             __separator
             __confirm "to-chroot"
             __run_in_chroot
@@ -290,15 +301,7 @@ base() {
     __start "chroot.base"
     . /usr/share/bash-completion/bash_completion
 
-    # re-password only if needed
-    if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
-        while true; do
-            printf "[root] "
-            if passwd; then break; fi
-            echo
-        done
-    fi
-
+    __passwd "root"
     ln -sf /usr/share/zoneinfo/Europe/Vaduz /etc/localtime
     hwclock --systohc
 
@@ -309,8 +312,8 @@ base() {
 localization() {
     __start "localization"
 
-    if ! locale -a | grep "sv_SE.utf8" >/dev/null; then
-        cat <<STOP >/etc/locale.gen
+    if ! locale -a | grep "^sv_SE.utf8$" >/dev/null; then
+        cat <<STOP >>/etc/locale.gen
 en_US.UTF-8 UTF-8
 
 fr_CH.UTF-8 UTF-8
@@ -372,7 +375,7 @@ boot() {
 
     __install grub efibootmgr
 
-    local grub_dir="/boot/grub"
+    local grub_dir="/boot/grub" bootloader_name="MAIN"
     if [ ! -d "${grub_dir}" ]; then
         mkinitcpio -P
         clear
@@ -380,7 +383,7 @@ boot() {
         grub-install \
             --target=x86_64-efi \
             --efi-directory="${EFI_MOUNT}" \
-            --bootloader-id=MAIN
+            --bootloader-id="${bootloader_name}"
         printf "\n\n"
         grub-mkconfig -o "${grub_dir}/grub.cfg"
     fi
@@ -398,11 +401,13 @@ pacman_extra() {
         #   https://www.blackarch.org/downloads.html#install-repo
         local _blackarch="strap.sh"
         curl -O "https://blackarch.org/${_blackarch}"
-        chmod +x "${_blackarch}"
-        ./"${_blackarch}"
-        rm "${_blackarch}"
+        if ! (chmod +x "${_blackarch}" && ./"${_blackarch}"); then
+            printf "blackarch> failed, exiting"
+            exit 3
+        fi
 
         __separator
+        rm "${_blackarch}"
         __confirm "blackarch"
     }
 
@@ -412,9 +417,14 @@ pacman_extra() {
         # REF:
         #   https://wiki.archlinux.org/title/Unofficial_user_repositories#archzfs
         local _archzfs_key="DDF7DB817396A49B2A2723F7403BD972F75D9D76"
-        pacman-key --recv-keys "${_archzfs_key}"
-        pacman-key --finger "${_archzfs_key}"
-        pacman-key --lsign-key "${_archzfs_key}"
+        if ! (
+            pacman-key --recv-keys "${_archzfs_key}" &&
+                pacman-key --finger "${_archzfs_key}" &&
+                pacman-key --lsign-key "${_archzfs_key}"
+        ); then
+            printf "blackarch> failed, exiting"
+            exit 3
+        fi
 
         __separator
         __confirm "zfs"
@@ -471,11 +481,7 @@ multiuser() {
             useradd -m -d "/home/${_home}" -G wheel -s /bin/zsh "${_me}"
             groupmod -n "${_rank}" "${_me}"
 
-            while true; do
-                printf "[%s] " ${_me}
-                if passwd "${_me}"; then break; fi
-                echo
-            done
+            __passwd "${_me}"
             printf "%s is born " ${_me}
         else
             printf "%s is already alive " ${_me}

@@ -1,10 +1,11 @@
 #!/usr/bin/env dash
 
+SCRIPT_PATH="$(realpath "$(dirname "${0}")")"
+cd "${SCRIPT_PATH}" || exit 3
 SCRIPT_NAME="$(basename "${0}")"
 
 MOUNT_ROOT="${HOME}/mnt"
 DOT_ROOT="${HOME}/dot/dot"
-DOT_PRV="d_prv"
 
 __start() {
     printf "%s> START \n" "${1}"
@@ -60,7 +61,7 @@ _pre() {
     fi
 
     if ! (sudo pacman -Syy &&
-        sudo pacman -S --needed \
+        sudo pacman -S --needed --noconfirm \
             fzf \
             openssh git stow \
             sshfs fuse2 unzip >/dev/null); then
@@ -158,7 +159,8 @@ get_d_setup() {
 get_prv() {
     __start "d_prv"
 
-    if [ -d "${DOT_ROOT}/${DOT_PRV}" ]; then
+    local _clone_path="d_prv"
+    if [ -d "${DOT_ROOT}/${_clone_path}" ]; then
         printf "found existing d_prv, skipping\n"
         __done "d_prv"
         return 0
@@ -185,11 +187,11 @@ get_prv() {
     }
 
     __clone() {
-        local _repo="file://${_mountpt}/home/main/dot/dot/${DOT_PRV}"
+        local _repo="file://${_mountpt}/home/main/dot/dot/${_clone_path}"
         (
             cd "${DOT_ROOT}" || exit 3
             # specify |-b| to prevent warning for missing default brach name
-            git clone -b main "${_repo}" "${DOT_PRV}"
+            git clone -b main "${_repo}" "${_clone_path}"
         )
     }
 
@@ -198,7 +200,7 @@ get_prv() {
         rm -r "${HOME}/.ssh"
 
         (
-            cd "${DOT_ROOT}/${DOT_PRV}" && ./"setup.sh"
+            cd "${DOT_ROOT}/${_clone_path}" && ./"setup.sh"
         )
     }
 
@@ -220,7 +222,10 @@ get_prv() {
 }
 
 _post() {
-    rm "${SCRIPT_NAME}"
+    # remove self only during |pre|-phase
+    if [ "${PWD}" = "${HOME}" ]; then
+        rm "${SCRIPT_NAME}"
+    fi
 
     if __yes_or_no "all done here, auto d_setup now"; then
         (

@@ -1,12 +1,7 @@
 #!/usr/bin/env dash
 
-dot_dir() {
-    echo "${HOME}/dot/dot"
-}
-
-bin_dir() {
-    echo "${HOME}/dot/bin"
-}
+DOT_DIR="${HOME}/dot/dot"
+BIN_DIR="${HOME}/dot/bin"
 
 __sudo() {
     local s=""
@@ -132,7 +127,7 @@ __install_aur() {
 
     if [ "${1}" = "--" ]; then shift; fi
     (
-        cd "$(bin_dir)" || exit 3
+        cd "${BIN_DIR}" || exit 3
         for p in "${@}"; do
             if ! __is_installed_arch "${p}"; then
                 __install_one "${p}"
@@ -169,9 +164,9 @@ __install_aurhelper() {
         if ! pacman -Qm "${p}" >/dev/null 2>&1; then
             __report paru "${p}" "install"
             if [ "${_confirm}" ]; then
-                paru -S --needed "${p}"
+                paru -S --needed --removemake "${p}"
             else
-                paru -S --needed --skipreview --noconfirm "${p}"
+                paru -S --needed --removemake --skipreview --noconfirm "${p}"
             fi
         else
             __report paru "${p}" "skip"
@@ -300,7 +295,7 @@ dotfile() {
     }
 
     (
-        cd "$(dot_dir)" || exit 3
+        cd "${DOT_DIR}" || exit 3
         for repo in "${@}"; do
             __do_one "${repo}"
         done
