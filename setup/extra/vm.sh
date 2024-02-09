@@ -5,7 +5,7 @@
 libvirt() {
     # REF:
     #   https://wiki.archlinux.org/title/Libvirt
-    install "arch" \
+    __install arch -- \
         libvirt qemu-full \
         virt-manager \
         iptables-nft dnsmasq \

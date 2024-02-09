@@ -16,7 +16,7 @@ __sudo() {
     echo "${s}"
 }
 
-install() {
+__install() {
     case "${1}" in
         "aur")
             shift && __install_aur "${@}"
@@ -40,6 +40,10 @@ install() {
             echo "Wrong mode: install()"
             ;;
     esac
+    if [ "${?}" -ne 0 ]; then
+        printf "\n"
+        exit 3
+    fi
 }
 
 __report() {
@@ -69,11 +73,22 @@ __is_installed_arch() {
 }
 
 __install_arch() {
-    local _report="yes"
-    if [ "${1}" = "--no-report" ]; then
-        _report=""
-        shift
-    fi
+    local _report="yes" _confirm="yes"
+    while [ "${#}" -gt 0 ]; do
+        case "${1}" in
+            "--no-report")
+                _report=""
+                shift
+                ;;
+            "--no-confirm")
+                _confirm=""
+                shift
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
 
     if [ "${1}" = "--" ]; then shift; fi
     if [ "${_report}" ]; then
@@ -85,7 +100,11 @@ __install_arch() {
             if [ "${_report}" ]; then
                 __report pacman "${p}" "install"
             fi
-            "$(__sudo)" pacman -S --needed "${p}"
+            if [ "${_confirm}" ]; then
+                "$(__sudo)" pacman -S --needed "${p}"
+            else
+                "$(__sudo)" pacman -S --needed --noconfirm "${p}"
+            fi
         fi
     done
 }
@@ -137,13 +156,23 @@ __install_arch_cache() {
 __install_aurhelper() {
     __install_aur -- "paru-bin"
 
+    local _confirm="yes"
+    if [ "${1}" = "--no-confirm" ]; then
+        _confirm=""
+        shift
+    fi
     if [ "${1}" = "--" ]; then shift; fi
+
     for p in "${@}"; do
         # REF:
         #   https://bbs.archlinux.org/viewtopic.php?id=76218
         if ! pacman -Qm "${p}" >/dev/null 2>&1; then
             __report paru "${p}" "install"
-            paru -S --needed "${p}"
+            if [ "${_confirm}" ]; then
+                paru -S --needed "${p}"
+            else
+                paru -S --needed --skipreview --noconfirm "${p}"
+            fi
         else
             __report paru "${p}" "skip"
         fi

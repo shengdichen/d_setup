@@ -2,11 +2,11 @@
 
 . "../../util.sh"
 
-__install() {
-    install "pipx" undervolt
+__base() {
+    __install pipx -- undervolt
 
     service_start -- throttled
 }
 
-__install
+__base
 unset -f __install

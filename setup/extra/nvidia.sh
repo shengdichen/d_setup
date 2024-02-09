@@ -3,7 +3,7 @@
 . "../util.sh"
 
 __base() {
-    install "arch" \
+    __install arch -- \
         nvidia-dkms opencl-nvidia cuda
 }
 
