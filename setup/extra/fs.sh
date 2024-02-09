@@ -1,7 +1,32 @@
 #!/usr/bin/env dash
 
+. "../util.sh"
+
 __swapfile() {
-    return
+    if ! __is_root; then
+        printf "run as root, exiting\n"
+        exit 3
+    fi
+
+    local _size=32 _target="/SWAP"
+    if [ ! -e "${_target}" ]; then
+        dd if=/dev/zero of="${_target}" bs=1M count="${_size}k" status=progress
+        chmod 0600 "${_target}"
+        mkswap -U clear "${_target}"
+        printf "\n\n"
+    fi
+
+    if ! swapon -s | grep -q "^${_target}"; then
+        swapon "${_target}"
+    fi
+
+    local _fstab="/etc/fstab"
+    if ! grep -q " none swap " "${_fstab}"; then
+        cat <<STOP >>"${_fstab}"
+${_target} none swap defaults 0 0
+
+STOP
+    fi
 }
 
 __swapfile_edit() {
@@ -19,3 +44,13 @@ __swapfile_edit() {
 
     return
 }
+
+case "${1}" in
+    "swapfile")
+        __swapfile
+        ;;
+    *)
+        printf "huh? what is [%s]\n" "${1}"
+        ;;
+esac
+unset -f __swapfile

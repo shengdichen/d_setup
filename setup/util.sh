@@ -3,6 +3,10 @@
 DOT_DIR="${HOME}/dot/dot"
 BIN_DIR="${HOME}/dot/bin"
 
+__is_root() {
+    [ "$(id -u)" -eq 0 ]
+}
+
 __sudo() {
     local s=""
     if [ "$(id -u)" -ne 0 ]; then
@@ -340,5 +344,22 @@ service_start() {
         else
             __report systemd-start "${sv}" "skip"
         fi
+    done
+}
+
+__yes_or_no() {
+    local _input
+    while true; do
+        printf "%s: [y]es; [n]o? " "${1}"
+        read -r _input
+
+        case "${_input}" in
+            "y" | "yes")
+                return 0
+                ;;
+            "n" | "no")
+                return 1
+                ;;
+        esac
     done
 }
