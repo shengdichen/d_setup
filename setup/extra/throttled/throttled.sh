@@ -20,11 +20,17 @@ __monitor() {
 }
 
 __main() {
-    __base
-    __set_conf
-    __monitor
-
+    case "${1}" in
+        "setup")
+            __base
+            __set_conf
+            __monitor
+            ;;
+        *)
+            __monitor
+            ;;
+    esac
     unset -f __base __set_conf __monitor
 }
-__main
+__main "${@}"
 unset -f __main
