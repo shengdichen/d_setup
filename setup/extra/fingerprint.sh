@@ -4,6 +4,7 @@
 
 __base() {
     __install aurhelper -- python-validity
+    service_start -- python3-validity
 }
 
 __record() {
