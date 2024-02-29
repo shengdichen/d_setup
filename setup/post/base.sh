@@ -4,7 +4,7 @@
 
 __base() {
     __install arch "${@}" -- \
-        base base-devel pacman-contrib vi
+        base base-devel pacman-contrib vi moreutils
 
     __install arch "${@}" -- \
         man-db man-pages \
