@@ -16,7 +16,7 @@ __base() {
         arch-install-scripts sysfsutils grub efibootmgr \
         lshw efibootmgr intel-ucode fwupd \
         s-tui glmark2 mesa-utils lib32-mesa-utils \
-        smartmontools lsof \
+        smartmontools lsof socat \
         archlinux-keyring openssh gnupg pass pass-otp zbar
 
     __install arch "${@}" -- \
