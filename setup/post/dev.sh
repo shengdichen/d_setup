@@ -62,6 +62,11 @@ __lang_misc() {
         ruby
 
     __install arch "${@}" -- \
+        dotnet-runtime dotnet-sdk aspnet-runtime
+    __install aurhelper "${@}" -- omnisharp-roslyn-bin
+    __install dotnet "${@}" -- csharpier
+
+    __install arch "${@}" -- \
         jdk-openjdk openjdk-doc openjdk-src \
         jdk17-openjdk openjdk17-doc openjdk17-src \
         jdk11-openjdk openjdk11-doc openjdk11-src
