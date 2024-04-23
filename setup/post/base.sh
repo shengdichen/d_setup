@@ -75,12 +75,15 @@ __desktop() {
     dotfile -- d_xdg
 
     __install arch "${@}" -- \
+        fzf the_silver_searcher ripgrep-all fd
+
+    __install arch "${@}" -- \
         neovim tree-sitter-cli python-pynvim
     dotfile -- d_nvim
 
     __install arch "${@}" -- \
         zsh zsh-completions zsh-syntax-highlighting \
-        tmux vifm fzf the_silver_searcher
+        tmux vifm
     dotfile -- d_zsh d_tmux d_vifm
 
     __install arch "${@}" -- \
