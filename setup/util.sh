@@ -337,7 +337,7 @@ _stow_nice() {
 service_start() {
     if [ "${1}" = "--" ]; then shift; fi
 
-    for sv; do
+    for sv in "${@}"; do
         if ! systemctl is-active --quiet "${sv}"; then
             __report systemd-start "${sv}" ": starting"
             systemctl enable --now "${sv}"
