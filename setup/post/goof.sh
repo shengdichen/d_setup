@@ -86,6 +86,7 @@ __browser() {
         __install arch "${@}" -- \
             firefox-developer-edition w3m \
             mktorrent transmission-cli deluge-gtk
+        __install aurhelper "${@}" -- firefox-esr-bin
     }
 
     __l2() {
