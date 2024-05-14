@@ -108,8 +108,14 @@ __browser() {
 }
 
 __game() {
+    __l1() {
+        __install arch "${@}" -- \
+            ppsspp tty-solitaire
+    }
+
     __l2() {
         __install arch "${@}" -- steam
+        __install aurhelper "${@}" -- pokerth
 
         __install arch "${@}" -- \
             wine-staging wine-gecko wine-mono \
@@ -118,8 +124,11 @@ __game() {
 
     local _level="${1}"
     shift
-    if [ "${_level}" -ge 2 ]; then
-        __l2 "${@}"
+    if [ "${_level}" -ge 1 ]; then
+        __l1 "${@}"
+        if [ "${_level}" -ge 2 ]; then
+            __l2 "${@}"
+        fi
     fi
     unset -f __l2
 }
