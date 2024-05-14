@@ -50,8 +50,18 @@ __lang_main() {
         @fsouza/prettierd \
         vscode-langservers-extracted
 
-    __install npm -- alex write-good textlint
-    __install aurhelper "${@}" -- proselint languagetool-rust
+    __install npm -- \
+        textlint \
+        textlint-rule-write-good \
+        textlint-rule-alex \
+        textlint-rule-max-number-of-lines \
+        textlint-rule-date-weekday-mismatch \
+        textlint-rule-doubled-spaces \
+        textlint-rule-no-zero-width-spaces \
+        textlint-plugin-html \
+        textlint-plugin-latex2e
+    __install npm -- alex write-good
+    __install aurhelper "${@}" -- proselint ltex-ls-bin
 }
 
 __lang_misc() {
