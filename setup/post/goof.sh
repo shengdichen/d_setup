@@ -20,7 +20,7 @@ __office() {
 
         __install arch "${@}" -- \
             texlive texlive-lang biber libreoffice-fresh
-        __install aurhelper "${@}" -- lyx
+        __install aurhelper "${@}" -- lyx bibtex-tidy
         dotfile -- d_lyx
     }
 
