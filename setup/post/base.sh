@@ -101,7 +101,7 @@ __desktop() {
         foot wezterm alacritty \
         wl-clipboard wev xorg-xwayland \
         grim slurp wf-recorder capitaine-cursors brightnessctl gammastep
-    install aur -- wdisplays
+    __install aur -- wdisplays
     dotfile -- d_sway d_foot
 
     __install arch "${@}" -- \
