@@ -65,9 +65,9 @@ function __install() {
     __uninstall_if_installed "${_zfs[@]}" "${_zfs_header}" "${_linux[@]}"
 
     __install_linux "$(__linux_version_required remote "${1}")" "${_linux[@]}"
-    sudo pacman -S "${_zfs[@]}"
+    sudo pacman -S --noconfirm "${_zfs[@]}"
     if ${2}; then
-        sudo pacman -S "${_zfs_header}"
+        sudo pacman -S --noconfirm "${_zfs_header}"
     fi
 }
 
@@ -76,7 +76,7 @@ function __install_linux() {
     for p in "${@:2}"; do
         urls+=("$(__url "${p}" "${1}")")
     done
-    sudo pacman -U "${urls[@]}"
+    sudo pacman -U --noconfirm "${urls[@]}"
 }
 
 function __url() {

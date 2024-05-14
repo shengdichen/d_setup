@@ -3,13 +3,23 @@
 . "../util.sh"
 
 __write() {
-    cat <<STOP >/etc/vconsole.conf
-KEYMAP=us
-FONT=ter-v${1:-24}b
+    local _locale="us" _size="24"
+    local _conf="/etc/vconsole.conf"
+
+    case "${1}" in
+        "-s" | "--size")
+            _size="${2}"
+            shift
+            ;;
+    esac
+
+    "$(__sudo)" tee "${_conf}" <<STOP >/dev/null
+KEYMAP=${_locale}
+FONT=ter-v${_size}b
 STOP
 
     systemctl restart systemd-vconsole-setup
 }
 
-__write 32
+__write "${@}"
 unset -f __write
