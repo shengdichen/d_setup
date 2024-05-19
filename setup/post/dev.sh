@@ -11,66 +11,79 @@ __libs() {
         gtk4 gtk3
 }
 
-__lang_python() {
-    __install arch "${@}" -- \
-        python python-pip python-pipx python-poetry
-
-    __install arch "${@}" -- \
-        python-lsp-server ruff-lsp \
-        python-black python-aiohttp python-lsp-black \
-        python-mccabe flake8 python-pylint python-pyflakes
-
-    __install arch "${@}" -- python-rope
-    __install aurhelper "${@}" -- python-pylsp-rope
-
-    __install arch "${@}" -- python-isort
-    __install aurhelper "${@}" -- python-lsp-isort
-
-    __install arch "${@}" -- mypy
-    __install aurhelper "${@}" -- python-lsp-mypy
-
-    __install arch "${@}" -- python-ruff ruff-lsp
-    __install aurhelper "${@}" -- python-lsp-ruff
-}
-
 __lang_main() {
-    __install arch "${@}" -- \
-        lua luajit luarocks lua-language-server
+    __base() {
+        __install arch "${@}" -- \
+            lua luajit luarocks lua-language-server
 
-    __install arch "${@}" -- \
-        dash checkbashisms \
-        bash-language-server shellcheck shfmt
-    __install aurhelper "${@}" -- beautysh
+        __install arch "${@}" -- \
+            dash checkbashisms \
+            bash-language-server shellcheck shfmt
+        __install aurhelper "${@}" -- beautysh
 
-    __install arch "${@}" -- \
-        nodejs npm typescript \
-        typescript-language-server
-    __install aurhelper "${@}" -- vscode-langservers-extracted
-    __install arch "${@}" -- \
-        eslint prettier
-    __install npm -- \
-        standard ts-standard
+        __install arch "${@}" -- clang lld rust
+    }
 
-    __install npm -- \
-        textlint \
-        textlint-rule-write-good \
-        textlint-rule-alex \
-        textlint-rule-max-number-of-lines \
-        textlint-rule-date-weekday-mismatch \
-        textlint-rule-doubled-spaces \
-        textlint-rule-no-zero-width-spaces \
-        textlint-plugin-html \
-        textlint-plugin-latex2e
-    __install npm -- alex write-good
-    __install aurhelper "${@}" -- proselint ltex-ls-bin
+    __python() {
+        __install arch "${@}" -- \
+            python python-pip python-pipx python-poetry
+
+        __install arch "${@}" -- \
+            python-lsp-server ruff-lsp \
+            python-black python-aiohttp python-lsp-black \
+            python-mccabe flake8 python-pylint python-pyflakes
+
+        __install arch "${@}" -- python-rope
+        __install aurhelper "${@}" -- python-pylsp-rope
+
+        __install arch "${@}" -- python-isort
+        __install aurhelper "${@}" -- python-lsp-isort
+
+        __install arch "${@}" -- mypy
+        __install aurhelper "${@}" -- python-lsp-mypy
+
+        __install arch "${@}" -- python-ruff ruff-lsp
+        __install aurhelper "${@}" -- python-lsp-ruff
+    }
+
+    __js() {
+        __install arch "${@}" -- \
+            nodejs npm typescript \
+            typescript-language-server
+        __install aurhelper "${@}" -- vscode-langservers-extracted
+        __install arch "${@}" -- \
+            eslint prettier
+        __install npm -- \
+            standard ts-standard
+    }
+
+    __prose() {
+        __install npm -- \
+            textlint \
+            textlint-rule-write-good \
+            textlint-rule-alex \
+            textlint-rule-max-number-of-lines \
+            textlint-rule-date-weekday-mismatch \
+            textlint-rule-doubled-spaces \
+            textlint-rule-no-zero-width-spaces \
+            textlint-plugin-html \
+            textlint-plugin-latex2e
+        __install npm -- alex write-good
+        __install aurhelper "${@}" -- proselint ltex-ls-bin
+    }
+
+    __base "${@}"
+    __python "${@}"
+    __js "${@}"
+    __prose "${@}"
+    unset -f __base __python __js __prose
 }
 
 __lang_misc() {
     __install arch "${@}" -- \
-        ghc cabal-install stack haskell-language-server \
-        clang lld \
-        rust \
-        ruby
+        ghc cabal-install stack haskell-language-server
+
+    __install arch "${@}" -- ruby
 
     __install arch "${@}" -- \
         dotnet-runtime dotnet-sdk aspnet-runtime
@@ -130,17 +143,15 @@ main() {
     if [ "${_level}" -ge 0 ]; then
         dotfile -- d_dev
         __libs "${@}"
-        __lang_python "${@}"
         __lang_main "${@}"
         if [ "${_level}" -ge 1 ]; then
             __lang_misc "${@}"
             if [ "${_level}" -ge 2 ]; then
-                __lang_misc "${@}"
                 __obesities "${@}"
             fi
         fi
     fi
-    unset -f __libs __lang_python __lang_main __lang_misc __obesities
+    unset -f __libs __lang_main __lang_misc __obesities
 }
 main "${@}"
 unset -f main
