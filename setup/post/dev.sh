@@ -44,11 +44,12 @@ __lang_main() {
 
     __install arch "${@}" -- \
         nodejs npm typescript \
-        typescript-language-server eslint_d
+        typescript-language-server
+    __install aurhelper "${@}" -- vscode-langservers-extracted
+    __install arch "${@}" -- \
+        eslint prettier
     __install npm -- \
-        prettier-standard standard ts-standard \
-        @fsouza/prettierd \
-        vscode-langservers-extracted
+        standard ts-standard
 
     __install npm -- \
         textlint \
