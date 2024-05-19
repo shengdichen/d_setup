@@ -96,11 +96,17 @@ __desktop() {
         font-manager
     dotfile -- d_font shevska
 
+    __install arch -- glib2
+    __install arch -- materia-gtk-theme
+    __install arch -- arc-icon-theme elementary-icon-theme
+    __install arch -- capitaine-cursors
+    __install arch -- materia-kde breeze breeze5 oxygen oxygen5
+
     __install arch "${@}" -- \
         sway swaylock swaybg xdg-desktop-portal-wlr \
         foot wezterm alacritty \
         wl-clipboard wev xorg-xwayland \
-        grim slurp wf-recorder capitaine-cursors brightnessctl gammastep
+        grim slurp wf-recorder brightnessctl gammastep
     __install aur -- wdisplays
     dotfile -- d_sway d_foot
 
