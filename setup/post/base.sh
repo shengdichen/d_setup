@@ -42,8 +42,8 @@ __sys() {
 
         __install arch "${@}" -- \
             bluez bluez-utils \
-            wireplumber \
             pipewire pipewire-docs pipewire-alsa pipewire-pulse pipewire-jack \
+            wireplumber helvum \
             gstreamer gstreamer-vaapi gst-libav gst-plugins-base gst-plugins-good
         service_start -- bluetooth
     }
