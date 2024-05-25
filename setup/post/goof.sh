@@ -69,6 +69,9 @@ __media() {
 
         __install arch "${@}" -- \
             kdenlive handbrake
+
+        __install arch "${@}" -- \
+            niri xdg-desktop-portal-gnome xdg-desktop-portal-gtk
     }
 
     local _level="${1}"

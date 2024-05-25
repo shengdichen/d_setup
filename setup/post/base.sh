@@ -120,8 +120,9 @@ __user() {
         dotfile -- d_foot
 
         __install arch "${@}" -- \
-            sway swaylock swaybg xdg-desktop-portal-wlr \
-            wl-clipboard wev xorg-xwayland \
+            hyprland xdg-desktop-portal-hyprland \
+            river sway swaylock swaybg xdg-desktop-portal-wlr \
+            fuzzel wl-clipboard wev xorg-xwayland \
             grim slurp wf-recorder brightnessctl gammastep
         __install aur -- wdisplays
         dotfile -- d_sway
