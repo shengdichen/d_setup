@@ -92,7 +92,7 @@ __user() {
         dotfile -- d_nvim
 
         __install arch "${@}" -- \
-            zsh zsh-completions zsh-syntax-highlighting \
+            zsh zsh-completions zsh-syntax-highlighting zsh-autosuggestions \
             tmux vifm
         dotfile -- d_zsh d_tmux d_vifm
     }

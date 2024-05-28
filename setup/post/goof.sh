@@ -65,6 +65,12 @@ __media() {
             easyeffects \
             calf lsp-plugins zam-plugins mda.lv2
 
+        __install arch "${@}" -- \
+            fortune asciiquarium \
+            toilet \
+            cowsay lolcat
+        __install aurhelper "${@}" -- bullshit
+
         __install arch "${@}" -- blanket
 
         __install arch "${@}" -- \
