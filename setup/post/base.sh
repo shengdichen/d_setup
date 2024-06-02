@@ -5,7 +5,7 @@
 __sys() {
     __base() {
         __install arch "${@}" -- \
-            base base-devel pacman-contrib vi moreutils
+            base base-devel pacman-contrib vi moreutils opendoas
 
         __install arch "${@}" -- \
             man-db man-pages \
