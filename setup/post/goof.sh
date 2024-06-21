@@ -98,12 +98,12 @@ __browser() {
         service_start -- tor
         dotfile -- d_qutebrowser
 
-        __install arch "${@}" -- chromium
+        __install arch "${@}" -- chromium firefox-developer-edition
     }
 
     __l1() {
         __install arch "${@}" -- \
-            firefox-developer-edition w3m \
+            w3m \
             mktorrent transmission-cli deluge-gtk
         __install aurhelper "${@}" -- firefox-esr-bin
     }
