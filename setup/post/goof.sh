@@ -66,10 +66,10 @@ __media() {
             calf lsp-plugins zam-plugins mda.lv2
 
         __install arch "${@}" -- \
-            fortune asciiquarium \
+            cmatrix asciiquarium \
             toilet \
             cowsay lolcat
-        __install aurhelper "${@}" -- bullshit
+        __install aurhelper "${@}" -- bullshit fortune-mod-off
 
         __install arch "${@}" -- blanket
 
