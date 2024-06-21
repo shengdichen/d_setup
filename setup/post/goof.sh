@@ -21,8 +21,8 @@ __office() {
         __install arch "${@}" -- \
             texlive texlive-lang biber libreoffice-fresh
         __install arch "${@}" -- \
-            texlab perl-yaml-tiny perl-file-homedir \
-            bibtex-tidy
+            texlab perl-yaml-tiny perl-file-homedir
+        __install aurhelper "${@}" -- bibtex-tidy
 
         __install aurhelper "${@}" -- lyx
         dotfile -- d_lyx
