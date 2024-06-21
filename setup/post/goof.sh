@@ -20,6 +20,10 @@ __office() {
 
         __install arch "${@}" -- \
             texlive texlive-lang biber libreoffice-fresh
+        __install arch "${@}" -- \
+            texlab perl-yaml-tiny perl-file-homedir \
+            bibtex-tidy
+
         __install aurhelper "${@}" -- lyx
         dotfile -- d_lyx
     }
@@ -58,7 +62,22 @@ __media() {
 
     __l1() {
         __install arch "${@}" -- \
+            easyeffects \
+            calf lsp-plugins zam-plugins mda.lv2
+
+        __install arch "${@}" -- \
+            fortune asciiquarium \
+            toilet \
+            cowsay lolcat
+        __install aurhelper "${@}" -- bullshit
+
+        __install arch "${@}" -- blanket
+
+        __install arch "${@}" -- \
             kdenlive handbrake
+
+        __install arch "${@}" -- \
+            niri xdg-desktop-portal-gnome xdg-desktop-portal-gtk
     }
 
     local _level="${1}"
@@ -86,6 +105,7 @@ __browser() {
         __install arch "${@}" -- \
             firefox-developer-edition w3m \
             mktorrent transmission-cli deluge-gtk
+        __install aurhelper "${@}" -- firefox-esr-bin
     }
 
     __l2() {
@@ -107,8 +127,14 @@ __browser() {
 }
 
 __game() {
+    __l1() {
+        __install arch "${@}" -- \
+            ppsspp tty-solitaire
+    }
+
     __l2() {
         __install arch "${@}" -- steam
+        __install aurhelper "${@}" -- pokerth
 
         __install arch "${@}" -- \
             wine-staging wine-gecko wine-mono \
@@ -117,8 +143,11 @@ __game() {
 
     local _level="${1}"
     shift
-    if [ "${_level}" -ge 2 ]; then
-        __l2 "${@}"
+    if [ "${_level}" -ge 1 ]; then
+        __l1 "${@}"
+        if [ "${_level}" -ge 2 ]; then
+            __l2 "${@}"
+        fi
     fi
     unset -f __l2
 }

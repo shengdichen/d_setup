@@ -8,7 +8,7 @@ __base() {
 }
 
 __update() {
-    __install arch -- nvidia-dkms
+    __install arch -- nvidia-dkms nvidia-utils
 }
 
 __reload() {
@@ -21,6 +21,10 @@ __reload() {
     "$(__sudo)" modprobe -r nvidia
 
     nvidia-smi
+}
+
+__link() {
+    "$(__sudo)" ln -s "/usr/bin/gcc" "/opt/cuda/bin/."
 }
 
 case "${1}" in

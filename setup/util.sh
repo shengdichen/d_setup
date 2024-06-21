@@ -35,6 +35,9 @@ __install() {
         "pipx")
             shift && __install_pipx "${@}"
             ;;
+        "dotnet")
+            shift && __install_dotnet "${@}"
+            ;;
         *)
             echo "Wrong mode: install()"
             ;;
@@ -189,6 +192,24 @@ __install_npm() {
             npm install --global "${p}"
         else
             __report npm "${p}" "skip"
+        fi
+    done
+}
+
+__install_dotnet() {
+    __install_arch --no-report -- "dotnet-host"
+
+    if [ "${1}" = "--" ]; then shift; fi
+
+    local _path="${HOME}/.local/bin" _packages
+    _packages="$(dotnet tool list --tool-path "${_path}" | tail -n +3 | cut -d " " -f 1)"
+
+    for p in "${@}"; do
+        if ! printf "%s" "${_packages}" | grep -q "${p}"; then
+            __report dotnet "${p}" "install"
+            dotnet tool install --tool-path "${HOME}/.local/bin" -- "${p}"
+        else
+            __report dotnet "${p}" "skip"
         fi
     done
 }
