@@ -4,7 +4,7 @@
 
 __base() {
     __install arch -- \
-        nvidia-dkms opencl-nvidia cuda
+        nvidia-utils nvidia-dkms opencl-nvidia cuda
 }
 
 __update() {
