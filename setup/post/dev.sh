@@ -83,6 +83,9 @@ __lang_misc() {
     __install arch "${@}" -- \
         ghc cabal-install stack haskell-language-server
 
+    __install arch "${@}" -- \
+        zig zls
+
     __install arch "${@}" -- ruby
 
     __install arch "${@}" -- \
