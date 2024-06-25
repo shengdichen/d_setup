@@ -28,6 +28,8 @@ __lang_main() {
         __install arch "${@}" -- \
             python python-pip python-pipx python-poetry
 
+        __install arch "${@}" -- pyright
+
         __install arch "${@}" -- \
             python-lsp-server ruff-lsp \
             python-black python-aiohttp python-lsp-black \
