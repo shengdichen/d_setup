@@ -33,6 +33,7 @@ __sys() {
         __install arch "${@}" -- \
             networkmanager dhclient \
             networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
+            reflector \
             tor nyx \
             wget curl speedtest-cli rsync \
             traceroute mtr \
