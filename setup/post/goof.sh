@@ -62,7 +62,7 @@ __media() {
 
     __l1() {
         __install arch "${@}" -- \
-            easyeffects \
+            easyeffects audacity \
             calf lsp-plugins zam-plugins mda.lv2
 
         __install arch "${@}" -- \
