@@ -129,13 +129,13 @@ __browser() {
 __game() {
     __l1() {
         __install arch "${@}" -- \
-            ppsspp tty-solitaire
+            bsd-games ppsspp tty-solitaire
     }
 
     __l2() {
-        __install arch "${@}" -- steam
         __install aurhelper "${@}" -- pokerth
 
+        __install arch "${@}" -- steam
         __install arch "${@}" -- \
             wine-staging wine-gecko wine-mono \
             lutris
