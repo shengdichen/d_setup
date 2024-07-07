@@ -144,11 +144,13 @@ __run_in_chroot() {
 }
 
 __passwd() {
-    # re-password only if needed
-    if [ ! "$(passwd --status | awk '{print $2}')" = "P" ]; then
+    local _user="${1:-root}"
+
+    # re-password only if no password has been set
+    if [ ! "$(passwd --status "${_user}" | awk '{print $2}')" = "P" ]; then
         while true; do
-            printf "[%s]-passwd> " "${1}"
-            if passwd "${1}"; then break; fi
+            printf "[%s]-passwd> " "${_user}"
+            if passwd "${_user}"; then break; fi
             echo
         done
     fi
