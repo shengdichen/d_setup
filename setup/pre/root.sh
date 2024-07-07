@@ -536,6 +536,25 @@ cleanup() {
     reboot
 }
 
+__wsl() {
+    __update
+    __install -- \
+        base base-devel dash \
+        vi neovim less bash-completion
+
+    pacman_extra
+    multiuser
+
+    __start "cleanup"
+
+    rm "${SCRIPT_NAME}"
+    __separator ""
+    printf "wsl> setup (as-root) complete, run from powershell to not root by default:\n"
+    printf "    win\$> Arch.exe config --default-user shc\n"
+
+    __confirm "cleanup"
+}
+
 case "${1}" in
     "update")
         __update
@@ -557,6 +576,9 @@ case "${1}" in
         pre_chroot
         transition_to_post
         cleanup
+        ;;
+    "wsl")
+        __wsl
         ;;
     *)
         printf "huh? what is [%s]? (try 'pipe' for full install)\n" "${1}"
