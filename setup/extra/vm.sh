@@ -16,7 +16,7 @@ libvirt() {
     echo "Set UEFI:"
     echo "    Edit -> Preferences -> x86 Firmware -> UEFI"
     printf "Done "
-    read -r
+    read -r _
 }
 
 libvirt_admin() {
@@ -24,12 +24,12 @@ libvirt_admin() {
     if ! id -nG "${USER}" | grep -qw "${libvirt_gr}"; then
         printf "\n\n"
         printf "Adding myself [%s] to %s-group: " "${USER}" "${libvirt_gr}"
-        read -r
+        read -r _
         "$(__sudo)" usermod -aG "${libvirt_gr}" "${USER}"
 
         printf "\n\n"
         printf "Must (re)login before using libvirt: "
-        read -r
+        read -r _
     fi
 
     service_start -- libvirtd.service virtlogd.service

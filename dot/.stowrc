@@ -3,5 +3,6 @@
 --ignore=\.git.*
 --ignore=\.mypy_cache
 
---ignore=setup.sh
+--ignore=src
 --ignore=no_stow
+--ignore=setup.sh

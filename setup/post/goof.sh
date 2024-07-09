@@ -21,8 +21,8 @@ __office() {
         __install arch "${@}" -- \
             texlive texlive-lang biber libreoffice-fresh
         __install arch "${@}" -- \
-            texlab perl-yaml-tiny perl-file-homedir \
-            bibtex-tidy
+            texlab perl-yaml-tiny perl-file-homedir
+        __install aurhelper "${@}" -- bibtex-tidy
 
         __install aurhelper "${@}" -- lyx
         dotfile -- d_lyx
@@ -62,14 +62,14 @@ __media() {
 
     __l1() {
         __install arch "${@}" -- \
-            easyeffects \
+            easyeffects audacity \
             calf lsp-plugins zam-plugins mda.lv2
 
         __install arch "${@}" -- \
-            fortune asciiquarium \
+            cmatrix asciiquarium \
             toilet \
             cowsay lolcat
-        __install aurhelper "${@}" -- bullshit
+        __install aurhelper "${@}" -- bullshit fortune-mod-off
 
         __install arch "${@}" -- blanket
 
@@ -98,12 +98,12 @@ __browser() {
         service_start -- tor
         dotfile -- d_qutebrowser
 
-        __install arch "${@}" -- chromium
+        __install arch "${@}" -- chromium firefox-developer-edition
     }
 
     __l1() {
         __install arch "${@}" -- \
-            firefox-developer-edition w3m \
+            w3m \
             mktorrent transmission-cli deluge-gtk
         __install aurhelper "${@}" -- firefox-esr-bin
     }
@@ -129,13 +129,13 @@ __browser() {
 __game() {
     __l1() {
         __install arch "${@}" -- \
-            ppsspp tty-solitaire
+            bsd-games ppsspp tty-solitaire
     }
 
     __l2() {
-        __install arch "${@}" -- steam
         __install aurhelper "${@}" -- pokerth
 
+        __install arch "${@}" -- steam
         __install arch "${@}" -- \
             wine-staging wine-gecko wine-mono \
             lutris

@@ -28,6 +28,8 @@ __lang_main() {
         __install arch "${@}" -- \
             python python-pip python-pipx python-poetry
 
+        __install arch "${@}" -- pyright
+
         __install arch "${@}" -- \
             python-lsp-server ruff-lsp \
             python-black python-aiohttp python-lsp-black \
@@ -82,6 +84,9 @@ __lang_main() {
 __lang_misc() {
     __install arch "${@}" -- \
         ghc cabal-install stack haskell-language-server
+
+    __install arch "${@}" -- \
+        zig zls
 
     __install arch "${@}" -- ruby
 
