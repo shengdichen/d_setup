@@ -104,13 +104,13 @@ __user() {
     }
 
     __desktop() {
-        __install arch -- glib2 # for gsettings
-        __install arch -- materia-gtk-theme
-        __install arch -- arc-icon-theme elementary-icon-theme
-        __install arch -- capitaine-cursors
+        __install arch "${@}" -- glib2 # for gsettings
+        __install arch "${@}" -- materia-gtk-theme
+        __install arch "${@}" -- arc-icon-theme elementary-icon-theme
+        __install arch "${@}" -- capitaine-cursors
 
-        __install aurhelper -- qt5ct-kde qt6ct-kde
-        __install arch -- materia-kde breeze breeze5
+        __install aurhelper "${@}" -- qt5ct-kde qt6ct-kde
+        __install arch "${@}" -- materia-kde breeze breeze5
 
         __install arch "${@}" -- \
             adobe-source-code-pro-fonts \
