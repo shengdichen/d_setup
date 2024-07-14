@@ -8,7 +8,8 @@ __base() {
 }
 
 __update() {
-    __install arch -- nvidia-dkms nvidia-utils
+    "$(__sudo)" pacman -S --noconfirm --needed -- \
+        nvidia-utils nvidia-dkms
 }
 
 __reload() {
@@ -29,7 +30,7 @@ __link() {
 
 case "${1}" in
     "update")
-        __udpate
+        __update
         ;;
     "reload")
         __reload
