@@ -151,7 +151,7 @@ __passwd() {
         while true; do
             printf "[%s]-passwd> " "${_user}"
             if passwd "${_user}"; then break; fi
-            echo
+            printf "\n"
         done
     fi
 }
