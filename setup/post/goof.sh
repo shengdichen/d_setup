@@ -74,6 +74,7 @@ __media() {
         __install arch "${@}" -- blanket
 
         __install arch "${@}" -- \
+            v4l2loopback-dkms v4l-utils obs-studio \
             kdenlive handbrake
 
         __install arch "${@}" -- \
