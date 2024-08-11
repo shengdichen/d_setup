@@ -44,7 +44,7 @@ __media() {
         __install arch "${@}" -- \
             pulsemixer mpv \
             sox cmus mpd mpc ncmpc \
-            imv yt-dlp ytfzf
+            imv yt-dlp ytfzf mkvtoolnix-cli
         __install pipx -- tidal-dl
         dotfile -- d_mpv d_mpd d_cmus d_ncmpc
 
@@ -74,6 +74,7 @@ __media() {
         __install arch "${@}" -- blanket
 
         __install arch "${@}" -- \
+            v4l2loopback-dkms v4l-utils obs-studio \
             kdenlive handbrake
 
         __install arch "${@}" -- \
