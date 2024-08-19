@@ -35,7 +35,7 @@ __sys() {
             networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
             reflector \
             tor nyx \
-            wget curl speedtest-cli rsync \
+            wget curl httpie speedtest-cli rsync \
             traceroute mtr \
             openbsd-netcat nmap \
             whois
