@@ -98,7 +98,9 @@ __lang_misc() {
     __install arch "${@}" -- \
         jdk-openjdk openjdk-doc openjdk-src \
         jdk17-openjdk openjdk17-doc openjdk17-src \
-        jdk11-openjdk openjdk11-doc openjdk11-src
+        jdk11-openjdk openjdk11-doc openjdk11-src \
+        maven gradle
+    __install aurhelper "${@}" -- jdtls
 
     __install npm -- vim-language-server
 
