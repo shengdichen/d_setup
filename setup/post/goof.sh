@@ -130,6 +130,7 @@ __game() {
     __l1() {
         __install arch "${@}" -- \
             bsd-games ppsspp tty-solitaire
+        __install pipx -- term2048
     }
 
     __l2() {
