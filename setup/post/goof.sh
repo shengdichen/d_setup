@@ -63,7 +63,8 @@ __media() {
     __l1() {
         __install arch "${@}" -- \
             easyeffects audacity \
-            calf lsp-plugins zam-plugins mda.lv2
+            calf lsp-plugins zam-plugins mda.lv2 \
+            timidity++
 
         __install arch "${@}" -- \
             cmatrix asciiquarium \
