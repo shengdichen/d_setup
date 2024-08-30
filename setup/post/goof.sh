@@ -16,7 +16,6 @@ __office() {
 
     __l1() {
         __install arch "${@}" -- xournalpp
-        dotfile -- d_xournalpp
 
         __install arch "${@}" -- \
             texlive texlive-lang biber libreoffice-fresh
@@ -25,7 +24,6 @@ __office() {
         __install aurhelper "${@}" -- bibtex-tidy
 
         __install aurhelper "${@}" -- lyx
-        dotfile -- d_lyx
     }
 
     local _level="${1}"
@@ -46,18 +44,7 @@ __media() {
             sox cmus mpd mpc ncmpc \
             imv yt-dlp ytfzf mkvtoolnix-cli
         __install pipx -- tidal-dl
-        dotfile -- d_mpv d_mpd d_cmus d_ncmpc
-
-        local mpd_lib="${HOME}/.config/mpd/bin/lib/"
-        # guarantee at least one (non-.gitignore) item under lib-directory
-        if [ "$(find "${mpd_lib}" -maxdepth 1 | wc -l)" -le 2 ]; then
-            ln -s "${HOME}/xdg/MDA/Aud/a" "${mpd_lib}"
-            if ! pgrep mpd >/dev/null 2>&1; then mpd; fi
-            for cmd in "update" "repeat" "single"; do
-                mpc --host=admin@localhost "${cmd}"
-            done
-            mpc --host=admin@localhost volume 37
-        fi
+        dotfile -- d_mpv
     }
 
     __l1() {
