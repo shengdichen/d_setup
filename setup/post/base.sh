@@ -86,7 +86,9 @@ __user() {
         dotfile -- d_xdg
 
         __install arch "${@}" -- \
-            fzf the_silver_searcher ripgrep-all fd
+            fzf fd \
+            the_silver_searcher ripgrep \
+            ripgrep-all ffmpeg graphicsmagick pandoc poppler tesseract
 
         __install arch "${@}" -- \
             neovim tree-sitter-cli python-pynvim
