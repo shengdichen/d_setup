@@ -15,7 +15,7 @@ __sys() {
         __install arch "${@}" -- \
             linux linux-headers linux-docs linux-firmware \
             arch-install-scripts sysfsutils grub efibootmgr \
-            lshw efibootmgr intel-ucode fwupd \
+            lshw intel-ucode fwupd \
             s-tui glmark2 mesa-utils lib32-mesa-utils \
             smartmontools lsof socat \
             archlinux-keyring openssh gnupg pass pass-otp zbar
