@@ -157,8 +157,10 @@ __social() {
     __l0() {
         __install arch "${@}" -- \
             neomutt notmuch fdm isync msmtp
-        __install aurhelper "${@}" -- \
-            protonmail-bridge-core
+        # REF:
+        #   https://wiki.archlinux.org/title/Isync#Using_XOAUTH2
+        __install aurhelper "${@}" -- cyrus-sasl-xoauth2-git
+        __install aurhelper "${@}" -- protonmail-bridge-core
         dotfile -- d_mail
     }
 
