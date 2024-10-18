@@ -8,7 +8,7 @@ __libs() {
         qt5-base qt5-wayland qt5-tools qt5-doc
 
     __install arch "${@}" -- \
-        gtk4 gtk3
+        glib2-devel gtk4 gtk3
 }
 
 __lang_main() {
