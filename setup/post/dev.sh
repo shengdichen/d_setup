@@ -102,6 +102,9 @@ __lang_misc() {
         maven gradle
     __install aurhelper "${@}" -- jdtls
 
+    __install npm "${@}" -- \
+        dockerfile-language-server-nodejs @microsoft/compose-language-service
+
     __install npm -- vim-language-server
 
     __install arch "${@}" -- \
