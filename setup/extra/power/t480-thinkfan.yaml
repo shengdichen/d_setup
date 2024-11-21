@@ -1,0 +1,53 @@
+# REF:
+#   $ man thinkfan.conf
+#   /usr/share/doc/thinkfan/examples/thinkfan.yaml
+
+sensors:
+  - tpacpi: /proc/acpi/ibm/thermal
+    indices: [0]
+
+  - hwmon: /sys/class/hwmon
+    name: acpitz # 1
+    indices: [1]
+
+  - hwmon: /sys/class/hwmon
+    name: nvme # 4
+    indices: [1]
+
+  - hwmon: /sys/class/hwmon
+    name: iwlwifi_1 # 8
+    indices: [1]
+
+  - hwmon: /sys/class/hwmon
+    name: thinkpad # 5
+    indices: [1] # 1: CPU; 2: GPU, but fails
+
+fans:
+  - tpacpi: /proc/acpi/ibm/fan
+
+# NOTE:
+#   1 := 2460
+#   2 := 2665
+#   3 := 2930
+#   4 := 2985
+#   5 := 3390
+#   6 := 3790
+#   7 := 3790
+#   full-speed == disengaged := 4590
+levels:
+  - ["level 0", 0, 51]
+  - ["level 2", 49, 61]
+  - ["level 3", 59, 71]
+  - ["level 5", 69, 81]
+  - ["level 7", 79, 91]
+  - ["level full-speed", 89, 147]
+# levels:
+#   - speed: 0
+#     upper_limit: [50, 50, 50]
+#
+#   - speed: 100
+#     lower_limit: [45, 45, 45]
+#     upper_limit: [65, 65, 65]
+#
+#   - speed: 255
+#     lower_limit: [60, 60, 60]

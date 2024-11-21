@@ -8,7 +8,11 @@ __base() {
     __install arch -- \
         ethtool tlp acpi
 
+    # REF:
+    #   https://linrunner.de/tlp/installation/arch.html
     service_start -- tlp
+    systemctl enable --now -- NetworkManager-dispatcher.service
+    systemctl mask -- systemd-rfkill.service systemd-rfkill.socket
 }
 
 set_threshold() {
