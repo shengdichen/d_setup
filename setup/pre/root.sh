@@ -351,8 +351,8 @@ network() {
     __start "network"
 
     local hostname_file="/etc/hostname"
+    local _hname="shc.machine"
     if [ ! -f "${hostname_file}" ]; then
-        local _hname
         printf "Hostname: "
         read -r _hname
         printf "%s\n" "${_hname}" >"${hostname_file}"
@@ -360,6 +360,7 @@ network() {
 
     cat <<STOP >/etc/hosts
 127.0.0.1 localhost
+127.0.0.1 ${_hname}
 ::1 localhost
 STOP
 
