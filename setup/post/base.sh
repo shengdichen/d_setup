@@ -18,7 +18,7 @@ __sys() {
             lshw intel-ucode fwupd \
             s-tui glmark2 mesa-utils lib32-mesa-utils \
             smartmontools lsof socat \
-            archlinux-keyring openssh gnupg pass pass-otp zbar
+            archlinux-keyring openssh gnupg pass pass-otp zbar pwgen
 
         __install arch "${@}" -- \
             tar bzip2 bzip3 gzip xz zstd p7zip unrar zip unzip \
@@ -35,10 +35,10 @@ __sys() {
             networkmanager-openvpn networkmanager-openconnect nm-connection-editor \
             reflector \
             tor nyx \
-            wget curl speedtest-cli rsync \
+            wget curl httpie speedtest-cli rsync \
             traceroute mtr \
             openbsd-netcat nmap \
-            whois
+            whois host bind
         service_start -- NetworkManager
 
         __install arch "${@}" -- \
