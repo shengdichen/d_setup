@@ -118,7 +118,7 @@ __user() {
             adobe-source-code-pro-fonts \
             adobe-source-han-sans-otc-fonts \
             adobe-source-han-serif-otc-fonts \
-            libertinus-font \
+            ttf-libertinus otf-libertinus \
             ttf-fira-code terminus-font \
             noto-fonts noto-fonts-extra noto-fonts-cjk noto-fonts-emoji \
             font-manager
