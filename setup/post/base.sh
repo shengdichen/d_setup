@@ -15,7 +15,7 @@ __sys() {
         __install arch "${@}" -- \
             linux linux-headers linux-docs linux-firmware \
             arch-install-scripts sysfsutils grub efibootmgr \
-            lshw efibootmgr intel-ucode fwupd \
+            lshw intel-ucode fwupd \
             s-tui glmark2 mesa-utils lib32-mesa-utils \
             smartmontools lsof socat \
             archlinux-keyring openssh gnupg pass pass-otp zbar
@@ -104,13 +104,13 @@ __user() {
     }
 
     __desktop() {
-        __install arch -- glib2 # for gsettings
-        __install arch -- materia-gtk-theme
-        __install arch -- arc-icon-theme elementary-icon-theme
-        __install arch -- capitaine-cursors
+        __install arch "${@}" -- glib2 # for gsettings
+        __install arch "${@}" -- materia-gtk-theme
+        __install arch "${@}" -- arc-icon-theme elementary-icon-theme
+        __install arch "${@}" -- capitaine-cursors
 
-        __install aurhelper -- qt5ct-kde qt6ct-kde
-        __install arch -- materia-kde breeze breeze5
+        __install aurhelper "${@}" -- qt5ct-kde qt6ct-kde
+        __install arch "${@}" -- materia-kde breeze breeze5
 
         __install arch "${@}" -- \
             adobe-source-code-pro-fonts \
